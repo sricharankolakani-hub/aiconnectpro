@@ -1,3 +1,69 @@
-<!doctype html><html><body>AIConnect Pro Demo
-<script src="app.js"></script>
-</body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AIConnect Pro Demo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>AIConnect Pro — Demo</h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Auth block -->
+    <section id="auth" class="card">
+      <h2>Get started (demo)</h2>
+      <div class="row">
+        <input id="name" placeholder="Full name" />
+        <input id="email" placeholder="Email" />
+        <input id="password" type="password" placeholder="Password" />
+      </div>
+      <div class="row actions">
+        <button id="signup" class="btn">Sign Up</button>
+        <button id="login" class="btn btn--muted">Login</button>
+      </div>
+      <p class="muted">This is a demo: data is in-memory and will reset when the server restarts.</p>
+    </section>
+
+    <!-- Feed block (hidden until login) -->
+    <section id="feed" class="card" style="display:none;">
+      <div class="composer">
+        <label for="post-type">Type</label>
+        <select id="post-type">
+          <option value="post">Post</option>
+          <option value="job">Job</option>
+        </select>
+        <input id="post-title" placeholder="Title (optional)" />
+        <textarea id="post-body" rows="3" placeholder="Write something..."></textarea>
+        <div class="row actions">
+          <button id="create-post" class="btn btn--primary">Create Post</button>
+        </div>
+      </div>
+
+      <div id="posts" class="posts-list"></div>
+
+      <h3>Reels (demo)</h3>
+      <div id="reels" class="posts-list"></div>
+
+      <h3>AI Assistant (demo)</h3>
+      <div class="ai-box">
+        <input id="ai-prompt" placeholder="Ask the assistant..." />
+        <button id="ai-send" class="btn">Ask AI</button>
+        <pre id="ai-reply" class="ai-reply"></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>Demo • Not for production • Replace with real DB & AI keys before launch</small>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
