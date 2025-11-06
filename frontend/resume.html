@@ -8,6 +8,8 @@
   <style>
     .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .full{ grid-column: 1 / -1; }
+    .template-select{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+    .template-card{ padding:8px; border-radius:6px; border:1px solid #eef3ff; background:#fff; }
   </style>
 </head>
 <body>
@@ -20,6 +22,16 @@
 
   <main class="container">
     <section class="card">
+      <div class="template-select">
+        <label for="template-select"><strong>Template:</strong></label>
+        <select id="template-select" class="template-card">
+          <option value="classic">Classic</option>
+          <option value="modern">Modern</option>
+          <option value="compact">Compact</option>
+        </select>
+        <div style="margin-left:auto;color:#666;font-size:13px;">Preview opens in a new tab (Print → Save as PDF)</div>
+      </div>
+
       <h2>Basic info</h2>
       <div class="form-grid">
         <input id="name" placeholder="Full name" />
