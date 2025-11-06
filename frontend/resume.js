@@ -27,7 +27,8 @@ function collectData(){
     phone: el('phone').value.trim(),
     location: el('location').value.trim(),
     summary: el('summary').value.trim(),
-    experience, education, skills
+    experience, education, skills,
+    template: el('template-select') ? el('template-select').value : 'classic'
   };
 }
 
@@ -42,12 +43,13 @@ async function generateResume(save=false){
     });
     const j = await res.json();
     if (j.error) { el('result').textContent = 'Error: ' + JSON.stringify(j); return; }
+    // indicate template used
+    el('result').textContent = 'Template: ' + (j.template || 'classic') + ' — Preview opened in a new tab.';
     // open preview in new tab
     const newWindow = window.open('', '_blank');
     newWindow.document.open();
     newWindow.document.write(j.html);
     newWindow.document.close();
-    el('result').textContent = 'Preview opened in a new tab. Use Print → Save as PDF.';
     if (save && j.id){
       el('result').textContent += ' Saved on server (id: ' + j.id + ')';
     }
