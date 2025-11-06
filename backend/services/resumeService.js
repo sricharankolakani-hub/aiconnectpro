@@ -1,6 +1,6 @@
 // backend/services/resumeService.js
 // Produces an HTML resume string from provided data.
-// If OpenAI is available via ../services/aiProxy.callOpenAI, it will try to improve the summary.
+// Supports templates: 'classic' (default), 'modern', 'compact'
 
 let aiProxy = null;
 try { aiProxy = require('./aiProxy'); } catch (e) { aiProxy = null; }
@@ -19,8 +19,49 @@ async function improveSummary(summary){
   }
 }
 
-async function generateHtml(data = {}) {
-  // data expected: { name, title, email, phone, location, summary, experience: [{company, role, from, to, desc}], education: [{school, degree, year}], skills: [..] }
+function cssForTemplate(t){
+  if(t === 'modern'){
+    return `
+      body{font-family: 'Segoe UI', Roboto, Arial; color:#111; margin:24px;}
+      header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+      h1{margin:0;font-size:26px;color:#0b76ff}
+      h2{margin:8px 0 6px;font-size:15px;color:#333}
+      .contact{ text-align:right;font-size:13px;color:#777 }
+      .muted{color:#666}
+      .section{margin-top:12px;padding:12px;border-left:4px solid #eef6ff;background:#fbfdff;border-radius:6px}
+      ul.skills{list-style:none;padding:0;display:flex;gap:8px;flex-wrap:wrap;margin:0}
+      ul.skills li{background:#e8f2ff;padding:6px 8px;border-radius:6px;font-size:13px}
+    `;
+  }
+  if(t === 'compact'){
+    return `
+      body{font-family: Arial, Helvetica, sans-serif; color:#111; margin:18px; font-size:13px;}
+      header{display:block;margin-bottom:8px;}
+      h1{margin:0;font-size:20px}
+      .contact{ font-size:12px;color:#555 }
+      .section{margin-top:8px}
+      .job{margin-bottom:6px}
+      ul.skills{list-style:none;padding:0;display:flex;gap:6px;flex-wrap:wrap;margin:0}
+      ul.skills li{background:#f0f0f0;padding:4px 6px;border-radius:4px;font-size:12px}
+    `;
+  }
+  // classic
+  return `
+    body { font-family: Georgia, 'Times New Roman', serif; color:#111; margin:24px; }
+    header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+    h1{ margin:0; font-size:24px; }
+    h2{ margin:8px 0 6px; font-size:16px; color:#333; }
+    .contact{ text-align:right; font-size:13px; color:#555; }
+    .section{ margin-top:10px; }
+    .job{ margin-bottom:8px; }
+    .muted{ color:#555; font-size:13px; }
+    ul.skills{ list-style:none; padding:0; display:flex; gap:8px; flex-wrap:wrap; }
+    ul.skills li{ background:#eef2ff; padding:6px 8px; border-radius:6px; font-size:13px; }
+  `;
+}
+
+async function generateHtml(data = {}, template = 'classic') {
+  const t = (template || 'classic').toLowerCase();
   const name = safeText(data.name || 'Unnamed');
   const title = safeText(data.title || '');
   const email = safeText(data.email || '');
@@ -32,7 +73,8 @@ async function generateHtml(data = {}) {
   const education = Array.isArray(data.education) ? data.education : [];
   const skills = Array.isArray(data.skills) ? data.skills : [];
 
-  // Simple responsive resume HTML (print-ready)
+  const css = cssForTemplate(t);
+
   const html = `
   <!doctype html>
   <html>
@@ -41,17 +83,8 @@ async function generateHtml(data = {}) {
     <title>Resume — ${name}</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <style>
-      body { font-family: Arial, sans-serif; color:#111; margin:24px; }
-      header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
-      h1{ margin:0; font-size:24px; }
-      h2{ margin:8px 0 6px; font-size:16px; color:#333; }
-      .contact{ text-align:right; font-size:13px; color:#555; }
-      .section{ margin-top:10px; }
-      .job{ margin-bottom:8px; }
-      .muted{ color:#555; font-size:13px; }
-      ul.skills{ list-style:none; padding:0; display:flex; gap:8px; flex-wrap:wrap; }
-      ul.skills li{ background:#eef2ff; padding:6px 8px; border-radius:6px; font-size:13px; }
-      @media print { body{ margin:12px } .no-print{ display:none } }
+      ${css}
+      @media print { .no-print{ display:none } }
     </style>
   </head>
   <body>
