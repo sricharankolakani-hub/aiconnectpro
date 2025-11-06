@@ -32,7 +32,7 @@ router.post('/assistant', async (req, res) => {
 
   // No key: mock reply
   const sanitized = String(prompt).trim();
-  const reply = `Mock assistant reply — you asked: "${sanitized}".\n\nSuggestions:\n1) Break into bullets.\n2) Ask for examples.`;
+  const reply = `Mock assistant reply — you asked: "${sanitized}".\n\nSuggestions:\n1) Break into bullets.\n2) Ask for examples.`;   //added
   return res.json({ reply, fallback: true });
 });
 
