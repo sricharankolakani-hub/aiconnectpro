@@ -1,4 +1,9 @@
 // backend/services/resumeService.js
+const education = Array.isArray(data.education) ? data.education : [];
+const skills = Array.isArray(data.skills) ? data.skills : [];
+
+
+const css = cssForTemplate(t);
 
 
 const html = `
