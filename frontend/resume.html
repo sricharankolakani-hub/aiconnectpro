@@ -1,75 +1,80 @@
 <!doctype html>
-.template-select{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
-.template-card{ padding:8px; border-radius:6px; border:1px solid #eef3ff; background:#fff; }
-</style>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AIConnect Pro — Resume Builder</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .full{ grid-column: 1 / -1; }
+    .template-select{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+    .template-card{ padding:8px; border-radius:6px; border:1px solid #eef3ff; background:#fff; }
+    .note { color:#666; font-size:13px; margin-left: 8px; }
+  </style>
 </head>
 <body>
-<header class="site-header">
-<div class="container">
-<h1>Resume Builder</h1>
-<a href="index.html" style="color:#fff">← Back</a>
-</div>
-</header>
+  <header class="site-header">
+    <div class="container">
+      <h1>Resume Builder</h1>
+      <a href="index.html" style="color:#fff">← Back</a>
+    </div>
+  </header>
 
+  <main class="container">
+    <section class="card">
+      <div class="template-select">
+        <label for="template-select"><strong>Template:</strong></label>
+        <select id="template-select" class="template-card">
+          <option value="classic">Classic</option>
+          <option value="modern">Modern</option>
+          <option value="compact">Compact</option>
+          <option value="creative">Creative</option>
+          <option value="two-column">Two-Column</option>
+        </select>
+        <div style="margin-left:auto;color:#666;font-size:13px;">Preview opens in a new tab (Print → Save as PDF)</div>
+      </div>
 
-<main class="container">
-<section class="card">
-<div class="template-select">
-<label for="template-select"><strong>Template:</strong></label>
-<select id="template-select" class="template-card">
-<option value="classic">Classic</option>
-<option value="modern">Modern</option>
-<option value="compact">Compact</option>
-</select>
-<div style="margin-left:auto;color:#666;font-size:13px;">Preview opens in a new tab (Print → Save as PDF)</div>
-</div>
+      <h2>Basic info</h2>
+      <div class="form-grid">
+        <input id="name" placeholder="Full name" />
+        <input id="title" placeholder="Headline / Title" />
+        <input id="email" placeholder="Email" />
+        <input id="phone" placeholder="Phone" />
+        <input id="location" placeholder="Location" />
+      </div>
+      <div class="full">
+        <textarea id="summary" rows="4" placeholder="Professional summary / objective"></textarea>
+      </div>
+    </section>
 
+    <section class="card">
+      <h2>Experience (first item)</h2>
+      <input id="exp-company" placeholder="Company" />
+      <input id="exp-role" placeholder="Role / Title" />
+      <div class="form-grid">
+        <input id="exp-from" placeholder="From (e.g., 2021)" />
+        <input id="exp-to" placeholder="To (e.g., Present)" />
+      </div>
+      <textarea id="exp-desc" rows="3" placeholder="Describe responsibilities / achievements"></textarea>
+    </section>
 
-<h2>Basic info</h2>
-<div class="form-grid">
-<input id="name" placeholder="Full name" />
-<input id="title" placeholder="Headline / Title" />
-<input id="email" placeholder="Email" />
-<input id="phone" placeholder="Phone" />
-<input id="location" placeholder="Location" />
-</div>
-<div class="full">
-<textarea id="summary" rows="4" placeholder="Professional summary / objective"></textarea>
-</div>
-</section>
+    <section class="card">
+      <h2>Education & Skills</h2>
+      <input id="edu-school" placeholder="School / University" />
+      <input id="edu-degree" placeholder="Degree" />
+      <input id="edu-year" placeholder="Year" />
+      <input id="skills" placeholder="Comma-separated skills (e.g., JavaScript, Node.js, SQL)" />
+    </section>
 
+    <div class="row actions">
+      <button id="generate-resume" class="btn btn--primary">Generate Resume (Preview & Print)</button>
+      <button id="generate-and-save" class="btn">Generate & Save (server)</button>
+    </div>
 
-<section class="card">
-<h2>Experience (first item)</h2>
-<input id="exp-company" placeholder="Company" />
-<input id="exp-role" placeholder="Role / Title" />
-<div class="form-grid">
-<input id="exp-from" placeholder="From (e.g., 2021)" />
-<input id="exp-to" placeholder="To (e.g., Present)" />
-</div>
-<textarea id="exp-desc" rows="3" placeholder="Describe responsibilities / achievements"></textarea>
-</section>
+    <div id="result" style="margin-top:12px;"></div>
+  </main>
 
-
-<section class="card">
-<h2>Education & Skills</h2>
-<input id="edu-school" placeholder="School / University" />
-<input id="edu-degree" placeholder="Degree" />
-<input id="edu-year" placeholder="Year" />
-<input id="skills" placeholder="Comma-separated skills (e.g., JavaScript, Node.js, SQL)" />
-</section>
-
-
-<div class="row actions">
-<button id="generate-resume" class="btn btn--primary">Generate Resume (Preview & Print)</button>
-<button id="generate-and-save" class="btn">Generate & Save (server)</button>
-</div>
-
-
-<div id="result" style="margin-top:12px;"></div>
-</main>
-
-
-<script src="resume.js"></script>
+  <script src="resume.js"></script>
 </body>
 </html>
