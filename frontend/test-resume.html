@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resume API Test — AIConnect Pro</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; background:#f8fafc; color:#111; }
+    h1 { color: #0b76ff; }
+    textarea, input { width: 100%; margin: 6px 0; padding: 8px; font-family: monospace; }
+    button { background:#0b76ff; color:#fff; border:none; padding:10px 16px; border-radius:6px; cursor:pointer; }
+    button:hover { background:#095bcc; }
+    #output { white-space: pre-wrap; margin-top: 20px; background: #fff; padding: 10px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Resume API Test</h1>
+  <p>Click the button below to test the <code>/api/resume/generate</code> endpoint.</p>
+
+  <button id="sendTest">Run Test</button>
+
+  <div id="output">Waiting...</div>
+
+  <script>
+    const API = 'https://aiconnectpro-backend.onrender.com/api/resume/generate';
+
+    async function runTest() {
+      document.getElementById('output').textContent = 'Sending request...';
+      const payload = {
+        name: "Charan",
+        title: "Senior Software Engineer",
+        email: "you@example.com",
+        phone: "9999999999",
+        location: "India",
+        summary: "Experienced software engineer with 8+ years building web apps.",
+        experience: [{ company: "ACME", role: "Lead", from: "2019", to: "Present", desc: "Built and optimized core web features." }],
+        education: [{ school: "State University", degree: "B.Tech", year: "2016" }],
+        skills: ["JavaScript", "Node.js", "SQL"]
+      };
+      try {
+        const res = await fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const text = await res.text();
+        document.getElementById('output').textContent =
+          'Status: ' + res.status + '\\n\\nResponse:\\n' + text;
+
+        // if successful, open HTML preview in new tab
+        if (res.ok) {
+          try {
+            const json = JSON.parse(text);
+            if (json.html) {
+              const w = window.open('', '_blank');
+              w.document.open();
+              w.document.write(json.html);
+              w.document.close();
+            }
+          } catch (e) { /* ignore */ }
+        }
+      } catch (err) {
+        document.getElementById('output').textContent = 'Error: ' + err.message;
+      }
+    }
+
+    document.getElementById('sendTest').addEventListener('click', runTest);
+  </script>
+</body>
+</html>
