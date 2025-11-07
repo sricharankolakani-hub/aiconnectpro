@@ -46,10 +46,24 @@ async function generateResume(save=false){
     // indicate template used
     el('result').textContent = 'Template: ' + (j.template || 'classic') + ' — Preview opened in a new tab.';
     // open preview in new tab
-    const newWindow = window.open('', '_blank');
-    newWindow.document.open();
-    newWindow.document.write(j.html);
-    newWindow.document.close();
+       // indicate template used
+    el('result').textContent = 'Template: ' + (j.template || 'classic') + ' — Preview opened in a new tab.';
+
+    // ✅ If backend returns a signed Supabase URL, open it
+    if (j.url) {
+      window.open(j.url, '_blank');
+    } else if (j.html) {
+      // fallback to local preview if Supabase URL not provided
+      const w = window.open('', '_blank');
+      w.document.open();
+      w.document.write(j.html);
+      w.document.close();
+    }
+
+    if (save && j.id) {
+      el('result').textContent += ' Saved on server (id: ' + j.id + ')';
+    }
+
     if (save && j.id){
       el('result').textContent += ' Saved on server (id: ' + j.id + ')';
     }
