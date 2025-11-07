@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>AIConnect Pro — Reels</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    body{ font-family: Inter, Arial, sans-serif; background:#f6f8fb; margin:0; color:#111; }
+    .container{ max-width:900px; margin:20px auto; padding:16px; }
+    .card{ background:#fff; border-radius:10px; padding:12px; margin-bottom:12px; box-shadow:0 6px 18px rgba(16,24,40,0.04); }
+    .reel{ padding:12px; border-radius:8px; margin-bottom:10px; background:#fff; }
+    .reel .meta{ display:flex; justify-content:space-between; font-size:13px; color:#666; margin-bottom:8px; }
+    .reel .body{ white-space:pre-wrap; margin-bottom:8px; }
+    .actions{ display:flex; gap:8px; align-items:center; }
+    .btn{ padding:8px 10px; border-radius:8px; border:none; cursor:pointer; font-weight:600; }
+    .btn--primary{ background:#0b76ff; color:#fff; }
+    .small{ font-size:13px; color:#666; }
+    .form-row{ display:flex; gap:8px; margin-bottom:8px; }
+    input, textarea { width:100%; padding:8px; border:1px solid #e6eef8; border-radius:8px; box-sizing:border-box; font-size:14px; }
+    textarea{ min-height:84px; resize:vertical; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>Create Reel</h2>
+      <div id="create-form">
+        <div class="form-row">
+          <input id="reel-title" placeholder="Title (optional)"/>
+        </div>
+        <div class="form-row">
+          <textarea id="reel-body" placeholder="Share a short knowledge clip, tip or link"></textarea>
+        </div>
+        <div class="form-row">
+          <input id="reel-media" placeholder="Optional media URL (image/video)" />
+        </div>
+        <div class="form-row">
+          <select id="reel-visibility">
+            <option value="private">Only signed-in users</option>
+            <option value="public">Public (not recommended)</option>
+          </select>
+          <button id="post-reel" class="btn btn--primary">Post Reel</button>
+        </div>
+        <div id="create-result" class="small"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Feed</h2>
+      <div id="feed"></div>
+      <div id="load-more" style="text-align:center; margin-top:8px;">
+        <button id="load-more-btn" class="btn">Load more</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="reels.js"></script>
+</body>
+</html>
