@@ -1,9 +1,9 @@
 // frontend/resume.js
-const API_BASE = 'https://aiconnectpro-backend.onrender.com/api';
+const API_BASE = '/api'; // your backend proxy base path (Vercel rewrites this to your backend)
+function el(id) { return document.getElementById(id); }
 
-function el(id){ return document.getElementById(id); }
-
-function collectData(){
+// Collect form data
+function collectData() {
   const experience = [{
     company: el('exp-company').value.trim(),
     role: el('exp-role').value.trim(),
@@ -27,12 +27,15 @@ function collectData(){
     phone: el('phone').value.trim(),
     location: el('location').value.trim(),
     summary: el('summary').value.trim(),
-    experience, education, skills,
+    experience,
+    education,
+    skills,
     template: el('template-select') ? el('template-select').value : 'classic'
   };
 }
 
-async function generateResume(save=false){
+// Generate resume (HTML + PDF)
+async function generateResume(save = false) {
   el('result').textContent = 'Generating...';
   const data = collectData();
   try {
@@ -42,38 +45,61 @@ async function generateResume(save=false){
       body: JSON.stringify(data)
     });
     const j = await res.json();
-    if (j.error) { el('result').textContent = 'Error: ' + JSON.stringify(j); return; }
-    // indicate template used
-    el('result').textContent = 'Template: ' + (j.template || 'classic') + ' — Preview opened in a new tab.';
-    // open preview in new tab
-       // indicate template used
+
+    if (j.error) {
+      el('result').textContent = 'Error: ' + JSON.stringify(j);
+      return;
+    }
+
     el('result').textContent = 'Template: ' + (j.template || 'classic') + ' — Preview opened in a new tab.';
 
-    // ✅ If backend returns a signed Supabase URL, open it
+    // --- Updated response handling ---
     if (j.url) {
-      window.open(j.url, '_blank');
+      // Open the rendered HTML resume via backend redirect
+      window.open('/api/resume/' + j.id, '_blank');
     } else if (j.html) {
-      // fallback to local preview if Supabase URL not provided
+      // fallback if backend still returns HTML directly
       const w = window.open('', '_blank');
       w.document.open();
       w.document.write(j.html);
       w.document.close();
     }
 
+    // If backend returned a PDF signed URL, show a “Download PDF” link
+    if (j.pdfUrl) {
+      const resultDiv = el('result') || document.body;
+      // remove previous link if exists
+      const old = document.getElementById('resume-pdf-link');
+      if (old) old.remove();
+
+      const pdfLink = document.createElement('a');
+      pdfLink.id = 'resume-pdf-link';
+      pdfLink.href = j.pdfUrl;
+      pdfLink.textContent = 'Download PDF';
+      pdfLink.target = '_blank';
+      pdfLink.style.display = 'inline-block';
+      pdfLink.style.marginTop = '10px';
+      pdfLink.style.fontWeight = '600';
+      pdfLink.style.color = '#0b76ff';
+      resultDiv.appendChild(document.createElement('br'));
+      resultDiv.appendChild(pdfLink);
+    }
+
     if (save && j.id) {
       el('result').textContent += ' Saved on server (id: ' + j.id + ')';
     }
 
-    if (save && j.id){
-      el('result').textContent += ' Saved on server (id: ' + j.id + ')';
-    }
-  } catch (err){
+  } catch (err) {
     console.error(err);
     el('result').textContent = 'Failed to generate resume.';
   }
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
-  const gen = el('generate-resume'); if(gen) gen.addEventListener('click', ()=>generateResume(false));
-  const genSave = el('generate-and-save'); if(genSave) genSave.addEventListener('click', ()=>generateResume(true));
+// Wire buttons after DOM loaded
+document.addEventListener('DOMContentLoaded', () => {
+  const gen = el('generate-resume');
+  if (gen) gen.addEventListener('click', () => generateResume(false));
+
+  const genSave = el('generate-and-save');
+  if (genSave) genSave.addEventListener('click', () => generateResume(true));
 });
