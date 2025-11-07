@@ -6,9 +6,9 @@
   <title>AIConnect Pro — Resume Builder</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    :root{ --primary:#0b76ff; --muted:#666; --card-bg:#fff; --gap:10px; }
+    :root{ --primary:#0b76ff; --muted:#666; --card-bg:#fff; --gap:10px; --thumb-border:#e6eef8; }
     body{ font-family: Inter, Arial, sans-serif; background:#f6f8fb; margin:0; color:#111; }
-    .container{ max-width:900px; margin:28px auto; padding:0 16px; }
+    .container{ max-width:960px; margin:24px auto; padding:0 16px; }
     .site-header{ background:var(--primary); color:#fff; padding:12px 0; margin-bottom:18px; }
     .site-header .container{ display:flex; align-items:center; justify-content:space-between; }
     h1{ margin:0; font-size:20px; }
@@ -17,14 +17,23 @@
     .full{ grid-column: 1 / -1; }
     input, textarea, select { width:100%; padding:8px 10px; border:1px solid #e6eef8; border-radius:8px; font-size:14px; box-sizing:border-box; }
     textarea{ resize:vertical; min-height:86px; }
-    .template-select{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
-    .template-card{ padding:8px; border-radius:6px; border:1px solid #eef3ff; background:#fff; }
+    .template-select{ display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+    .template-card{ padding:8px; border-radius:6px; border:1px solid var(--thumb-border); background:#fff; display:flex; align-items:center; gap:10px; cursor:pointer; }
+    .template-card.selected{ outline:3px solid rgba(11,118,255,0.12); box-shadow:0 6px 12px rgba(11,118,255,0.06); border-color:rgba(11,118,255,0.22); }
+    .thumb{ width:120px; height:72px; border-radius:6px; overflow:hidden; box-shadow:0 2px 6px rgba(16,24,40,0.06); display:flex; flex-direction:column; justify-content:center; align-items:center; font-size:11px; color:#fff; }
+    .thumb.classic{ background: linear-gradient(180deg,#6b8bff,#4b6bff); font-family: Georgia, serif; }
+    .thumb.modern{ background: linear-gradient(180deg,#eef6ff,#fbfdff); color:#0b3766; border:1px solid #e6f0ff; font-family: 'Segoe UI', Arial; color:#193252; }
+    .thumb.compact{ background: linear-gradient(180deg,#f0f2f5,#fff); color:#222; border:1px solid #eee; font-family: Arial, sans-serif; color:#111; }
+    .thumb.creative{ background: linear-gradient(135deg,#ff6b6b,#6b8bff); font-weight:700; }
+    .thumb.two-column{ background: linear-gradient(180deg,#eef7ff,#f7f9fc); color:#0b3b66; border:1px solid #e6eef8; }
+    .thumb-label{ font-size:12px; margin-top:6px; color:var(--muted); }
+    .template-list{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .row.actions{ display:flex; gap:8px; align-items:center; }
     .btn{ padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-weight:600; }
     .btn--primary{ background:var(--primary); color:#fff; }
     .note{ color:var(--muted); font-size:13px; }
     #result{ margin-top:12px; color:#0b76ff; font-weight:600; }
-    @media (max-width:640px){ .form-grid{ grid-template-columns:1fr; } .site-header .container{ flex-direction:column; gap:8px; } }
+    @media (max-width:640px){ .form-grid{ grid-template-columns:1fr; } .site-header .container{ flex-direction:column; gap:8px; } .thumb{ width:92px; height:60px } }
   </style>
 </head>
 <body>
@@ -39,13 +48,59 @@
     <section class="card">
       <div class="template-select">
         <label for="template-select"><strong>Template:</strong></label>
-        <select id="template-select" class="template-card">
+
+        <!-- template-list: thumbnail cards (clickable) -->
+        <div class="template-list" id="template-thumbs" style="margin-left:6px;">
+          <div class="template-card" data-template="classic" role="button" tabindex="0">
+            <div class="thumb classic"><div style="font-size:13px">Classic</div></div>
+            <div style="min-width:78px">
+              <div style="font-weight:600">Classic</div>
+              <div class="thumb-label">Timeless serif</div>
+            </div>
+          </div>
+
+          <div class="template-card" data-template="modern" role="button" tabindex="0">
+            <div class="thumb modern"><div style="font-size:13px">Modern</div></div>
+            <div style="min-width:78px">
+              <div style="font-weight:600">Modern</div>
+              <div class="thumb-label">Clean & professional</div>
+            </div>
+          </div>
+
+          <div class="template-card" data-template="compact" role="button" tabindex="0">
+            <div class="thumb compact"><div style="font-size:13px">Compact</div></div>
+            <div style="min-width:78px">
+              <div style="font-weight:600">Compact</div>
+              <div class="thumb-label">Dense, ATS-friendly</div>
+            </div>
+          </div>
+
+          <div class="template-card" data-template="creative" role="button" tabindex="0">
+            <div class="thumb creative"><div style="font-size:13px">Creative</div></div>
+            <div style="min-width:78px">
+              <div style="font-weight:600">Creative</div>
+              <div class="thumb-label">Colorful & modern</div>
+            </div>
+          </div>
+
+          <div class="template-card" data-template="two-column" role="button" tabindex="0">
+            <div class="thumb two-column"><div style="font-size:13px">2-Column</div></div>
+            <div style="min-width:78px">
+              <div style="font-weight:600">Two-Column</div>
+              <div class="thumb-label">Professional layout</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- hidden select kept for backward compatibility -->
+        <select id="template-select" class="template-card" style="display:none;">
           <option value="classic">Classic</option>
           <option value="modern">Modern</option>
           <option value="compact">Compact</option>
           <option value="creative">Creative</option>
           <option value="two-column">Two-Column</option>
         </select>
+
         <div class="note" style="margin-left:auto;">Preview opens in a new tab (Print → Save as PDF)</div>
       </div>
 
