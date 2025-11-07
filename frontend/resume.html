@@ -6,18 +6,32 @@
   <title>AIConnect Pro — Resume Builder</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    :root{ --primary:#0b76ff; --muted:#666; --card-bg:#fff; --gap:10px; }
+    body{ font-family: Inter, Arial, sans-serif; background:#f6f8fb; margin:0; color:#111; }
+    .container{ max-width:900px; margin:28px auto; padding:0 16px; }
+    .site-header{ background:var(--primary); color:#fff; padding:12px 0; margin-bottom:18px; }
+    .site-header .container{ display:flex; align-items:center; justify-content:space-between; }
+    h1{ margin:0; font-size:20px; }
+    .card{ background:var(--card-bg); padding:14px; border-radius:10px; box-shadow:0 6px 18px rgba(16,24,40,0.04); margin-bottom:12px; }
     .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .full{ grid-column: 1 / -1; }
+    input, textarea, select { width:100%; padding:8px 10px; border:1px solid #e6eef8; border-radius:8px; font-size:14px; box-sizing:border-box; }
+    textarea{ resize:vertical; min-height:86px; }
     .template-select{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
     .template-card{ padding:8px; border-radius:6px; border:1px solid #eef3ff; background:#fff; }
-    .note { color:#666; font-size:13px; margin-left: 8px; }
+    .row.actions{ display:flex; gap:8px; align-items:center; }
+    .btn{ padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-weight:600; }
+    .btn--primary{ background:var(--primary); color:#fff; }
+    .note{ color:var(--muted); font-size:13px; }
+    #result{ margin-top:12px; color:#0b76ff; font-weight:600; }
+    @media (max-width:640px){ .form-grid{ grid-template-columns:1fr; } .site-header .container{ flex-direction:column; gap:8px; } }
   </style>
 </head>
 <body>
   <header class="site-header">
     <div class="container">
-      <h1>Resume Builder</h1>
-      <a href="index.html" style="color:#fff">← Back</a>
+      <h1>AIConnect Pro — Resume Builder</h1>
+      <a href="index.html" style="color:#fff; text-decoration:none; font-weight:600;">← Back</a>
     </div>
   </header>
 
@@ -32,10 +46,10 @@
           <option value="creative">Creative</option>
           <option value="two-column">Two-Column</option>
         </select>
-        <div style="margin-left:auto;color:#666;font-size:13px;">Preview opens in a new tab (Print → Save as PDF)</div>
+        <div class="note" style="margin-left:auto;">Preview opens in a new tab (Print → Save as PDF)</div>
       </div>
 
-      <h2>Basic info</h2>
+      <h2 style="margin-top:6px">Basic info</h2>
       <div class="form-grid">
         <input id="name" placeholder="Full name" />
         <input id="title" placeholder="Headline / Title" />
@@ -43,36 +57,45 @@
         <input id="phone" placeholder="Phone" />
         <input id="location" placeholder="Location" />
       </div>
-      <div class="full">
+      <div class="full" style="margin-top:8px;">
         <textarea id="summary" rows="4" placeholder="Professional summary / objective"></textarea>
       </div>
     </section>
 
     <section class="card">
       <h2>Experience (first item)</h2>
-      <input id="exp-company" placeholder="Company" />
-      <input id="exp-role" placeholder="Role / Title" />
-      <div class="form-grid">
+      <div class="form-grid" style="margin-bottom:8px;">
+        <input id="exp-company" placeholder="Company" />
+        <input id="exp-role" placeholder="Role / Title" />
+      </div>
+      <div class="form-grid" style="margin-bottom:8px;">
         <input id="exp-from" placeholder="From (e.g., 2021)" />
         <input id="exp-to" placeholder="To (e.g., Present)" />
       </div>
-      <textarea id="exp-desc" rows="3" placeholder="Describe responsibilities / achievements"></textarea>
+      <div class="full">
+        <textarea id="exp-desc" rows="3" placeholder="Describe responsibilities / achievements"></textarea>
+      </div>
     </section>
 
     <section class="card">
       <h2>Education & Skills</h2>
-      <input id="edu-school" placeholder="School / University" />
-      <input id="edu-degree" placeholder="Degree" />
-      <input id="edu-year" placeholder="Year" />
-      <input id="skills" placeholder="Comma-separated skills (e.g., JavaScript, Node.js, SQL)" />
+      <div class="form-grid" style="margin-bottom:8px;">
+        <input id="edu-school" placeholder="School / University" />
+        <input id="edu-degree" placeholder="Degree" />
+      </div>
+      <div class="form-grid" style="margin-bottom:8px;">
+        <input id="edu-year" placeholder="Year" />
+        <input id="skills" placeholder="Comma-separated skills (e.g., JavaScript, Node.js, SQL)" />
+      </div>
     </section>
 
-    <div class="row actions">
+    <div class="row actions" style="margin-bottom:12px;">
       <button id="generate-resume" class="btn btn--primary">Generate Resume (Preview & Print)</button>
-      <button id="generate-and-save" class="btn">Generate & Save (server)</button>
+      <button id="generate-and-save" class="btn" style="background:#fff;border:1px solid #e6eef8;">Generate & Save (server)</button>
+      <div class="note" style="margin-left:12px;">Try Creative or Two-Column for premium layouts</div>
     </div>
 
-    <div id="result" style="margin-top:12px;"></div>
+    <div id="result"></div>
   </main>
 
   <script src="resume.js"></script>
