@@ -1,8 +1,7 @@
 // frontend/resume.js
-const API_BASE = '/api'; // your backend proxy base path (Vercel rewrites this to your backend)
+const API_BASE = '/api'; // backend base (Vercel proxy)
 function el(id) { return document.getElementById(id); }
 
-// Collect form data
 function collectData() {
   const experience = [{
     company: el('exp-company').value.trim(),
@@ -34,9 +33,9 @@ function collectData() {
   };
 }
 
-// Generate resume (HTML + PDF)
 async function generateResume(save = false) {
-  el('result').textContent = 'Generating...';
+  const resultEl = el('result');
+  resultEl.textContent = 'Generating...';
   const data = collectData();
   try {
     const res = await fetch(API_BASE + '/resume/generate', {
@@ -47,31 +46,26 @@ async function generateResume(save = false) {
     const j = await res.json();
 
     if (j.error) {
-      el('result').textContent = 'Error: ' + JSON.stringify(j);
+      resultEl.textContent = 'Error: ' + JSON.stringify(j);
       return;
     }
 
-    el('result').textContent = 'Template: ' + (j.template || 'classic') + ' — Preview opened in a new tab.';
+    resultEl.textContent = 'Template: ' + (j.template || 'classic') + ' — Preview opened in a new tab.';
 
-    // --- Updated response handling ---
+    // Open preview (prefer backend redirect)
     if (j.url) {
-      // Open the rendered HTML resume via backend redirect
       window.open('/api/resume/' + j.id, '_blank');
     } else if (j.html) {
-      // fallback if backend still returns HTML directly
       const w = window.open('', '_blank');
       w.document.open();
       w.document.write(j.html);
       w.document.close();
     }
 
-    // If backend returned a PDF signed URL, show a “Download PDF” link
+    // Show PDF link if available
+    const old = document.getElementById('resume-pdf-link');
+    if (old) old.remove();
     if (j.pdfUrl) {
-      const resultDiv = el('result') || document.body;
-      // remove previous link if exists
-      const old = document.getElementById('resume-pdf-link');
-      if (old) old.remove();
-
       const pdfLink = document.createElement('a');
       pdfLink.id = 'resume-pdf-link';
       pdfLink.href = j.pdfUrl;
@@ -81,25 +75,51 @@ async function generateResume(save = false) {
       pdfLink.style.marginTop = '10px';
       pdfLink.style.fontWeight = '600';
       pdfLink.style.color = '#0b76ff';
-      resultDiv.appendChild(document.createElement('br'));
-      resultDiv.appendChild(pdfLink);
+      resultEl.appendChild(document.createElement('br'));
+      resultEl.appendChild(pdfLink);
     }
 
     if (save && j.id) {
-      el('result').textContent += ' Saved on server (id: ' + j.id + ')';
+      resultEl.textContent += ' Saved on server (id: ' + j.id + ')';
     }
-
   } catch (err) {
     console.error(err);
-    el('result').textContent = 'Failed to generate resume.';
+    resultEl.textContent = 'Failed to generate resume.';
   }
 }
 
-// Wire buttons after DOM loaded
-document.addEventListener('DOMContentLoaded', () => {
-  const gen = el('generate-resume');
-  if (gen) gen.addEventListener('click', () => generateResume(false));
+// Template thumbnail click handling
+function initTemplateThumbs() {
+  const thumbs = document.querySelectorAll('.template-card[data-template]');
+  const select = el('template-select');
 
-  const genSave = el('generate-and-save');
-  if (genSave) genSave.addEventListener('click', () => generateResume(true));
+  function setSelected(template) {
+    // update hidden select (for data)
+    if (select) select.value = template;
+    // visual highlight
+    thumbs.forEach(t => {
+      if (t.getAttribute('data-template') === template) t.classList.add('selected');
+      else t.classList.remove('selected');
+    });
+  }
+
+  thumbs.forEach(t => {
+    t.addEventListener('click', () => {
+      const template = t.getAttribute('data-template');
+      setSelected(template);
+    });
+    t.addEventListener('keyup', (e) => { if (e.key === 'Enter' || e.key === ' ') { t.click(); }});
+  });
+
+  // default select first
+  if (thumbs.length) {
+    const defaultTemplate = select ? select.value || thumbs[0].getAttribute('data-template') : thumbs[0].getAttribute('data-template');
+    setSelected(defaultTemplate);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTemplateThumbs();
+  const gen = el('generate-resume'); if (gen) gen.addEventListener('click', () => generateResume(false));
+  const genSave = el('generate-and-save'); if (genSave) genSave.addEventListener('click', () => generateResume(true));
 });
