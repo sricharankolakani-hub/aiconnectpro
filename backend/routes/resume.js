@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { generateHtml } = require('../services/resumeService');
+const { generatePdfFromHtml } = require('../services/pdfService');
 const { v4: uuidv4 } = require('uuid');
 const supabase = require('../services/supabaseClient');
 
@@ -11,7 +12,7 @@ const BUCKET = 'resumes';
 /**
  * POST /api/resume/generate
  * Body: { name, title, email, phone, location, summary, experience, education, skills, template, user_id? }
- * Returns: { id, template, url }
+ * Returns: { id, template, url (html signed url), pdfUrl (signed pdf url) }
  */
 router.post('/generate', async (req, res) => {
   try {
@@ -21,31 +22,49 @@ router.post('/generate', async (req, res) => {
     // generate HTML resume string
     const html = await generateHtml(data, template);
 
-    // generate uuid and filename (inside bucket)
+    // generate uuid id and filenames
     const id = uuidv4();
-    const filename = `${id}.html`; // will be stored at bucket://resumes/<id>.html
+    const htmlFilename = `${id}.html`;
+    const pdfFilename = `${id}.pdf`;
 
-    // upload HTML buffer to Supabase Storage with correct content type
-    const buffer = Buffer.from(html, 'utf-8');
+    // upload HTML buffer to Supabase Storage with content type
+    const htmlBuffer = Buffer.from(html, 'utf-8');
+    const { error: uploadHtmlErr } = await supabase.storage.from(BUCKET).upload(htmlFilename, htmlBuffer, {
+      contentType: 'text/html',
+      upsert: false
+    });
 
-    const { error: uploadErr } = await supabase.storage
-      .from(BUCKET)
-      .upload(filename, buffer, {
-        contentType: 'text/html',
-        upsert: false
-      });
-
-    if (uploadErr) {
-      console.error('Supabase upload error', uploadErr);
-      // If file exists or other error, return helpful message
-      return res.status(500).json({ error: 'storage_upload_failed', details: uploadErr.message || uploadErr });
+    if (uploadHtmlErr) {
+      console.error('Supabase HTML upload error', uploadHtmlErr);
+      return res.status(500).json({ error: 'storage_upload_failed', details: uploadHtmlErr.message || uploadHtmlErr });
     }
 
-    // Insert metadata row in resumes table (best-effort)
+    // generate PDF buffer from HTML (server-side)
+    let pdfBuffer = null;
+    try {
+      pdfBuffer = await generatePdfFromHtml(html);
+    } catch (pdfErr) {
+      console.error('PDF generation failed', pdfErr && (pdfErr.message || pdfErr));
+      // Continue — we still can return HTML URL even if PDF generation fails
+    }
+
+    // upload PDF to Supabase Storage (if generated)
+    if (pdfBuffer) {
+      const { error: uploadPdfErr } = await supabase.storage.from(BUCKET).upload(pdfFilename, pdfBuffer, {
+        contentType: 'application/pdf',
+        upsert: false
+      });
+      if (uploadPdfErr) {
+        console.warn('Supabase PDF upload warning', uploadPdfErr);
+        // continue
+      }
+    }
+
+    // Insert metadata into resumes table (best-effort)
     try {
       const meta = {
         id,
-        filename,
+        filename: htmlFilename,
         name: data.name || null,
         template,
         user_id: data.user_id || null
@@ -53,23 +72,37 @@ router.post('/generate', async (req, res) => {
       const { error: insertErr } = await supabase.from('resumes').insert([meta]);
       if (insertErr) {
         console.warn('Supabase metadata insert warning', insertErr);
-        // continue — we can still return signed url even if metadata insert fails
       }
     } catch (metaErr) {
-      console.warn('Metadata insert failed', metaErr && metaErr.message);
+      console.warn('Metadata insert failed', metaErr && (metaErr.message || metaErr));
     }
 
-    // Create a signed URL for preview — set expiration (seconds). e.g., 7 days
-    const expiresIn = 60 * 60 * 24 * 7;
-    const { data: signedData, error: signedErr } = await supabase.storage.from(BUCKET).createSignedUrl(filename, expiresIn);
+    // create signed URLs
+    const expiresInHtml = 60 * 60 * 24 * 7; // 7 days for HTML preview
+    const { data: signedHtmlData, error: signedHtmlErr } = await supabase.storage.from(BUCKET).createSignedUrl(htmlFilename, expiresInHtml);
+    if (signedHtmlErr) {
+      console.error('Signed URL creation failed for HTML', signedHtmlErr);
+    }
+    const htmlSignedUrl = signedHtmlData && (signedHtmlData.signedUrl || signedHtmlData.signedURL);
 
-    if (signedErr) {
-      console.error('Supabase createSignedUrl error', signedErr);
-      return res.status(500).json({ error: 'signed_url_failed', details: signedErr.message || signedErr });
+    let pdfSignedUrl = null;
+    if (pdfBuffer) {
+      // shorter expiry for PDFs if you want
+      const expiresInPdf = 60 * 60 * 24 * 7;
+      const { data: signedPdfData, error: signedPdfErr } = await supabase.storage.from(BUCKET).createSignedUrl(pdfFilename, expiresInPdf);
+      if (signedPdfErr) {
+        console.warn('Signed URL creation failed for PDF', signedPdfErr);
+      } else {
+        pdfSignedUrl = signedPdfData && (signedPdfData.signedUrl || signedPdfData.signedURL);
+      }
     }
 
-    const signedUrl = (signedData && (signedData.signedUrl || signedData.signedURL)) || null;
-    return res.json({ id, template, url: signedUrl });
+    return res.json({
+      id,
+      template,
+      url: htmlSignedUrl || null,
+      pdfUrl: pdfSignedUrl || null
+    });
   } catch (err) {
     console.error('Resume generate error', err && err.message);
     return res.status(500).json({ error: 'resume_error', details: err.message || 'internal' });
@@ -78,39 +111,25 @@ router.post('/generate', async (req, res) => {
 
 /**
  * GET /api/resume/:id
- * Finds metadata by id, then redirects to a short-lived signed URL for the HTML file.
+ * Redirects to a short-lived signed URL for the HTML file by id
  */
 router.get('/:id', async (req, res) => {
   try {
     const id = req.params.id;
+    const { data: row, error: fetchErr } = await supabase.from('resumes').select('filename').eq('id', id).limit(1).single();
 
-    // fetch metadata row to get filename (optional fallback)
-    const { data: rows, error: fetchErr } = await supabase.from('resumes').select('filename').eq('id', id).limit(1).single();
+    let filename = `${id}.html`;
+    if (!fetchErr && row && row.filename) filename = row.filename;
 
-    if (fetchErr) {
-      // If not found in table, still try to assume filename = <id>.html
-      // But if the error is something else, return 404.
-      if (fetchErr.code === 'PGRST116' || fetchErr.code === 'NotFound' || fetchErr.message?.includes('No rows')) {
-        // fallback to filename
-      } else {
-        console.warn('Supabase metadata fetch warning', fetchErr);
-      }
-    }
-
-    const filename = (rows && rows.filename) || `${id}.html`;
-
-    // create a short signed url (e.g., 60 seconds) for immediate preview
+    // create a short signed url (60 seconds) for immediate preview
     const { data: signedData, error: signedErr } = await supabase.storage.from(BUCKET).createSignedUrl(filename, 60);
-
     if (signedErr) {
       console.error('Signed URL creation failed', signedErr);
       return res.status(500).json({ error: 'signed_url_failed', details: signedErr.message || signedErr });
     }
-
     const signedUrl = (signedData && (signedData.signedUrl || signedData.signedURL)) || null;
     if (!signedUrl) return res.status(500).json({ error: 'signed_url_unavailable' });
 
-    // redirect the client to the signed URL (so browser renders the HTML)
     return res.redirect(signedUrl);
   } catch (err) {
     console.error('Resume fetch error', err && err.message);
