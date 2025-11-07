@@ -1,6 +1,6 @@
 // backend/services/resumeService.js
 // Produces an HTML resume string from provided data.
-// Supports templates: 'classic' (default), 'modern', 'compact', 'creative', 'two-column'
+// Supports templates: 'classic', 'modern', 'compact', 'creative', 'two-column'
 
 let aiProxy = null;
 try { aiProxy = require('./aiProxy'); } catch (e) { aiProxy = null; }
@@ -106,7 +106,7 @@ async function generateHtml(data = {}, template = 'classic') {
 
   const css = cssForTemplate(t);
 
-  // special layout for two-column template
+  // two-column layout handled specially
   if (t === 'two-column') {
     const left = `
       <div class="left">
@@ -167,10 +167,7 @@ async function generateHtml(data = {}, template = 'classic') {
     <meta charset="utf-8" />
     <title>Resume — ${name}</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <style>
-      ${css}
-      @media print { .no-print{ display:none } }
-    </style>
+    <style>${css}@media print { .no-print{ display:none } }</style>
   </head>
   <body>
     <header>
