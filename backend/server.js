@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const postsRoutes = require('./routes/posts');
 const aiRoutes = require('./routes/ai');
 const resumeRoutes = require('./routes/resume');
+const reelsRoutes = require('./routes/reels');
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/posts', postsRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/resume', resumeRoutes);
+app.use('/api/reels', reelsRoutes);
 
 // other demo routes
 app.get('/health', (req, res) => res.json({ status: 'ok', message: 'AIConnect Pro backend running' }));
