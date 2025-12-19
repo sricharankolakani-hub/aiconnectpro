@@ -11,6 +11,8 @@ const aiRoutes = require('./routes/ai');
 const resumeRoutes = require('./routes/resume');
 const reelsRoutes = require('./routes/reels');
 const jobsRoutes = require('./routes/jobs');
+const profileRoutes = require('./routes/profile');
+
 
 const app = express();
 
@@ -25,6 +27,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/resume', resumeRoutes);
 app.use('/api/reels', reelsRoutes);
 app.use('/api/jobs', jobsRoutes);
+app.use('/api/profile', profileRoutes);
 
 // other demo routes
 app.get('/health', (req, res) => res.json({ status: 'ok', message: 'AIConnect Pro backend running' }));
