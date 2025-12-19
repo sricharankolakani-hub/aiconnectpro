@@ -25,6 +25,16 @@ const { v4: uuidv4 } = require('uuid');
  * Body: { title, type, description, company_id, location, is_private }
  */
 router.post('/', auth, async (req, res) => {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', req.user.id)
+    .single();
+
+  if (!profile || profile.role !== 'company') {
+    return res.status(403).json({ error: 'Only companies can post jobs' });
+  }
+
   try {
     const userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'unauthorized' });
