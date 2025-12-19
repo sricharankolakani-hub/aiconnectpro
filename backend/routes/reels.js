@@ -34,16 +34,19 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-/**
- * GET /api/reels
- * Query params: ?limit=20&offset=0
- * Returns reels visible to signed-in users (private visibility allowed)
- * For simplicity, require auth to list (as you requested jobs visible only to signed-in users).
- */
+// GET /api/reels
 router.get('/', auth, async (req, res) => {
-  try {
-    const limit = Math.min(50, parseInt(req.query.limit || '20', 10));
-    const offset = parseInt(req.query.offset || '0', 10);
+  let q = supabase.from('reels').select('*').order('created_at', { ascending: false });
+
+  if (req.query.mine === 'true') {
+    q = q.eq('user_id', req.user.id);
+  }
+
+  const { data, error } = await q;
+  if (error) return res.status(500).json(error);
+  res.json(data);
+});
+
 
     // Fetch reels ordered by created_at desc
     const { data, error } = await supabase
