@@ -184,3 +184,34 @@ router.get('/_companies/list', async (req, res) => {
 });
 
 module.exports = router;
+// GET /api/jobs/applied
+router.get('/applied', auth, async (req, res) => {
+  const { data, error } = await supabase
+    .from('applications')
+    .select('job_id, jobs(title, type)')
+    .eq('user_id', req.user.id);
+
+  if (error) return res.status(500).json(error);
+  res.json(data);
+});
+
+// GET /api/jobs/posted (company)
+router.get('/posted', auth, async (req, res) => {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', req.user.id)
+    .single();
+
+  if (profile?.role !== 'company') {
+    return res.status(403).json({ error: 'Only companies' });
+  }
+
+  const { data, error } = await supabase
+    .from('jobs')
+    .select('*')
+    .eq('posted_by', req.user.id);
+
+  if (error) return res.status(500).json(error);
+  res.json(data);
+});
