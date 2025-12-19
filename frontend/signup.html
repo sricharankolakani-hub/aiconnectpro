@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Signup – AIConnectPro</title>
+</head>
+<body>
+  <h2>Signup</h2>
+
+  <input id="email" placeholder="Email"><br><br>
+  <input id="password" type="password" placeholder="Password"><br><br>
+
+  <button onclick="signup()">Create Account</button>
+  <p id="msg"></p>
+
+  <script type="module">
+    import { signUp } from './auth.js';
+
+    async function signup() {
+      try {
+        await signUp(email.value, password.value);
+        msg.textContent = 'Account created. Please login.';
+      } catch (e) {
+        msg.textContent = e.message;
+      }
+    }
+  </script>
+</body>
+</html>
