@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Profile – AIConnectPro</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    h2 { margin-top: 30px; }
+    .card { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<h1>My Profile</h1>
+<p id="info"></p>
+
+<h2>My Resumes</h2>
+<div id="resumes"></div>
+
+<h2>My Reels</h2>
+<div id="reels"></div>
+
+<h2 id="jobsTitle"></h2>
+<div id="jobs"></div>
+
+<script>
+const headers = {
+  'Authorization': 'Bearer ' + localStorage.token
+};
+
+async function loadProfile() {
+  const p = await fetch('/api/profile/me', { headers });
+  const profile = await p.json();
+  info.textContent = `Role: ${profile.role}`;
+
+  loadResumes();
+  loadReels();
+
+  if (profile.role === 'company') {
+    jobsTitle.textContent = 'Jobs Posted';
+    loadPostedJobs();
+  } else {
+    jobsTitle.textContent = 'Jobs Applied';
+    loadAppliedJobs();
+  }
+}
+
+async function loadResumes() {
+  const r = await fetch('/api/resume?mine=true', { headers });
+  const data = await r.json();
+  resumes.innerHTML = data.map(r =>
+    `<div class="card">
+      Template: ${r.template} <br>
+      <a href="/api/resume/${r.id}/html" target="_blank">Preview</a>
+    </div>`
+  ).join('');
+}
+
+async function loadReels() {
+  const r = await fetch('/api/reels?mine=true', { headers });
+  const data = await r.json();
+  reels.innerHTML = data.map(r =>
+    `<div class="card">${r.body}</div>`
+  ).join('');
+}
+
+async function loadAppliedJobs() {
+  const r = await fetch('/api/jobs/applied', { headers });
+  const data = await r.json();
+  jobs.innerHTML = data.map(j =>
+    `<div class="card">${j.jobs.title} (${j.jobs.type})</div>`
+  ).join('');
+}
+
+async function loadPostedJobs() {
+  const r = await fetch('/api/jobs/posted', { headers });
+  const data = await r.json();
+  jobs.innerHTML = data.map(j =>
+    `<div class="card">${j.title} (${j.type})</div>`
+  ).join('');
+}
+
+loadProfile();
+</script>
+
+</body>
+</html>
