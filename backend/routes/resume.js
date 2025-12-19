@@ -283,3 +283,19 @@ router.get('/:id/html', async (req, res) => {
 });
 
 module.exports = router;
+// GET /api/resume?mine=true
+router.get('/', authMiddleware, async (req, res) => {
+  if (req.query.mine !== 'true') {
+    return res.status(400).json({ error: 'Invalid query' });
+  }
+
+  const { data, error } = await supabase
+    .from('resumes')
+    .select('id, template, created_at, pdf_path')
+    .eq('user_id', req.user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) return res.status(500).json(error);
+  res.json(data);
+});
+
