@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Find jobs – AIConnectPro</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="jobs.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container jobs-header">
+      <h1>AIConnectPro</h1>
+      <nav aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="jobs.html" aria-current="page">Jobs</a>
+        <a href="resume.html">Resume Builder</a>
+        <a href="profile.html">My Profile</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container jobs-main">
+    <section class="jobs-intro">
+      <p class="eyebrow">CAREER OPPORTUNITIES</p>
+      <h2>Find your next opportunity</h2>
+      <p>Browse current listings and apply with a resume saved to your account.</p>
+    </section>
+
+    <form id="filters" class="card job-filters">
+      <label>
+        Search
+        <input id="search" type="search" placeholder="Title or keywords">
+      </label>
+      <label>
+        Type
+        <select id="type">
+          <option value="">All opportunity types</option>
+          <option value="job">Full-time or part-time job</option>
+          <option value="freelance">Freelance</option>
+          <option value="govt">Government</option>
+          <option value="business">Business opportunity</option>
+        </select>
+      </label>
+      <label>
+        Location
+        <input id="location" type="search" placeholder="City, region, or remote">
+      </label>
+      <button class="btn btn--primary" type="submit">Search opportunities</button>
+    </form>
+
+    <p id="status" class="job-status" role="status" aria-live="polite"></p>
+    <div class="jobs-layout">
+      <section aria-labelledby="results-heading">
+        <div class="results-heading">
+          <h2 id="results-heading">Open opportunities</h2>
+          <span id="result-count" class="muted"></span>
+        </div>
+        <div id="job-list" class="job-list"></div>
+        <button id="load-more" class="btn load-more" type="button" hidden>Load more</button>
+      </section>
+      <aside id="job-detail" class="card job-detail" aria-live="polite">
+        <p class="muted">Select a listing to see its details.</p>
+      </aside>
+    </div>
+  </main>
+
+  <script type="module" src="jobs.js"></script>
+</body>
+</html>
