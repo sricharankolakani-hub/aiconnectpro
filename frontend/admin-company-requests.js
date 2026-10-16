@@ -69,7 +69,14 @@ function renderRequests(requests) {
     identity.append(create('p', 'request-meta', request.requester_email || 'No email available'));
     header.append(identity, create('span', 'request-status', request.status));
     card.append(header);
-    card.append(create('h4', 'request-company', request.company_name));
+    card.append(create('h4', 'request-company', request.organization?.name || request.company_name));
+    if (request.organization) {
+      const organization = request.organization;
+      card.append(create('p', 'request-meta', 'GSTIN: ' + (organization.gstin || 'Not provided')));
+      card.append(create('p', 'request-meta', 'Registered address: ' + (organization.registered_address || 'Not provided')));
+      card.append(create('p', 'request-meta', 'Operating location: ' + (organization.operating_location || 'Not provided')));
+      card.append(create('p', 'request-meta', 'Verification: ' + (organization.verification_status || 'pending') + ' · Manual check required'));
+    }
     if (request.website) {
       const website = create('a', 'request-meta', request.website);
       website.href = request.website;
@@ -82,7 +89,7 @@ function renderRequests(requests) {
 
     if (request.status === 'pending') {
       const actions = create('div', 'request-actions');
-      const approve = create('button', 'button button-primary decision-button', 'Approve employer');
+      const approve = create('button', 'button button-primary decision-button', 'Verify organization & approve');
       const reject = create('button', 'button button-outline decision-button', 'Decline');
       approve.type = reject.type = 'button';
       approve.addEventListener('click', () => decide(request.id, 'approved', approve, reject));
@@ -109,14 +116,14 @@ async function loadQueue() {
 
 async function decide(id, decision, approve, reject) {
   approve.disabled = reject.disabled = true;
-  setQueueStatus(decision === 'approved' ? 'Approving company access…' : 'Declining request…');
+  setQueueStatus(decision === 'approved' ? 'Verifying organization and activating employer access…' : 'Declining request…');
   try {
     await api('/api/admin/company-access-requests/' + encodeURIComponent(id), {
       method: 'PATCH',
       body: JSON.stringify({ decision })
     });
     setQueueStatus(decision === 'approved'
-      ? 'Company access approved. The employer must sign in again to refresh their access.'
+      ? 'Organization approved. The employer can now publish using this organization.'
       : 'Request declined.');
     await loadQueue();
   } catch (error) {

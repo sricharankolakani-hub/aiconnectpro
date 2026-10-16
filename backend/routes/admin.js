@@ -15,7 +15,7 @@ router.get('/company-access-requests', async (req, res) => {
 
   let query = supabase
     .from('company_access_requests')
-    .select('id, requester_id, company_name, website, message, status, created_at, reviewed_at, reviewed_by')
+    .select('id, requester_id, organization_id, company_name, website, message, status, created_at, reviewed_at, reviewed_by, organization:organizations(name, gstin, registered_address, operating_location, verification_status)')
     .order('created_at', { ascending: false })
     .limit(100);
   if (status !== 'all') query = query.eq('status', status);
@@ -47,6 +47,8 @@ router.get('/company-access-requests', async (req, res) => {
     requests: rows.map(row => ({
       id: row.id,
       requester_id: row.requester_id,
+      organization_id: row.organization_id,
+      organization: row.organization || null,
       requester_name: profiles.get(row.requester_id)?.full_name || 'AIConnectPro user',
       requester_email: emails.get(row.requester_id) || null,
       company_name: row.company_name,
@@ -68,7 +70,7 @@ router.patch('/company-access-requests/:id', async (req, res) => {
 
   const { data: request, error: lookupError } = await supabase
     .from('company_access_requests')
-    .select('id, requester_id, company_name, status')
+    .select('id, requester_id, organization_id, company_name, status')
     .eq('id', req.params.id)
     .maybeSingle();
   if (lookupError) return res.status(500).json({ error: 'request_lookup_failed' });
@@ -78,7 +80,34 @@ router.patch('/company-access-requests/:id', async (req, res) => {
     return res.status(403).json({ error: 'cannot_review_own_request' });
   }
 
-  if (decision === 'approved') {
+  if (request.organization_id) {
+    const verificationStatus = decision === 'approved' ? 'verified' : 'rejected';
+    const { error: organizationError } = await supabase
+      .from('organizations')
+      .update({
+        verification_status: verificationStatus,
+        verified_at: decision === 'approved' ? new Date().toISOString() : null,
+        verified_by: decision === 'approved' ? req.user.id : null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', request.organization_id);
+    if (organizationError) {
+      console.error('Organization review update failed', organizationError);
+      return res.status(500).json({ error: 'organization_review_failed' });
+    }
+
+    const { error: membershipError } = await supabase
+      .from('organization_memberships')
+      .update({ status: decision === 'approved' ? 'active' : 'rejected', updated_at: new Date().toISOString() })
+      .eq('organization_id', request.organization_id)
+      .eq('user_id', request.requester_id);
+    if (membershipError) {
+      console.error('Organization membership review failed', membershipError);
+      return res.status(500).json({ error: 'membership_review_failed' });
+    }
+  }
+
+  if (decision === 'approved' && !request.organization_id) {
     const { data: authData, error: userError } = await supabase.auth.admin.getUserById(request.requester_id);
     if (userError || !authData?.user) return res.status(404).json({ error: 'requester_not_found' });
 
