@@ -72,9 +72,10 @@ async function initialize() {
 
   try {
     await getUser();
-    const profile = await api('/api/profile/me');
-    if (profile.role === 'company') {
-      showState('Employer access is already enabled', 'This login already has employer access. Your personal profile remains available too.', 'Post an opportunity', 'post-job.html');
+    const memberships = await api('/api/organizations/mine');
+    const verifiedOrganizations = (memberships.organizations || []).filter(item => item.verification_status === 'verified');
+    if (verifiedOrganizations.length) {
+      showState('Employer access is ready', 'Your personal profile remains separate from your organization membership.', 'Post an opportunity', 'post-job.html');
       return;
     }
     const result = await api('/api/company-access-requests/me');
