@@ -1,75 +1,144 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AIConnect Pro Demo</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Find career opportunities, build your resume, and organize your professional profile with AIConnectPro.">
+  <title>AIConnectPro — Your career, moving forward</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header">
-    <div class="container">
-      <h1>AIConnect Pro — Demo</h1>
-      <a href="jobs.html" class="btn" style="margin-left:12px; background:#fff; color:#0b76ff; border-radius:6px; padding:6px 8px; text-decoration:none;">Find Jobs</a>
-      <a href="resume.html" class="btn" style="margin-left:12px; background:#fff; color:#0b76ff; border-radius:6px; padding:6px 8px; text-decoration:none;">Resume Builder</a>
-      <a href="profile.html">My Profile</a>
-      <a href="login.html">Log in</a>
-      <a href="signup.html">Create account</a>
-
+    <div class="shell nav-shell">
+      <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+      <nav class="primary-nav" aria-label="Main navigation">
+        <a href="jobs.html">Jobs</a>
+        <a href="resume.html">Resume Builder</a>
+        <a href="profile.html">My Profile</a>
+      </nav>
+      <div class="account-actions" id="guest-actions">
+        <a class="nav-login" href="login.html">Log in</a>
+        <a class="button button-primary button-small" href="signup.html">Get started</a>
+      </div>
+      <div class="account-actions" id="user-actions" hidden>
+        <span id="welcome-label" class="welcome-label"></span>
+        <a class="button button-outline button-small" href="profile.html">My profile</a>
+        <button class="nav-login" id="logout" type="button">Log out</button>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-    <!-- Auth block -->
-    <section id="auth" class="card">
-      <h2>Get started (demo)</h2>
-      <div class="row">
-        <input id="name" placeholder="Full name" />
-        <input id="email" placeholder="Email" />
-        <input id="password" type="password" placeholder="Password" />
+  <main>
+    <section class="shell hero">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="eyebrow-dot"></span> Your career workspace</p>
+        <h1>Make your next career move with confidence.</h1>
+        <p class="hero-description">Find opportunities, build a resume you’re proud to share, and keep your professional profile in one place.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="jobs.html">Explore opportunities <span aria-hidden="true">↗</span></a>
+          <a class="button button-outline" href="resume.html">Build your resume</a>
+        </div>
+        <p class="hero-note">Start with one clear next step. Your profile and saved resume are ready when you are.</p>
       </div>
-      <div class="row actions">
-        <button id="signup" class="btn">Sign Up</button>
-        <button id="login" class="btn btn--muted">Login</button>
+      <div class="hero-art" aria-label="AIConnectPro career tools: opportunities, resume, and profile">
+        <div class="art-glow"></div>
+        <div class="art-orbit orbit-one"></div>
+        <div class="art-orbit orbit-two"></div>
+        <div class="tool-card tool-card-main">
+          <span class="tool-card-label">YOUR CAREER TOOLKIT</span>
+          <div class="tool-card-title">A little more clarity.<br>A lot more momentum.</div>
+          <div class="tool-list">
+            <div><span class="tool-icon icon-jobs">↗</span><span><strong>Opportunities</strong><small>Find work that fits</small></span><span class="tool-arrow">→</span></div>
+            <div><span class="tool-icon icon-resume">▤</span><span><strong>Resume</strong><small>Show your strengths</small></span><span class="tool-arrow">→</span></div>
+            <div><span class="tool-icon icon-profile">◎</span><span><strong>Profile</strong><small>Keep your story together</small></span><span class="tool-arrow">→</span></div>
+          </div>
+        </div>
+        <div class="floating-chip chip-top"><span class="chip-spark">✦</span> Built around your next step</div>
+        <div class="floating-chip chip-bottom"><span class="chip-check">✓</span> Your progress, in one place</div>
       </div>
-      <p class="muted">This is a demo: data is in-memory and will reset when the server restarts.</p>
     </section>
 
-    <!-- Feed block (hidden until login) -->
-    <section id="feed" class="card" style="display:none;">
-      <div class="composer">
-        <label for="post-type">Type</label>
-        <select id="post-type">
-          <option value="post">Post</option>
-          <option value="job">Job</option>
-        </select>
-        <input id="post-title" placeholder="Title (optional)" />
-        <textarea id="post-body" rows="3" placeholder="Write something..."></textarea>
-        <div class="row actions">
-          <button id="create-post" class="btn btn--primary">Create Post</button>
+    <section class="section-wrap">
+      <div class="shell">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">MOVE FORWARD</p>
+            <h2>Tools for the next step in your career</h2>
+          </div>
+          <p>Practical essentials to help you prepare, explore, and keep moving.</p>
+        </div>
+        <div class="feature-grid">
+          <a class="feature-card" href="jobs.html">
+            <span class="feature-icon feature-icon-blue">↗</span>
+            <span class="feature-kicker">DISCOVER</span>
+            <h3>Explore opportunities</h3>
+            <p>Search job, freelance, government, and business listings in one place.</p>
+            <span class="feature-link">Browse opportunities <span aria-hidden="true">→</span></span>
+          </a>
+          <a class="feature-card" href="resume.html">
+            <span class="feature-icon feature-icon-purple">▤</span>
+            <span class="feature-kicker">PREPARE</span>
+            <h3>Build your resume</h3>
+            <p>Create a polished resume and keep a saved copy ready for applications.</p>
+            <span class="feature-link">Open Resume Builder <span aria-hidden="true">→</span></span>
+          </a>
+          <a class="feature-card" href="profile.html">
+            <span class="feature-icon feature-icon-green">◎</span>
+            <span class="feature-kicker">ORGANIZE</span>
+            <h3>Manage your profile</h3>
+            <p>See your saved resumes and keep your professional details together.</p>
+            <span class="feature-link">View your profile <span aria-hidden="true">→</span></span>
+          </a>
         </div>
       </div>
+    </section>
 
-      <div id="posts" class="posts-list"></div>
-
-      <h3>Reels (demo)</h3>
-      <div id="reels" class="posts-list"></div>
-
-      <h3>AI Assistant (demo)</h3>
-      <div class="ai-box">
-        <input id="ai-prompt" placeholder="Ask the assistant..." />
-        <button id="ai-send" class="btn">Ask AI</button>
-        <pre id="ai-reply" class="ai-reply"></pre>
+    <section class="shell next-step-banner">
+      <div class="next-step-mark">✦</div>
+      <div>
+        <p class="eyebrow">YOUR NEXT STEP STARTS HERE</p>
+        <h2>Ready to see what’s possible?</h2>
+        <p>Browse opportunities or make your resume application-ready.</p>
       </div>
+      <a class="button button-light" href="jobs.html">Explore jobs <span aria-hidden="true">→</span></a>
     </section>
   </main>
 
   <footer class="site-footer">
-    <div class="container">
-      <small>Demo • Not for production • Replace with real DB & AI keys before launch</small>
+    <div class="shell footer-inner">
+      <a class="brand brand-footer" href="index.html"><span class="brand-mark">A</span> AIConnectPro</a>
+      <span>Career opportunities, resume tools, and professional profiles.</span>
     </div>
   </footer>
 
-  <script src="app.js"></script>
+  <script type="module">
+    import { getUser, signOut } from './auth.js';
+
+    const guestActions = document.getElementById('guest-actions');
+    const userActions = document.getElementById('user-actions');
+    const welcomeLabel = document.getElementById('welcome-label');
+    const logoutButton = document.getElementById('logout');
+
+    try {
+      const user = await getUser();
+      if (user) {
+        guestActions.hidden = true;
+        userActions.hidden = false;
+        const name = user.user_metadata?.name || user.user_metadata?.full_name;
+        welcomeLabel.textContent = name ? 'Hi, ' + name : 'Welcome back';
+      }
+    } catch {
+      // Keep the signed-out navigation visible if no valid session exists.
+    }
+
+    logoutButton.addEventListener('click', async () => {
+      logoutButton.disabled = true;
+      try {
+        await signOut();
+      } finally {
+        window.location.assign('index.html');
+      }
+    });
+  </script>
 </body>
 </html>
