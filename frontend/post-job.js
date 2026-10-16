@@ -105,8 +105,8 @@ form.addEventListener('submit', async event => {
     setStatus('Your opportunity is live. You can review it from My Profile or the Jobs page.');
     const link = document.createElement('a');
     link.className = 'published-link';
-    link.href = 'profile.html';
-    link.textContent = 'View your posted opportunities';
+    link.href = 'company-applications.html';
+    link.textContent = 'Open applicant inbox';
     statusEl.append(document.createElement('br'), link);
   } catch (error) {
     setStatus(error.message || 'The opportunity could not be published.', true);

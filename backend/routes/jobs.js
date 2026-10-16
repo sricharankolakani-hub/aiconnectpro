@@ -245,3 +245,73 @@ router.get('/posted', auth, async (req, res) => {
   if (error) return res.status(500).json(error);
   res.json(data);
 });
+
+
+// GET /api/jobs/posted/:jobId/applications
+// Only the company account that owns the listing may view its applicants.
+router.get('/posted/:jobId/applications', auth, async (req, res) => {
+  try {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', req.user.id)
+      .maybeSingle();
+
+    if (profileError) return res.status(500).json({ error: 'db_error' });
+    if (!profile || profile.role !== 'company') {
+      return res.status(403).json({ error: 'company_access_required' });
+    }
+
+    const { data: job, error: jobError } = await supabase
+      .from('jobs')
+      .select('id, posted_by')
+      .eq('id', req.params.jobId)
+      .maybeSingle();
+
+    if (jobError) return res.status(500).json({ error: 'db_error' });
+    if (!job || job.posted_by !== req.user.id) {
+      return res.status(404).json({ error: 'job_not_found' });
+    }
+
+    const { data: applications, error: applicationError } = await supabase
+      .from('applications')
+      .select('id, user_id, message, status, created_at, resume_id')
+      .eq('job_id', job.id)
+      .order('created_at', { ascending: false });
+
+    if (applicationError) return res.status(500).json({ error: 'db_error' });
+    const rows = applications || [];
+    if (!rows.length) return res.json({ applications: [] });
+
+    const applicantIds = [...new Set(rows.map(row => row.user_id).filter(Boolean))];
+    const resumeIds = [...new Set(rows.map(row => row.resume_id).filter(Boolean))];
+    const [profileResult, resumeResult] = await Promise.all([
+      applicantIds.length
+        ? supabase.from('profiles').select('id, full_name').in('id', applicantIds)
+        : Promise.resolve({ data: [], error: null }),
+      resumeIds.length
+        ? supabase.from('resumes').select('id, template, created_at').in('id', resumeIds)
+        : Promise.resolve({ data: [], error: null })
+    ]);
+
+    if (profileResult.error || resumeResult.error) {
+      return res.status(500).json({ error: 'db_error' });
+    }
+
+    const profilesById = new Map((profileResult.data || []).map(item => [item.id, item]));
+    const resumesById = new Map((resumeResult.data || []).map(item => [item.id, item]));
+    return res.json({
+      applications: rows.map(row => ({
+        id: row.id,
+        full_name: profilesById.get(row.user_id)?.full_name || 'Applicant',
+        message: row.message,
+        status: row.status || 'applied',
+        created_at: row.created_at,
+        resume: row.resume_id ? (resumesById.get(row.resume_id) || null) : null
+      }))
+    });
+  } catch (error) {
+    console.error('Employer applications lookup failed', error);
+    return res.status(500).json({ error: 'internal' });
+  }
+});
