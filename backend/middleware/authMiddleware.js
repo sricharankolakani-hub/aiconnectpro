@@ -3,7 +3,7 @@ const supabase = require('../services/supabaseClient');
 
 module.exports = async function auth(req, res, next) {
   const header = req.headers.authorization || '';
-  const match = header.match(/^Bearer\\s+(.+)$/i);
+  const match = header.match(/^Bearer\s+(.+)$/i);
   if (!match) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
