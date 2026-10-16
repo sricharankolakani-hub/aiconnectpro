@@ -7,14 +7,22 @@ const auth = require('../middleware/authMiddleware');
 /**
  * POST /api/profile
  * Body: { role, full_name, company_name }
- * Creates or updates profile for logged-in user
+ * Creates or updates profile for logged-in user.
+ * Company privileges must be granted through Supabase app_metadata by an administrator.
  */
 router.post('/', auth, async (req, res) => {
   const userId = req.user.id;
-  const { role, full_name, company_name } = req.body;
+  const { role, full_name, company_name } = req.body || {};
 
   if (!['user', 'company'].includes(role)) {
     return res.status(400).json({ error: 'Invalid role' });
+  }
+
+  // Do not let a user grant themselves company privileges; auth metadata is
+  // controlled server-side and is verified by authMiddleware.
+  const authorizedRoles = Array.isArray(req.user.roles) ? req.user.roles : [];
+  if (role === 'company' && !authorizedRoles.includes('company')) {
+    return res.status(403).json({ error: 'Company role requires administrator approval' });
   }
 
   const profile = {
