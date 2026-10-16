@@ -14,6 +14,29 @@
     button.innerHTML = '<span aria-hidden="true">' + (dark ? '☀' : '☾') + '</span>';
   }
 
+  async function addAdminNavigation() {
+    const nav = document.querySelector('.primary-nav');
+    if (!nav || nav.querySelector('[data-admin-nav]')) return;
+
+    try {
+      const { getUser } = await import('./auth.js');
+      const user = await getUser();
+      const roles = Array.isArray(user?.app_metadata?.roles) ? user.app_metadata.roles : [];
+      if (!roles.includes('admin')) return;
+
+      const link = document.createElement('a');
+      link.href = 'admin-company-requests.html';
+      link.textContent = 'Admin Requests';
+      link.dataset.adminNav = 'true';
+      if (window.location.pathname.endsWith('/admin-company-requests.html')) {
+        link.setAttribute('aria-current', 'page');
+      }
+      nav.append(link);
+    } catch {
+      // Keep the regular navigation if the user is signed out or auth is unavailable.
+    }
+  }
+
   applyTheme(initial);
   document.addEventListener('DOMContentLoaded', () => {
     applyTheme(document.body.dataset.theme || initial);
@@ -22,6 +45,7 @@
       localStorage.setItem(storageKey, next);
       applyTheme(next);
     });
+    void addAdminNavigation();
   });
 
   media.addEventListener?.('change', event => {
