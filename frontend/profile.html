@@ -1,22 +1,8 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My Profile – AIConnectPro</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h2 { margin-top: 30px; }
-    .card { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
-  </style>
-</head>
-<body>
-<h1>My Profile</h1>
-<p id="info" role="status"></p>
-<h2>My Resumes</h2><div id="resumes"></div>
-<h2>My Reels</h2><div id="reels"></div>
-<h2 id="jobsTitle"></h2><div id="jobs"></div>
-<script>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>My Profile – AIConnectPro</title><link rel="stylesheet" href="workspace.css"></head><body class="workspace-page profile-page"><header class="workspace-header"><div class="workspace-header-inner">
+  <a class="workspace-brand" href="index.html"><span class="workspace-mark">A</span> AIConnectPro</a>
+  <nav class="workspace-nav" aria-label="Main navigation"><a href="jobs.html">Jobs</a><a href="resume.html">Resume Builder</a><a href="profile.html">My Profile</a></nav>
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode">☾</button>
+</div></header><main class="workspace-main"><p class="eyebrow">YOUR ACCOUNT</p><h1>My Profile</h1><p id="info" role="status">Loading your profile…</p><section class="workspace-card"><h2>My Resumes</h2><div id="resumes"></div></section><section class="workspace-card"><h2>My Reels</h2><div id="reels"></div></section><section class="workspace-card"><h2 id="jobsTitle"></h2><div id="jobs"></div></section></main><script src="theme.js" defer></script><script>
 const token = localStorage.getItem('token');
 const headers = token ? { Authorization: 'Bearer ' + token } : {};
 const byId = id => document.getElementById(id);
@@ -94,6 +80,4 @@ async function loadPostedJobs() {
   rows.forEach(job => addCard(byId('jobs'), job.title + ' (' + job.type + ')'));
 }
 loadProfile();
-</script>
-</body>
-</html>
+</script></body></html>
