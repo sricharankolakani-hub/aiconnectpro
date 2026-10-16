@@ -1,0 +1,35 @@
+.jobs-header { display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+.jobs-header nav { display:flex; gap:18px; flex-wrap:wrap; }
+.jobs-header nav a { color:#fff; text-decoration:none; }
+.jobs-header nav a[aria-current="page"] { text-decoration:underline; text-underline-offset:5px; }
+.jobs-main { padding-bottom:48px; }
+.jobs-intro { padding:32px 0 18px; }
+.jobs-intro h2 { margin:4px 0 8px; font-size:clamp(28px, 4vw, 40px); }
+.jobs-intro p { color:#566174; max-width:620px; }
+.eyebrow { color:#0b76ff !important; font-weight:700; font-size:12px; letter-spacing:.12em; }
+.job-filters { display:grid; grid-template-columns:2fr 1fr 1.2fr auto; align-items:end; gap:12px; }
+.job-filters label, .application-form label { display:grid; gap:6px; font-size:14px; font-weight:600; }
+.job-filters input, .job-filters select, .application-form select, .application-form textarea { width:100%; min-width:0; padding:11px 12px; border:1px solid #d7deea; border-radius:6px; font:inherit; background:#fff; }
+.job-status { min-height:24px; color:#48556a; }
+.job-status.error { color:#a52727; }
+.jobs-layout { display:grid; grid-template-columns:minmax(0, 1.2fr) minmax(280px, .8fr); gap:18px; align-items:start; }
+.results-heading { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+.results-heading h2 { font-size:20px; }
+.job-list { display:grid; gap:12px; }
+.job-card { padding:16px; background:#fff; border:1px solid #e2e7ef; border-radius:8px; box-shadow:0 3px 12px rgba(10,10,10,.035); }
+.job-card h3 { margin:0 0 8px; font-size:18px; }
+.job-meta { display:flex; flex-wrap:wrap; gap:8px 14px; color:#596579; font-size:13px; }
+.job-excerpt { margin:12px 0; color:#39465a; white-space:pre-line; }
+.job-actions { display:flex; align-items:center; gap:10px; }
+.job-detail { position:sticky; top:16px; min-height:180px; }
+.job-detail h2 { margin-top:0; }
+.job-detail-body { white-space:pre-wrap; line-height:1.55; }
+.application-form { display:grid; gap:12px; border-top:1px solid #e6eaf0; margin-top:16px; padding-top:16px; }
+.application-note { font-size:13px; color:#566174; }
+.load-more { margin:14px 0; }
+.empty-state { background:#fff; border:1px dashed #cbd4e2; color:#566174; border-radius:8px; padding:24px; text-align:center; }
+@media (max-width:760px) {
+  .job-filters { grid-template-columns:1fr; }
+  .jobs-layout { grid-template-columns:1fr; }
+  .job-detail { position:static; }
+}
