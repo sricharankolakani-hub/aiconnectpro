@@ -19,3 +19,4 @@
 body[data-theme=dark] .resume-page .template-card{background:var(--ui-panel);border-color:var(--ui-line)}
 body[data-theme=dark] .resume-page .thumb.modern,body[data-theme=dark] .resume-page .thumb.two-column{background:linear-gradient(135deg,#26364c,#1b2535);color:#dce7f7}
 @media(max-width:640px){.resume-page .form-grid{grid-template-columns:1fr}.resume-page .template-card{min-width:min(100%,210px)}.resume-page .template-select>.note{margin-left:0!important}}
+.resume-page textarea{width:100%}
