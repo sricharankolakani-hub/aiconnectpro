@@ -124,3 +124,10 @@ body[data-theme="dark"] .job-status.error { color: #ffaaaa; }
 body[data-theme="dark"] .empty-state-icon,
 body[data-theme="dark"] .search-panel-mark { color: #a9c5ff; background: #263c60; }
 body[data-theme="dark"] .job-card:hover { border-color: #52617a; }
+
+.employer-entry{display:inline-flex;flex-direction:column;gap:5px;margin-top:16px;padding:12px 15px;color:var(--ink);background:var(--white);border:1px solid var(--line);border-radius:11px;text-decoration:none;box-shadow:0 6px 16px rgba(31,52,95,.04);transition:transform .16s ease,border-color .16s ease}
+.employer-entry:hover{transform:translateY(-1px);border-color:#b9c8df}
+.employer-entry>span{color:var(--muted);font-size:10px}
+.employer-entry strong{color:var(--primary);font-size:12px}
+.employer-entry strong span{margin-left:6px}
+body[data-theme="dark"] .employer-entry{color:var(--ink);background:#1b2535;border-color:#354156;box-shadow:0 6px 16px rgba(0,0,0,.16)}

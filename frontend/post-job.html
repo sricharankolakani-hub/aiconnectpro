@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Create and manage your company's opportunities on AIConnectPro.">
+  <title>Post an opportunity – AIConnectPro</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="post-job.css">
+</head>
+<body class="post-job-page">
+  <header class="site-header">
+    <div class="shell nav-shell">
+      <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+      <nav class="primary-nav" aria-label="Main navigation">
+        <a href="jobs.html">Jobs</a>
+        <a href="resume.html">Resume Builder</a>
+        <a href="profile.html">My Profile</a>
+      </nav>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
+    </div>
+  </header>
+
+  <main class="shell employer-main">
+    <section class="employer-hero">
+      <div>
+        <p class="eyebrow"><span class="eyebrow-dot"></span> FOR EMPLOYERS</p>
+        <h1>Meet the people who can move your work forward.</h1>
+        <p>Share a clear opportunity with professionals building their next step.</p>
+      </div>
+      <div class="employer-hero-card" aria-hidden="true">
+        <span class="employer-hero-icon">↗</span>
+        <strong>A better match starts with a clear role.</strong>
+        <span>Add the essentials. Reach the right people.</span>
+      </div>
+    </section>
+
+    <section id="access-state" class="access-state" role="status" aria-live="polite">
+      <span class="access-icon" aria-hidden="true">◎</span>
+      <h2>Checking employer access…</h2>
+      <p>We’re confirming this account can publish opportunities.</p>
+    </section>
+
+    <form id="job-form" class="post-job-form" hidden>
+      <div class="form-heading">
+        <div>
+          <p class="eyebrow">NEW LISTING</p>
+          <h2>Opportunity details</h2>
+          <p>Required fields are marked with an asterisk.</p>
+        </div>
+        <span class="form-heading-mark" aria-hidden="true">✦</span>
+      </div>
+
+      <label for="title">Opportunity title <span aria-hidden="true">*</span>
+        <input id="title" name="title" type="text" maxlength="120" placeholder="e.g. Product Designer" required>
+      </label>
+
+      <div class="form-row">
+        <label for="type">Opportunity type <span aria-hidden="true">*</span>
+          <select id="type" name="type" required>
+            <option value="">Choose a type</option>
+            <option value="job">Job</option>
+            <option value="freelance">Freelance</option>
+            <option value="govt">Government</option>
+            <option value="business">Business opportunity</option>
+          </select>
+        </label>
+        <label for="location">Location
+          <input id="location" name="location" type="text" maxlength="160" placeholder="City, region, or Remote">
+        </label>
+      </div>
+
+      <label for="description">Description
+        <textarea id="description" name="description" rows="7" maxlength="12000" placeholder="Describe the work, responsibilities, and what a good fit looks like."></textarea>
+        <span class="field-hint">Keep it clear and specific so people can decide if it’s right for them.</span>
+      </label>
+
+      <label class="private-option" for="is-private">
+        <input id="is-private" name="is_private" type="checkbox">
+        <span><strong>Keep this listing private</strong><small>Only your company account will be able to view it.</small></span>
+      </label>
+
+      <div id="form-status" class="form-status" role="status" aria-live="polite"></div>
+      <div class="form-actions">
+        <a class="button button-outline" href="jobs.html">Cancel</a>
+        <button class="button button-primary" id="submit-job" type="submit">Publish opportunity <span aria-hidden="true">→</span></button>
+      </div>
+    </form>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <a class="brand brand-footer" href="index.html"><span class="brand-mark">A</span> AIConnectPro</a>
+      <span>Good opportunities start with a clear next step.</span>
+    </div>
+  </footer>
+  <script src="theme.js" defer></script>
+  <script type="module" src="post-job.js"></script>
+</body>
+</html>
