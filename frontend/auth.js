@@ -38,6 +38,17 @@ export async function signIn(email, password) {
   return data;
 }
 
+// GOOGLE LOGIN
+export async function signInWithGoogle() {
+  const redirectTo = new URL('/auth-callback.html', window.location.origin).toString();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo }
+  });
+  if (error) throw error;
+  return data;
+}
+
 // LOGOUT
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
