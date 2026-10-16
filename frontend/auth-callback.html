@@ -4,14 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Signing in – AIConnectPro</title>
+  <link rel="stylesheet" href="workspace.css">
 </head>
-<body>
-  <main>
+<body class="workspace-page auth-page"><header class="workspace-header"><div class="workspace-header-inner">
+  <a class="workspace-brand" href="index.html"><span class="workspace-mark">A</span> AIConnectPro</a>
+  <nav class="workspace-nav" aria-label="Main navigation"><a href="jobs.html">Jobs</a><a href="resume.html">Resume Builder</a><a href="profile.html">My Profile</a></nav>
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode">☾</button>
+</div></header>
+  <main class="auth-main">
     <h1>Finishing sign-in</h1>
     <p id="message" role="status" aria-live="polite">Verifying your Supabase session…</p>
     <p><a id="login-link" href="login.html" hidden>Return to login</a></p>
   </main>
 
+  <script src="theme.js" defer></script>
   <script type="module">
     import { supabase } from './auth.js';
 
