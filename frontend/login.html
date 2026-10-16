@@ -3,54 +3,70 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login – AIConnectPro</title>
-  <style>
-    body { font: 16px Arial, sans-serif; max-width: 420px; margin: 48px auto; padding: 0 20px; color: #17202a; }
-    input, button { box-sizing: border-box; width: 100%; padding: 12px; margin: 8px 0; }
-    button { cursor: pointer; }
-    .password-field { display: flex; align-items: center; gap: 8px; }
-    .password-field input { flex: 1; min-width: 0; }
-    .password-toggle { width: 44px; height: 44px; flex: 0 0 auto; display: grid; place-items: center; padding: 0; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; color: #475569; }
-    .password-toggle:hover { background: #f1f5f9; }
-    .password-toggle:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
-    .password-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-    .password-toggle .eye-closed { display: none; }
-    .password-toggle[data-visible="true"] .eye-open { display: none; }
-    .password-toggle[data-visible="true"] .eye-closed { display: block; }
-    #msg { min-height: 1.5em; }
-  </style>
+  <meta name="description" content="Sign in to your AIConnectPro career workspace.">
+  <title>Log in – AIConnectPro</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <main>
-    <h1>Welcome back</h1>
-    <form id="login-form">
-      <label for="email">Email</label>
-      <input id="email" name="email" type="email" autocomplete="email" required>
-      <label for="password">Password</label>
-      <div class="password-field">
-        <input id="password" name="password" type="password" autocomplete="current-password" required>
-        <button class="password-toggle" type="button" aria-controls="password" aria-label="Show password" title="Show password" aria-pressed="false">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path class="eye-open" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle class="eye-open" cx="12" cy="12" r="3"/>
-            <g class="eye-closed"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path d="m3 3 18 18"/></g>
-          </svg>
-        </button>
+<body class="auth-page">
+  <header class="site-header">
+    <div class="shell nav-shell">
+      <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+      <nav class="primary-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="jobs.html">Jobs</a>
+      </nav>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
+    </div>
+  </header>
+
+  <main class="auth-layout">
+    <section class="auth-intro" aria-labelledby="welcome-title">
+      <div class="auth-intro-copy">
+        <p class="eyebrow">YOUR CAREER WORKSPACE</p>
+        <h1 id="welcome-title">Make your next move with confidence.</h1>
+        <p>Sign in to pick up where you left off, keep your career details together, and discover opportunities that fit your goals.</p>
       </div>
-      <button type="submit">Log in</button>
-    </form>
-    <button id="google-login" type="button">Continue with Google</button>
-    <p id="msg" role="status" aria-live="polite"></p>
-    <p>New here? <a href="signup.html">Create an account</a></p>
+      <div class="auth-benefits" aria-label="AIConnectPro benefits">
+        <span><b aria-hidden="true">✓</b> Your resumes and profile in one place</span>
+        <span><b aria-hidden="true">✓</b> New opportunities for your next step</span>
+      </div>
+    </section>
+
+    <section class="auth-panel" aria-labelledby="login-title">
+      <h2 id="login-title">Welcome back</h2>
+      <p class="auth-subtitle">Log in to your AIConnectPro account.</p>
+      <form id="login-form" class="auth-form">
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+        <label for="password">Password</label>
+        <div class="auth-password-field">
+          <input id="password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+          <button class="auth-password-toggle" type="button" aria-controls="password" aria-label="Show password" title="Show password" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path class="eye-open" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle class="eye-open" cx="12" cy="12" r="3"/>
+              <g class="eye-closed"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path d="m3 3 18 18"/></g>
+            </svg>
+          </button>
+        </div>
+        <button class="auth-submit" type="submit">Log in</button>
+      </form>
+      <div class="auth-divider">or</div>
+      <button class="auth-google" id="google-login" type="button">Continue with Google</button>
+      <p id="msg" class="auth-message" role="status" aria-live="polite"></p>
+      <p class="auth-switch">New to AIConnectPro? <a href="signup.html">Create an account</a></p>
+    </section>
   </main>
 
+  <script src="theme.js" defer></script>
   <script type="module">
     import { signIn, signInWithGoogle } from './auth.js';
 
     const form = document.getElementById('login-form');
     const message = document.getElementById('msg');
+    const submitButton = form.querySelector('[type="submit"]');
     const googleButton = document.getElementById('google-login');
     const password = document.getElementById('password');
-    const passwordToggle = document.querySelector('.password-toggle');
+    const passwordToggle = document.querySelector('.auth-password-toggle');
 
     passwordToggle.addEventListener('click', () => {
       const isHidden = password.type === 'password';
@@ -63,26 +79,29 @@
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      message.textContent = 'Signing in…';
+      message.dataset.state = '';
+      message.textContent = 'Signing you in…';
+      submitButton.disabled = true;
       try {
-        await signIn(
-          document.getElementById('email').value,
-          password.value
-        );
+        await signIn(document.getElementById('email').value, password.value);
         window.location.assign('index.html');
       } catch (error) {
-        message.textContent = error.message || 'Could not sign in.';
+        message.dataset.state = 'error';
+        message.textContent = error.message || 'Could not sign in. Check your details and try again.';
+        submitButton.disabled = false;
       }
     });
 
     googleButton.addEventListener('click', async () => {
-      message.textContent = 'Redirecting to Google…';
+      message.dataset.state = '';
+      message.textContent = 'Connecting to Google…';
       googleButton.disabled = true;
       try {
         await signInWithGoogle();
       } catch (error) {
         googleButton.disabled = false;
-        message.textContent = error.message || 'Could not start Google sign-in.';
+        message.dataset.state = 'error';
+        message.textContent = error.message || 'Could not start Google sign-in. Please try again.';
       }
     });
   </script>
