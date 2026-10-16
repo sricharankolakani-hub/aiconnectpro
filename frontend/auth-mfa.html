@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Secure your AIConnectPro account with an authenticator app.">
+  <title>Secure your account – AIConnectPro</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+  <main class="auth-layout">
+    <section class="auth-panel" aria-labelledby="mfa-title">
+      <p class="eyebrow">ACCOUNT SECURITY</p>
+      <h1 id="mfa-title">Set up two-step verification</h1>
+      <p id="instructions" class="auth-subtitle">Use an authenticator app such as Google Authenticator, Microsoft Authenticator, or 1Password.</p>
+      <div id="setup" hidden>
+        <img id="qr-code" alt="QR code for authenticator setup" width="220" height="220">
+        <p>If you cannot scan the QR code, enter this setup key in your authenticator app:</p>
+        <p><code id="secret"></code></p>
+        <p>Keep access to your authenticator app. AIConnectPro cannot restore a lost authenticator.</p>
+      </div>
+      <form id="mfa-form" class="auth-form">
+        <label for="code">6-digit authenticator code</label>
+        <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+        <button class="auth-submit" type="submit" id="verify-button">Verify and continue</button>
+      </form>
+      <p id="msg" class="auth-message" role="status" aria-live="polite"></p>
+      <p><button id="sign-out" class="auth-google" type="button">Sign out</button></p>
+    </section>
+  </main>
+  <script type="module">
+    import { supabase, signOut } from './auth.js';
+    const message = document.getElementById('msg');
+    const form = document.getElementById('mfa-form');
+    const codeInput = document.getElementById('code');
+    const verifyButton = document.getElementById('verify-button');
+    const params = new URLSearchParams(location.search);
+    let mode = params.get('mode') === 'challenge' ? 'challenge' : 'enroll';
+    let factorId = '';
+    let qrCode = '';
+    let secret = '';
+
+    async function initialize() {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!sessionData.session) {
+        location.replace('login.html');
+        return;
+      }
+
+      const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
+      if (factorsError) throw factorsError;
+      const verified = (factorsData.totp || []).find(factor => factor.status === 'verified');
+      if (verified) {
+        mode = 'challenge';
+        factorId = verified.id;
+        document.getElementById('mfa-title').textContent = 'Verify it’s you';
+        document.getElementById('instructions').textContent = 'Enter the current code from your authenticator app to finish signing in.';
+      } else {
+        mode = 'enroll';
+        const { data, error } = await supabase.auth.mfa.enroll({
+          factorType: 'totp',
+          friendlyName: 'AIConnectPro authenticator'
+        });
+        if (error) throw error;
+        factorId = data.id;
+        qrCode = data.totp.qr_code;
+        secret = data.totp.secret;
+        document.getElementById('setup').hidden = false;
+        document.getElementById('qr-code').src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(qrCode);
+        document.getElementById('secret').textContent = secret;
+        document.getElementById('mfa-title').textContent = 'Set up two-step verification';
+        document.getElementById('instructions').textContent = 'Scan this QR code with your authenticator app, then enter the 6-digit code it generates.';
+      }
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      verifyButton.disabled = true;
+      message.dataset.state = '';
+      message.textContent = mode === 'enroll' ? 'Verifying your authenticator…' : 'Checking your code…';
+      try {
+        if (!factorId) throw new Error('The authenticator step is not ready. Reload this page and try again.');
+        const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId });
+        if (challengeError) throw challengeError;
+        const { error: verifyError } = await supabase.auth.mfa.verify({
+          factorId,
+          challengeId: challenge.id,
+          code: codeInput.value.trim()
+        });
+        if (verifyError) throw verifyError;
+        message.dataset.state = 'success';
+        message.textContent = 'Verified. Opening your home page…';
+        location.replace('index.html');
+      } catch (error) {
+        message.dataset.state = 'error';
+        message.textContent = error.message || 'That code could not be verified. Check your app and try again.';
+      } finally {
+        verifyButton.disabled = false;
+        codeInput.value = '';
+      }
+    });
+
+    document.getElementById('sign-out').addEventListener('click', async () => {
+      try {
+        await signOut();
+        location.replace('login.html');
+      } catch (error) {
+        message.dataset.state = 'error';
+        message.textContent = error.message || 'Could not sign out.';
+      }
+    });
+
+    initialize().catch(error => {
+      message.dataset.state = 'error';
+      message.textContent = error.message || 'Could not prepare two-step verification.';
+    });
+  </script>
+</body>
+</html>
