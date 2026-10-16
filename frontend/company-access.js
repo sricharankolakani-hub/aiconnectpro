@@ -6,6 +6,7 @@ const statusEl = document.getElementById('form-status');
 const submitButton = document.getElementById('submit-request');
 
 function showState(title, message, linkText, href) {
+  state.hidden = false;
   state.replaceChildren();
   const heading = document.createElement('h2');
   heading.textContent = title;
