@@ -151,12 +151,12 @@ function escapeHtml(s) {
  * Body: JSON containing resume data (name, title, summary, experience[], education[], skills[], template)
  * Auth optional — if auth middleware is used earlier it will populate req.user
  */
-router.post('/generate', async (req, res) => {
+router.post('/generate', authMiddleware, async (req, res) => {
   try {
     // If you want to require auth for resume generation, uncomment the next line:
     // await new Promise((resolve, reject) => authMiddleware(req, res, (err) => err ? reject(err) : resolve()));
 
-    const userId = (req.user && req.user.id) || null; // authMiddleware sets req.user if present
+    const userId = req.user.id;
 
     const payload = req.body || {};
     const template = payload.template || 'classic';
@@ -230,10 +230,10 @@ router.post('/generate', async (req, res) => {
  * Returns the resume DB record and a PDF signed URL if available (does not require auth by default).
  * If you want to require auth, apply authMiddleware when mounting this route or uncomment the check below.
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const id = req.params.id;
-    const { data, error } = await supabase.from('resumes').select('*').eq('id', id).limit(1).single();
+    const { data, error } = await supabase.from('resumes').select('*').eq('id', id).eq('user_id', req.user.id).limit(1).single();
     if (error || !data) {
       return res.status(404).json({ error: 'not_found' });
     }
@@ -267,10 +267,10 @@ router.get('/:id', async (req, res) => {
  * Returns rendered HTML for preview. This returns HTML content-type.
  * Use carefully — if you want to protect previews to auth users only, apply authMiddleware or check req.user here.
  */
-router.get('/:id/html', async (req, res) => {
+router.get('/:id/html', authMiddleware, async (req, res) => {
   try {
     const id = req.params.id;
-    const { data, error } = await supabase.from('resumes').select('html').eq('id', id).limit(1).single();
+    const { data, error } = await supabase.from('resumes').select('html').eq('id', id).eq('user_id', req.user.id).limit(1).single();
     if (error || !data) {
       return res.status(404).send('<h3>Resume not found</h3>');
     }
