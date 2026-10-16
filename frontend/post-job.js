@@ -53,7 +53,7 @@ async function initialize() {
       showAccess(
         'Company access is required',
         'Posting is available to verified company accounts. An administrator must approve company access before this account can publish.',
-        'Browse opportunities', 'jobs.html'
+        'Request company access', 'company-access.html'
       );
       return;
     }
@@ -102,7 +102,7 @@ form.addEventListener('submit', async event => {
     if (!response.ok) throw new Error(result.details || result.error || 'The opportunity could not be published.');
 
     form.reset();
-    setStatus('Your opportunity is live. You can review it from My Profile or the Jobs page.');
+    setStatus('Your opportunity is live. You can review its applications in your employer inbox.');
     const link = document.createElement('a');
     link.className = 'published-link';
     link.href = 'company-applications.html';
