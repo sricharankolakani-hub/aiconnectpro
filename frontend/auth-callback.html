@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Signing in – AIConnectPro</title>
+</head>
+<body>
+  <main>
+    <h1>Finishing sign-in</h1>
+    <p id="message" role="status" aria-live="polite">Verifying your Supabase session…</p>
+    <p><a id="login-link" href="login.html" hidden>Return to login</a></p>
+  </main>
+
+  <script type="module">
+    import { supabase } from './auth.js';
+
+    const message = document.getElementById('message');
+    const loginLink = document.getElementById('login-link');
+
+    try {
+      const query = new URLSearchParams(window.location.search);
+      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const providerError =
+        query.get('error_description') ||
+        query.get('error') ||
+        hash.get('error_description') ||
+        hash.get('error');
+
+      if (providerError) throw new Error(providerError);
+
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      if (!data.session) {
+        throw new Error('No active session was returned. Please try signing in again.');
+      }
+
+      localStorage.setItem('token', data.session.access_token);
+      message.textContent = 'Signed in. Opening AIConnectPro…';
+      window.location.replace('index.html');
+    } catch (error) {
+      message.textContent = error.message || 'Sign-in could not be completed.';
+      loginLink.hidden = false;
+    }
+  </script>
+</body>
+</html>

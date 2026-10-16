@@ -8,8 +8,8 @@
 // - Requires these helper files to exist:
 //     - backend/services/supabaseClient.js   (exports configured supabase client)
 //     - backend/services/resumePdfService.js (exports htmlToPdfBuffer, uploadPdfBufferToSupabase)
-//     - backend/middleware/authMiddleware.js (optional — used to attach req.user if present)
-// - Ensure Supabase has a 'resumes' table with at least: id (uuid PK), user_id, html, template, metadata (jsonb), pdf_path (text), created_at
+//     - backend/middleware/authMiddleware.js (required for all resume endpoints)
+// - The resumes table also requires filename; content columns are added by the Supabase migration.
 // - Environment variable GENERATE_PDF controls PDF generation (set to "true" to enable).
 // - Adjust bucket names or column names if your schema differs.
 
@@ -149,14 +149,11 @@ function escapeHtml(s) {
 /**
  * POST /api/resume/generate
  * Body: JSON containing resume data (name, title, summary, experience[], education[], skills[], template)
- * Auth optional — if auth middleware is used earlier it will populate req.user
+ * Auth required.
  */
-router.post('/generate', async (req, res) => {
+router.post('/generate', authMiddleware, async (req, res) => {
   try {
-    // If you want to require auth for resume generation, uncomment the next line:
-    // await new Promise((resolve, reject) => authMiddleware(req, res, (err) => err ? reject(err) : resolve()));
-
-    const userId = (req.user && req.user.id) || null; // authMiddleware sets req.user if present
+    const userId = req.user.id;
 
     const payload = req.body || {};
     const template = payload.template || 'classic';
@@ -176,6 +173,8 @@ router.post('/generate', async (req, res) => {
     const insertObj = {
       id: resumeId,
       user_id: userId,
+      filename: `resume-${resumeId}.html`,
+      name: payload.name ? String(payload.name).trim() : null,
       html: renderedHtml,
       template,
       metadata,
@@ -227,13 +226,12 @@ router.post('/generate', async (req, res) => {
 
 /**
  * GET /api/resume/:id
- * Returns the resume DB record and a PDF signed URL if available (does not require auth by default).
- * If you want to require auth, apply authMiddleware when mounting this route or uncomment the check below.
+ * Returns the current user's resume record and a fresh PDF signed URL if available.
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const id = req.params.id;
-    const { data, error } = await supabase.from('resumes').select('*').eq('id', id).limit(1).single();
+    const { data, error } = await supabase.from('resumes').select('*').eq('id', id).eq('user_id', req.user.id).limit(1).single();
     if (error || !data) {
       return res.status(404).json({ error: 'not_found' });
     }
@@ -265,12 +263,12 @@ router.get('/:id', async (req, res) => {
 /**
  * GET /api/resume/:id/html
  * Returns rendered HTML for preview. This returns HTML content-type.
- * Use carefully — if you want to protect previews to auth users only, apply authMiddleware or check req.user here.
+ * Auth required; only the owner can preview the resume.
  */
-router.get('/:id/html', async (req, res) => {
+router.get('/:id/html', authMiddleware, async (req, res) => {
   try {
     const id = req.params.id;
-    const { data, error } = await supabase.from('resumes').select('html').eq('id', id).limit(1).single();
+    const { data, error } = await supabase.from('resumes').select('html').eq('id', id).eq('user_id', req.user.id).limit(1).single();
     if (error || !data) {
       return res.status(404).send('<h3>Resume not found</h3>');
     }
@@ -282,7 +280,6 @@ router.get('/:id/html', async (req, res) => {
   }
 });
 
-module.exports = router;
 // GET /api/resume?mine=true
 router.get('/', authMiddleware, async (req, res) => {
   if (req.query.mine !== 'true') {
@@ -299,3 +296,5 @@ router.get('/', authMiddleware, async (req, res) => {
   res.json(data);
 });
 
+
+module.exports = router;

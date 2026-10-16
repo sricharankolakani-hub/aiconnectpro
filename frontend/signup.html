@@ -1,28 +1,66 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <title>Signup – AIConnectPro</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign up – AIConnectPro</title>
+  <style>
+    body { font: 16px Arial, sans-serif; max-width: 420px; margin: 48px auto; padding: 0 20px; color: #17202a; }
+    input, button { box-sizing: border-box; width: 100%; padding: 12px; margin: 8px 0; }
+    button { cursor: pointer; }
+    #msg { min-height: 1.5em; }
+  </style>
 </head>
 <body>
-  <h2>Signup</h2>
-
-  <input id="email" placeholder="Email"><br><br>
-  <input id="password" type="password" placeholder="Password"><br><br>
-
-  <button onclick="signup()">Create Account</button>
-  <p id="msg"></p>
+  <main>
+    <h1>Create your account</h1>
+    <form id="signup-form">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+      <button type="submit">Create account</button>
+    </form>
+    <button id="google-signup" type="button">Continue with Google</button>
+    <p id="msg" role="status" aria-live="polite"></p>
+    <p>Already registered? <a href="login.html">Log in</a></p>
+  </main>
 
   <script type="module">
-    import { signUp } from './auth.js';
+    import { signUp, signInWithGoogle } from './auth.js';
 
-    async function signup() {
+    const form = document.getElementById('signup-form');
+    const message = document.getElementById('msg');
+    const googleButton = document.getElementById('google-signup');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      message.textContent = 'Creating your account…';
       try {
-        await signUp(email.value, password.value);
-        msg.textContent = 'Account created. Please login.';
-      } catch (e) {
-        msg.textContent = e.message;
+        const data = await signUp(
+          document.getElementById('email').value,
+          document.getElementById('password').value
+        );
+        if (data.session) {
+          window.location.assign('index.html');
+        } else {
+          message.textContent = 'Account created. Check your email to confirm, then log in.';
+        }
+      } catch (error) {
+        message.textContent = error.message || 'Could not create your account.';
       }
-    }
+    });
+
+    googleButton.addEventListener('click', async () => {
+      message.textContent = 'Redirecting to Google…';
+      googleButton.disabled = true;
+      try {
+        await signInWithGoogle();
+      } catch (error) {
+        googleButton.disabled = false;
+        message.textContent = error.message || 'Could not start Google sign-in.';
+      }
+    });
   </script>
 </body>
 </html>

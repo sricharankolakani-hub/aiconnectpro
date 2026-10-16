@@ -1,5 +1,10 @@
 // frontend/resume.js
-const API_BASE = '/api'; // backend base (Vercel proxy)
+const API_BASE = '/api'; // Vercel rewrites this path to the Render API.
+
+function authHeaders() {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 function el(id) { return document.getElementById(id); }
 
 function collectData() {
@@ -36,31 +41,38 @@ function collectData() {
 async function generateResume(save = false) {
   const resultEl = el('result');
   resultEl.textContent = 'Generating...';
+  const token = localStorage.getItem('token');
+  if (!token) {
+    resultEl.textContent = 'Please sign in before generating a resume.';
+    window.location.assign('login.html');
+    return;
+  }
+
+  const previewWindow = window.open('about:blank', '_blank');
   const data = collectData();
   try {
     const res = await fetch(API_BASE + '/resume/generate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
       body: JSON.stringify(data)
     });
     const j = await res.json();
 
-    if (j.error) {
+    if (!res.ok || j.error) {
+      if (previewWindow) previewWindow.close();
       resultEl.textContent = 'Error: ' + JSON.stringify(j);
       return;
     }
 
-    resultEl.textContent = 'Template: ' + (j.template || 'classic') + ' — Preview opened in a new tab.';
+    resultEl.textContent = 'Template: ' + (j.template || data.template || 'classic') + ' — Preview opened in a new tab.';
 
-    // Open preview (prefer backend redirect)
-    if (j.url) {
-      window.open('/api/resume/' + j.id, '_blank');
-    } else if (j.html) {
-      const w = window.open('', '_blank');
-      w.document.open();
-      w.document.write(j.html);
-      w.document.close();
-    }
+    if (!j.previewUrl) throw new Error('The resume preview link was not returned.');
+    const previewResponse = await fetch(j.previewUrl, { headers: authHeaders() });
+    if (!previewResponse.ok) throw new Error('Could not load the saved resume preview.');
+    const html = await previewResponse.text();
+    const previewUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    if (previewWindow) previewWindow.location = previewUrl;
+    else window.open(previewUrl, '_blank');
 
     // Show PDF link if available
     const old = document.getElementById('resume-pdf-link');
@@ -83,8 +95,9 @@ async function generateResume(save = false) {
       resultEl.textContent += ' Saved on server (id: ' + j.id + ')';
     }
   } catch (err) {
+    if (previewWindow) previewWindow.close();
     console.error(err);
-    resultEl.textContent = 'Failed to generate resume.';
+    resultEl.textContent = err.message || 'Failed to generate resume.';
   }
 }
 
