@@ -88,6 +88,8 @@ router.get('/', auth, async (req, res) => {
     if (qType) builder = builder.eq('type', qType);
     if (qCompany) builder = builder.eq('company_id', qCompany);
     if (qLocation) builder = builder.ilike('location', `%${qLocation}%`);
+    // Private listings are visible only to their owner.
+    builder = builder.or(`is_private.eq.false,posted_by.eq.${req.user.id}`);
 
     const { data, error } = await builder;
     if (error) {
@@ -113,6 +115,9 @@ router.get('/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
     const { data, error } = await supabase.from('jobs').select('*').eq('id', id).limit(1).single();
     if (error) {
       console.error('Job fetch error', error);
+      return res.status(404).json({ error: 'not_found' });
+    }
+    if (data.is_private && data.posted_by !== req.user.id) {
       return res.status(404).json({ error: 'not_found' });
     }
     return res.json({ job: data });
@@ -141,8 +146,33 @@ router.post('/:id/apply', auth, async (req, res) => {
     if (jobErr || !jobRow) {
       return res.status(404).json({ error: 'job_not_found' });
     }
+    if (jobRow.is_private && jobRow.posted_by !== userId) {
+      return res.status(404).json({ error: 'job_not_found' });
+    }
+    if (jobRow.posted_by === userId) {
+      return res.status(400).json({ error: 'cannot_apply_to_own_job' });
+    }
 
-    // Optionally prevent applying to private jobs unless invited - here we allow apply
+    if (resume_id) {
+      const { data: resume, error: resumeError } = await supabase
+        .from('resumes')
+        .select('id')
+        .eq('id', resume_id)
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (resumeError) return res.status(500).json({ error: 'db_error', details: resumeError.message });
+      if (!resume) return res.status(404).json({ error: 'resume_not_found' });
+    }
+
+    const { data: existingApplication, error: existingError } = await supabase
+      .from('applications')
+      .select('id')
+      .eq('job_id', jobId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (existingError) return res.status(500).json({ error: 'db_error', details: existingError.message });
+    if (existingApplication) return res.status(409).json({ error: 'already_applied' });
+
     const application = {
       id: uuidv4(),
       job_id: jobId,
