@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Review employer access requests for AIConnectPro.">
+  <title>Company access review – AIConnectPro</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin-company-requests.css">
+</head>
+<body class="admin-requests-page">
+  <header class="site-header">
+    <div class="shell nav-shell">
+      <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+      <nav class="primary-nav" aria-label="Main navigation"><a href="jobs.html">Jobs</a><a href="profile.html">My Profile</a></nav>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
+    </div>
+  </header>
+  <main class="shell admin-main">
+    <section class="admin-intro">
+      <p class="eyebrow"><span class="eyebrow-dot"></span> ADMINISTRATION</p>
+      <h1>Company access requests</h1>
+      <p>Review organizations before enabling employer posting.</p>
+    </section>
+    <section id="access-state" class="admin-state" role="status" aria-live="polite"><h2>Checking administrator access…</h2></section>
+    <section id="admin-panel" class="admin-panel" hidden>
+      <div class="admin-toolbar">
+        <div><h2>Requests</h2><p id="request-count"></p></div>
+        <label for="status-filter">Show
+          <select id="status-filter"><option value="pending">Pending</option><option value="all">All requests</option><option value="approved">Approved</option><option value="rejected">Declined</option></select>
+        </label>
+      </div>
+      <p id="queue-status" class="queue-status" role="status" aria-live="polite"></p>
+      <div id="request-list" class="request-list"></div>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="shell footer-inner"><a class="brand brand-footer" href="index.html"><span class="brand-mark">A</span> AIConnectPro</a><span>Only trusted administrators can approve company access.</span></div></footer>
+  <script src="theme.js" defer></script>
+  <script type="module" src="admin-company-requests.js"></script>
+</body>
+</html>
