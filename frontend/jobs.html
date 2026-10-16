@@ -3,68 +3,110 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Find jobs – AIConnectPro</title>
+  <meta name="description" content="Search career opportunities and apply with a saved AIConnectPro resume.">
+  <title>Find opportunities – AIConnectPro</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="jobs.css">
 </head>
-<body>
+<body class="jobs-page">
   <header class="site-header">
-    <div class="container jobs-header">
-      <h1>AIConnectPro</h1>
-      <nav aria-label="Main navigation">
-        <a href="index.html">Home</a>
+    <div class="shell nav-shell">
+      <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+      <nav class="primary-nav" aria-label="Main navigation">
         <a href="jobs.html" aria-current="page">Jobs</a>
         <a href="resume.html">Resume Builder</a>
         <a href="profile.html">My Profile</a>
       </nav>
+      <div class="account-actions" id="guest-actions">
+        <a class="nav-login" href="login.html">Log in</a>
+        <a class="button button-primary button-small" href="signup.html">Get started</a>
+      </div>
+      <div class="account-actions" id="user-actions" hidden>
+        <a class="button button-outline button-small" href="profile.html">My profile</a>
+      </div>
     </div>
   </header>
 
-  <main class="container jobs-main">
-    <section class="jobs-intro">
-      <p class="eyebrow">CAREER OPPORTUNITIES</p>
-      <h2>Find your next opportunity</h2>
-      <p>Browse current listings and apply with a resume saved to your account.</p>
+  <main>
+    <section class="shell jobs-hero">
+      <div class="jobs-hero-copy">
+        <p class="eyebrow"><span class="eyebrow-dot"></span> CAREER OPPORTUNITIES</p>
+        <h1>Find work that moves you forward.</h1>
+        <p>Search job, freelance, government, and business opportunities. When you find the right fit, apply with a resume you’ve already saved.</p>
+      </div>
+      <div class="jobs-hero-art" aria-hidden="true">
+        <div class="jobs-art-orb"></div>
+        <div class="jobs-art-card">
+          <span class="jobs-art-caption">YOUR NEXT STEP</span>
+          <div class="jobs-art-row"><span class="jobs-art-icon">⌕</span><span><strong>Search with purpose</strong><small>Filter by type and location</small></span></div>
+          <div class="jobs-art-row"><span class="jobs-art-icon purple">↗</span><span><strong>Apply with confidence</strong><small>Use your saved resume</small></span></div>
+          <div class="jobs-art-line"></div>
+        </div>
+      </div>
     </section>
 
-    <form id="filters" class="card job-filters">
-      <label>
-        Search
-        <input id="search" type="search" placeholder="Title or keywords">
-      </label>
-      <label>
-        Type
-        <select id="type">
-          <option value="">All opportunity types</option>
-          <option value="job">Full-time or part-time job</option>
-          <option value="freelance">Freelance</option>
-          <option value="govt">Government</option>
-          <option value="business">Business opportunity</option>
-        </select>
-      </label>
-      <label>
-        Location
-        <input id="location" type="search" placeholder="City, region, or remote">
-      </label>
-      <button class="btn btn--primary" type="submit">Search opportunities</button>
-    </form>
-
-    <p id="status" class="job-status" role="status" aria-live="polite"></p>
-    <div class="jobs-layout">
-      <section aria-labelledby="results-heading">
-        <div class="results-heading">
-          <h2 id="results-heading">Open opportunities</h2>
-          <span id="result-count" class="muted"></span>
+    <section class="shell jobs-content">
+      <form id="filters" class="job-search-panel">
+        <div class="search-panel-heading">
+          <div>
+            <h2>Search opportunities</h2>
+            <p>Choose a type, add a location, or search by keyword.</p>
+          </div>
+          <span class="search-panel-mark" aria-hidden="true">⌕</span>
         </div>
-        <div id="job-list" class="job-list"></div>
-        <button id="load-more" class="btn load-more" type="button" hidden>Load more</button>
-      </section>
-      <aside id="job-detail" class="card job-detail" aria-live="polite">
-        <p class="muted">Select a listing to see its details.</p>
-      </aside>
-    </div>
+        <div class="job-filters">
+          <label class="filter-keyword">
+            <span>Keywords</span>
+            <input id="search" type="search" placeholder="Role or skill">
+          </label>
+          <label>
+            <span>Opportunity type</span>
+            <select id="type">
+              <option value="">All types</option>
+              <option value="job">Job</option>
+              <option value="freelance">Freelance</option>
+              <option value="govt">Government</option>
+              <option value="business">Business</option>
+            </select>
+          </label>
+          <label>
+            <span>Location</span>
+            <input id="location" type="search" placeholder="City, region, or remote">
+          </label>
+          <button class="button button-primary search-button" type="submit">Search <span aria-hidden="true">→</span></button>
+        </div>
+      </form>
+
+      <p id="status" class="job-status" role="status" aria-live="polite"></p>
+      <div class="jobs-layout">
+        <section aria-labelledby="results-heading">
+          <div class="results-heading">
+            <div>
+              <p class="eyebrow">OPEN ROLES</p>
+              <h2 id="results-heading">Opportunities for you</h2>
+            </div>
+            <span id="result-count" class="result-count"></span>
+          </div>
+          <div id="job-list" class="job-list"></div>
+          <button id="load-more" class="button button-outline load-more" type="button" hidden>Load more opportunities</button>
+        </section>
+        <aside id="job-detail" class="job-detail" aria-live="polite">
+          <div class="detail-placeholder">
+            <span class="detail-placeholder-icon">↗</span>
+            <h2>Take a closer look</h2>
+            <p>Select an opportunity to read the full details and see how to apply.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
   </main>
 
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <a class="brand brand-footer" href="index.html"><span class="brand-mark">A</span> AIConnectPro</a>
+      <span>Good opportunities start with a clear next step.</span>
+    </div>
+  </footer>
   <script type="module" src="jobs.js"></script>
 </body>
 </html>
