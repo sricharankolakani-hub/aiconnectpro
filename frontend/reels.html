@@ -4,25 +4,15 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>AIConnect Pro — Reels</title>
-  <link rel="stylesheet" href="style.css"/>
-  <style>
-    body{ font-family: Inter, Arial, sans-serif; background:#f6f8fb; margin:0; color:#111; }
-    .container{ max-width:900px; margin:20px auto; padding:16px; }
-    .card{ background:#fff; border-radius:10px; padding:12px; margin-bottom:12px; box-shadow:0 6px 18px rgba(16,24,40,0.04); }
-    .reel{ padding:12px; border-radius:8px; margin-bottom:10px; background:#fff; }
-    .reel .meta{ display:flex; justify-content:space-between; font-size:13px; color:#666; margin-bottom:8px; }
-    .reel .body{ white-space:pre-wrap; margin-bottom:8px; }
-    .actions{ display:flex; gap:8px; align-items:center; }
-    .btn{ padding:8px 10px; border-radius:8px; border:none; cursor:pointer; font-weight:600; }
-    .btn--primary{ background:#0b76ff; color:#fff; }
-    .small{ font-size:13px; color:#666; }
-    .form-row{ display:flex; gap:8px; margin-bottom:8px; }
-    input, textarea { width:100%; padding:8px; border:1px solid #e6eef8; border-radius:8px; box-sizing:border-box; font-size:14px; }
-    textarea{ min-height:84px; resize:vertical; }
-  </style>
+  <link rel="stylesheet" href="workspace.css">
+
 </head>
-<body>
-  <div class="container">
+<body class="workspace-page reels-page"><header class="workspace-header"><div class="workspace-header-inner">
+  <a class="workspace-brand" href="index.html"><span class="workspace-mark">A</span> AIConnectPro</a>
+  <nav class="workspace-nav" aria-label="Main navigation"><a href="jobs.html">Jobs</a><a href="resume.html">Resume Builder</a><a href="profile.html">My Profile</a></nav>
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode">☾</button>
+</div></header>
+  <main class="workspace-main">
     <div class="card">
       <h2>Create Reel</h2>
       <div id="create-form">
@@ -53,8 +43,9 @@
         <button id="load-more-btn" class="btn">Load more</button>
       </div>
     </div>
-  </div>
+  </main>
 
+  <script src="theme.js" defer></script>
   <script src="reels.js"></script>
 </body>
 </html>
