@@ -10,6 +10,7 @@ const filtersForm = document.getElementById('filters');
 let jobs = [];
 let offset = 0;
 const pageSize = 20;
+let hasMore = false;
 let selectedJob = null;
 
 function setStatus(message, isError = false) {
@@ -55,7 +56,7 @@ function renderJobs() {
     const haystack = [job.title, job.description, job.location, job.type].filter(Boolean).join(' ').toLocaleLowerCase();
     return !keyword || haystack.includes(keyword);
   });
-  countEl.textContent = visibleJobs.length + (jobs.length === pageSize + offset ? '+' : '') + ' shown';
+  countEl.textContent = visibleJobs.length + (hasMore ? '+' : '') + ' shown';
 
   if (!visibleJobs.length) {
     listEl.appendChild(createText('p', 'empty-state', jobs.length
@@ -107,6 +108,7 @@ async function loadJobs({ reset = false } = {}) {
     offset = 0;
     jobs = [];
     selectedJob = null;
+    hasMore = false;
     detailEl.replaceChildren(createText('p', 'muted', 'Select a listing to see its details.'));
   }
 
@@ -123,10 +125,13 @@ async function loadJobs({ reset = false } = {}) {
     const page = Array.isArray(result.jobs) ? result.jobs : [];
     jobs = reset ? page : jobs.concat(page);
     offset += page.length;
+    hasMore = page.length === pageSize;
     renderJobs();
-    loadMoreButton.hidden = page.length < pageSize;
+    loadMoreButton.hidden = !hasMore;
     setStatus(page.length || jobs.length ? '' : 'There are no public job listings yet.');
   } catch (error) {
+    hasMore = false;
+    loadMoreButton.hidden = true;
     setStatus(error.status === 401 ? 'Your session expired. Please log in again.' : error.message, true);
   } finally {
     loadMoreButton.disabled = false;
