@@ -1,5 +1,10 @@
+import { getUser, signOut } from './auth.js';
+
 const API = '/api';
-const token = localStorage.getItem('token');
+let token = localStorage.getItem('token');
+const guestActions = document.getElementById('guest-actions');
+const userActions = document.getElementById('user-actions');
+const logoutButton = document.getElementById('logout');
 
 const statusEl = document.getElementById('status');
 const listEl = document.getElementById('job-list');
@@ -12,6 +17,11 @@ let offset = 0;
 const pageSize = 20;
 let hasMore = false;
 let selectedJob = null;
+
+function syncAuthNavigation() {
+  guestActions.hidden = Boolean(token);
+  userActions.hidden = !token;
+}
 
 function setStatus(message, isError = false) {
   statusEl.textContent = message;
@@ -59,9 +69,23 @@ function renderJobs() {
   countEl.textContent = visibleJobs.length + (hasMore ? '+' : '') + ' shown';
 
   if (!visibleJobs.length) {
-    listEl.appendChild(createText('p', 'empty-state', jobs.length
-      ? 'No listings match those keywords. Try a shorter search.'
-      : 'No opportunities match these filters yet.'));
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.appendChild(createText('span', 'empty-state-icon', jobs.length ? '⌕' : '↗'));
+    empty.appendChild(createText('h3', '', jobs.length ? 'No matches for this search' : 'No listings published yet'));
+    empty.appendChild(createText('p', '', jobs.length
+      ? 'Try another keyword or adjust the type and location filters.'
+      : 'New opportunities will appear here once companies publish listings.'));
+    if (jobs.length) {
+      const reset = createText('button', 'btn', 'Clear keyword search');
+      reset.type = 'button';
+      reset.addEventListener('click', () => {
+        document.getElementById('search').value = '';
+        renderJobs();
+      });
+      empty.appendChild(reset);
+    }
+    listEl.appendChild(empty);
     return;
   }
 
@@ -96,11 +120,19 @@ function renderJobs() {
 
 async function loadJobs({ reset = false } = {}) {
   if (!token) {
-    setStatus('Please log in to browse opportunities.', true);
-    const link = document.createElement('a');
+    setStatus('');
+    countEl.textContent = '';
+    listEl.replaceChildren();
+    const prompt = document.createElement('div');
+    prompt.className = 'empty-state auth-prompt';
+    prompt.appendChild(createText('span', 'empty-state-icon', '◎'));
+    prompt.appendChild(createText('h3', '', 'Sign in to explore opportunities'));
+    prompt.appendChild(createText('p', '', 'Log in to search public listings and apply with a resume saved to your account.'));
+    const link = createText('a', 'button button-primary', 'Log in');
     link.href = 'login.html';
-    link.textContent = 'Log in';
-    statusEl.append(' ', link);
+    prompt.appendChild(link);
+    listEl.appendChild(prompt);
+    loadMoreButton.hidden = true;
     return;
   }
 
@@ -237,4 +269,25 @@ filtersForm.addEventListener('submit', event => {
 });
 document.getElementById('search').addEventListener('input', renderJobs);
 loadMoreButton.addEventListener('click', () => loadJobs());
-loadJobs({ reset: true });
+
+logoutButton.addEventListener('click', async () => {
+  logoutButton.disabled = true;
+  try {
+    await signOut();
+  } finally {
+    window.location.assign('index.html');
+  }
+});
+
+async function initializePage() {
+  try {
+    await getUser();
+  } catch {
+    // The page will show its sign-in prompt when no valid session exists.
+  }
+  token = localStorage.getItem('token');
+  syncAuthNavigation();
+  loadJobs({ reset: true });
+}
+
+initializePage();
