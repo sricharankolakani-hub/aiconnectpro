@@ -3,7 +3,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 // These are public client settings. Never place service-role credentials in this file.
 const SUPABASE_URL = 'https://yrjkkmvrmiieqozuvbqp.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyamtrbXZybWlpZXFvenV2YnFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MTE1NzAsImV4cCI6MjA3ODA4NzU3MH0.uITpRtUsm-R9xeYW8R48gDjZILUqtkkLB-1utarwns';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyamtrbXZybWlpZXFvenV2YnFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MTE1NzAsImV4cCI6MjA3ODA4NzU3MH0.uITpRtUsm-R9xeYW8R48gDjZILUqtkkLB1-4utarwns';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -12,11 +12,15 @@ supabase.auth.onAuthStateChange((_event, session) => {
   else localStorage.removeItem('token');
 });
 
+function authCallbackUrl() {
+  return new URL('/auth-callback.html', window.location.origin).toString();
+}
+
 export async function signUp(email, password) {
   const { data, error } = await supabase.auth.signUp({
     email: email.trim(),
     password,
-    options: { emailRedirectTo: new URL('/auth-callback.html', window.location.origin).toString() }
+    options: { emailRedirectTo: authCallbackUrl() }
   });
   if (error) throw error;
   return data;
@@ -37,7 +41,7 @@ export async function resendSignupCode(email) {
   const { error } = await supabase.auth.resend({
     type: 'signup',
     email: email.trim(),
-    options: { emailRedirectTo: new URL('/auth-callback.html', window.location.origin).toString() }
+    options: { emailRedirectTo: authCallbackUrl() }
   });
   if (error) throw error;
 }
@@ -56,15 +60,13 @@ export async function signIn(email, password) {
 export async function getMfaStep() {
   const { data, error } = await supabase.auth.mfa.listFactors();
   if (error) throw error;
-  const verifiedTotp = (data.totp || []).filter(factor => factor.status === 'verified');
-  return verifiedTotp.length ? 'challenge' : 'enroll';
+  return (data.totp || []).some(factor => factor.status === 'verified') ? 'challenge' : 'enroll';
 }
 
 export async function signInWithGoogle() {
-  const redirectTo = new URL('/auth-callback.html', window.location.origin).toString();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo }
+    options: { redirectTo: authCallbackUrl() }
   });
   if (error) throw error;
   return data;
