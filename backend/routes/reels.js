@@ -48,7 +48,12 @@ router.get('/', auth, async (req, res) => {
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (req.query.mine === 'true') query = query.eq('user_id', req.user.id);
+    if (req.query.mine === 'true') {
+      query = query.eq('user_id', req.user.id);
+    } else {
+      // The feed includes public reels and the signed-in user's own private reels.
+      query = query.or(`visibility.eq.public,user_id.eq.${req.user.id}`);
+    }
 
     const { data, error } = await query;
     if (error) return res.status(500).json({ error: 'db_error', details: error.message });
@@ -67,11 +72,24 @@ router.post('/:id/like', auth, async (req, res) => {
   try {
     const userId = req.user.id;
     const reelId = req.params.id;
+    const { data: reel, error: reelError } = await supabase
+      .from('reels')
+      .select('id, user_id, visibility')
+      .eq('id', reelId)
+      .maybeSingle();
+    if (reelError) return res.status(500).json({ error: 'db_error', details: reelError.message });
+    if (!reel || (reel.visibility !== 'public' && reel.user_id !== userId)) {
+      return res.status(404).json({ error: 'reel_not_found' });
+    }
+
     const { error: insertErr } = await supabase.from('reel_likes').insert([
       { reel_id: reelId, user_id: userId }
     ]);
 
     if (!insertErr) return res.json({ liked: true });
+    if (insertErr.code !== '23505') {
+      return res.status(500).json({ error: 'db_error', details: insertErr.message });
+    }
 
     const { error: deleteErr } = await supabase
       .from('reel_likes')
@@ -98,6 +116,15 @@ router.post('/:id/comment', auth, async (req, res) => {
   try {
     const userId = req.user.id;
     const reelId = req.params.id;
+    const { data: reel, error: reelError } = await supabase
+      .from('reels')
+      .select('id, user_id, visibility')
+      .eq('id', reelId)
+      .maybeSingle();
+    if (reelError) return res.status(500).json({ error: 'db_error', details: reelError.message });
+    if (!reel || (reel.visibility !== 'public' && reel.user_id !== userId)) {
+      return res.status(404).json({ error: 'reel_not_found' });
+    }
     const { comment } = req.body || {};
     if (typeof comment !== 'string' || comment.trim().length === 0) {
       return res.status(400).json({ error: 'invalid_comment' });
