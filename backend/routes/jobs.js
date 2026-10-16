@@ -254,17 +254,6 @@ router.get('/posted', auth, async (req, res) => {
 // Only the company account that owns the listing may view its applicants.
 router.get('/posted/:jobId/applications', auth, async (req, res) => {
   try {
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', req.user.id)
-      .maybeSingle();
-
-    if (profileError) return res.status(500).json({ error: 'db_error' });
-    if (!profile || profile.role !== 'company' || !Array.isArray(req.user.roles) || !req.user.roles.includes('company')) {
-      return res.status(403).json({ error: 'company_access_required' });
-    }
-
     const { data: job, error: jobError } = await supabase
       .from('jobs')
       .select('id, company_id')
