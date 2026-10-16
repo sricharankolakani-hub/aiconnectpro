@@ -31,7 +31,7 @@ router.post('/', auth, async (req, res) => {
     .eq('id', req.user.id)
     .single();
 
-  if (!profile || profile.role !== 'company') {
+  if (!profile || profile.role !== 'company' || !Array.isArray(req.user.roles) || !req.user.roles.includes('company')) {
     return res.status(403).json({ error: 'Only companies can post jobs' });
   }
 
@@ -233,7 +233,7 @@ router.get('/posted', auth, async (req, res) => {
     .eq('id', req.user.id)
     .single();
 
-  if (profile?.role !== 'company') {
+  if (profile?.role !== 'company' || !Array.isArray(req.user.roles) || !req.user.roles.includes('company')) {
     return res.status(403).json({ error: 'Only companies' });
   }
 
@@ -258,7 +258,7 @@ router.get('/posted/:jobId/applications', auth, async (req, res) => {
       .maybeSingle();
 
     if (profileError) return res.status(500).json({ error: 'db_error' });
-    if (!profile || profile.role !== 'company') {
+    if (!profile || profile.role !== 'company' || !Array.isArray(req.user.roles) || !req.user.roles.includes('company')) {
       return res.status(403).json({ error: 'company_access_required' });
     }
 
