@@ -3,97 +3,246 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Manage your AIConnectPro profile, resumes, and career activity.">
   <title>My Profile – AIConnectPro</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h2 { margin-top: 30px; }
-    .card { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>My Profile</h1>
-<p id="info" role="status"></p>
-<h2>My Resumes</h2><div id="resumes"></div>
-<h2>My Reels</h2><div id="reels"></div>
-<h2 id="jobsTitle"></h2><div id="jobs"></div>
-<script>
-const token = localStorage.getItem('token');
-const headers = token ? { Authorization: 'Bearer ' + token } : {};
-const byId = id => document.getElementById(id);
-async function getJson(url) {
-  const response = await fetch(url, { headers });
-  const body = await response.json();
-  if (!response.ok) throw new Error(body.error || 'Could not load profile data.');
-  return body;
-}
-function addCard(container, text) {
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.textContent = text;
-  container.appendChild(card);
-}
-async function loadProfile() {
-  if (!token) { window.location.replace('login.html'); return; }
-  try {
-    const profile = await getJson('/api/profile/me');
-    byId('info').textContent = 'Role: ' + profile.role;
-    await Promise.all([loadResumes(), loadReels()]);
-    if (profile.role === 'company') {
-      byId('jobsTitle').textContent = 'Jobs Posted';
-      await loadPostedJobs();
-    } else {
-      byId('jobsTitle').textContent = 'Jobs Applied';
-      await loadAppliedJobs();
-    }
-  } catch (error) {
-    byId('info').textContent = error.message;
-  }
-}
-async function loadResumes() {
-  const rows = await getJson('/api/resume?mine=true');
-  const container = byId('resumes');
-  rows.forEach(resume => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.append('Template: ' + (resume.template || 'classic') + ' ');
-    const link = document.createElement('a');
-    link.href = '#';
-    link.textContent = 'Preview';
-    link.addEventListener('click', async event => {
-      event.preventDefault();
-      const previewWindow = window.open('about:blank', '_blank');
-      try {
-        const response = await fetch('/api/resume/' + encodeURIComponent(resume.id) + '/html', { headers });
-        if (!response.ok) throw new Error('Could not load resume preview.');
-        const html = await response.text();
-        const blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-        if (previewWindow) previewWindow.location = blobUrl;
-        else window.location.assign(blobUrl);
-      } catch (error) {
-        if (previewWindow) previewWindow.close();
-        byId('info').textContent = error.message;
+  <header class="site-header">
+    <div class="shell nav-shell">
+      <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+      <nav class="primary-nav" aria-label="Main navigation">
+        <a href="jobs.html">Jobs</a>
+        <a href="resume.html">Resume Builder</a>
+        <a href="company-access.html">For employers</a>
+      </nav>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
+    </div>
+  </header>
+
+  <main class="shell profile-page">
+    <div class="profile-heading">
+      <div>
+        <p class="eyebrow">YOUR CAREER WORKSPACE</p>
+        <h1>My profile</h1>
+        <p>Your resumes and career activity, together in one place.</p>
+      </div>
+      <a class="button button-primary" href="resume.html">Build a resume <span aria-hidden="true">↗</span></a>
+    </div>
+
+    <p id="info" class="profile-status" role="status" aria-live="polite">Loading your profile…</p>
+
+    <section class="profile-overview" aria-label="Account overview">
+      <div class="profile-avatar" aria-hidden="true">◎</div>
+      <div class="profile-overview-copy">
+        <strong id="profile-name">Your account</strong>
+        <span id="profile-email">Loading account details…</span>
+      </div>
+      <span id="profile-role" class="profile-role">Member</span>
+    </section>
+
+    <section class="profile-section" aria-labelledby="resumes-title">
+      <div class="profile-section-heading">
+        <div><h2 id="resumes-title">My resumes</h2><p>Your saved resumes are ready to preview.</p></div>
+        <a class="button button-outline" href="resume.html">Create resume</a>
+      </div>
+      <div id="resumes" class="profile-list"><p class="profile-loading">Loading saved resumes…</p></div>
+    </section>
+
+    <section class="profile-section" aria-labelledby="activity-title">
+      <div class="profile-section-heading">
+        <div><h2 id="activity-title">My activity</h2><p>Keep track of your posts and applications.</p></div>
+        <a class="button button-outline" href="jobs.html">Explore jobs</a>
+      </div>
+      <div class="profile-activity-grid">
+        <section class="profile-subsection" aria-labelledby="jobsTitle">
+          <h3 id="jobsTitle">Job applications</h3>
+          <div id="jobs" class="profile-list"><p class="profile-loading">Loading job activity…</p></div>
+        </section>
+        <section class="profile-subsection" aria-labelledby="reels-title">
+          <h3 id="reels-title">My reels</h3>
+          <div id="reels" class="profile-list"><p class="profile-loading">Loading reels…</p></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="theme.js" defer></script>
+  <script type="module">
+    import { getUser } from './auth.js';
+
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: 'Bearer ' + token } : {};
+    const byId = id => document.getElementById(id);
+
+    async function getJson(url) {
+      const response = await fetch(url, { headers });
+      let body;
+      try { body = await response.json(); } catch { body = {}; }
+      if (!response.ok) {
+        const error = new Error(body.error || 'Could not load this section.');
+        error.status = response.status;
+        throw error;
       }
-    });
-    card.appendChild(link);
-    container.appendChild(card);
-  });
-}
-async function loadReels() {
-  const result = await getJson('/api/reels?mine=true');
-  (result.reels || []).forEach(reel => addCard(byId('reels'), reel.body || reel.title || 'Reel'));
-}
-async function loadAppliedJobs() {
-  const rows = await getJson('/api/jobs/applied');
-  rows.forEach(row => {
-    const job = Array.isArray(row.jobs) ? row.jobs[0] : row.jobs;
-    if (job) addCard(byId('jobs'), job.title + ' (' + job.type + ')');
-  });
-}
-async function loadPostedJobs() {
-  const rows = await getJson('/api/jobs/posted');
-  rows.forEach(job => addCard(byId('jobs'), job.title + ' (' + job.type + ')'));
-}
-loadProfile();
-</script>
+      return body;
+    }
+
+    function showEmpty(container, message, linkText, href) {
+      container.replaceChildren();
+      const empty = document.createElement('div');
+      empty.className = 'profile-empty';
+      empty.append(document.createTextNode(message + ' '));
+      if (linkText && href) {
+        const link = document.createElement('a');
+        link.href = href;
+        link.textContent = linkText;
+        empty.appendChild(link);
+      }
+      container.appendChild(empty);
+    }
+
+    function addEntry(container, { icon = '•', title, detail = '', action, onAction }) {
+      const entry = document.createElement('article');
+      entry.className = 'profile-entry';
+      const mark = document.createElement('span');
+      mark.className = 'profile-entry-icon';
+      mark.setAttribute('aria-hidden', 'true');
+      mark.textContent = icon;
+      const copy = document.createElement('div');
+      copy.className = 'profile-entry-copy';
+      const heading = document.createElement('strong');
+      heading.textContent = title;
+      copy.appendChild(heading);
+      if (detail) {
+        const note = document.createElement('span');
+        note.textContent = detail;
+        copy.appendChild(note);
+      }
+      entry.append(mark, copy);
+      if (action) {
+        const button = document.createElement('button');
+        button.className = 'button button-outline';
+        button.type = 'button';
+        button.textContent = action;
+        button.addEventListener('click', onAction);
+        entry.appendChild(button);
+      }
+      container.appendChild(entry);
+    }
+
+    function showSectionError(container, error) {
+      showEmpty(container, error.message || 'Could not load this section.', 'Try again', '#');
+      container.querySelector('a')?.addEventListener('click', event => {
+        event.preventDefault();
+        window.location.reload();
+      });
+    }
+
+    async function loadResumes() {
+      const container = byId('resumes');
+      try {
+        const result = await getJson('/api/resume?mine=true');
+        const rows = Array.isArray(result) ? result : [];
+        if (!rows.length) {
+          showEmpty(container, 'No saved resumes yet.', 'Build your first resume', 'resume.html');
+          return;
+        }
+        container.replaceChildren();
+        rows.forEach(resume => addEntry(container, {
+          icon: '▤',
+          title: resume.title || 'My resume',
+          detail: (resume.template || 'Classic') + ' template',
+          action: 'Preview',
+          onAction: async () => {
+            const previewWindow = window.open('about:blank', '_blank');
+            try {
+              const response = await fetch('/api/resume/' + encodeURIComponent(resume.id) + '/html', { headers });
+              if (!response.ok) throw new Error('Could not load resume preview.');
+              const html = await response.text();
+              const blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+              if (previewWindow) previewWindow.location = blobUrl;
+              else window.location.assign(blobUrl);
+            } catch (error) {
+              if (previewWindow) previewWindow.close();
+              byId('info').dataset.state = 'error';
+              byId('info').textContent = error.message;
+            }
+          }
+        }));
+      } catch (error) { showSectionError(container, error); }
+    }
+
+    async function loadReels() {
+      const container = byId('reels');
+      try {
+        const result = await getJson('/api/reels?mine=true');
+        const rows = Array.isArray(result.reels) ? result.reels : [];
+        if (!rows.length) {
+          showEmpty(container, 'No reels yet. Your shared career updates will appear here.');
+          return;
+        }
+        container.replaceChildren();
+        rows.forEach(reel => addEntry(container, {
+          icon: '✦',
+          title: reel.title || 'Career update',
+          detail: reel.body || 'Shared with your network'
+        }));
+      } catch (error) { showSectionError(container, error); }
+    }
+
+    async function loadJobs(role) {
+      const container = byId('jobs');
+      const isCompany = role === 'company';
+      try {
+        const rows = await getJson(isCompany ? '/api/jobs/posted' : '/api/jobs/applied');
+        const jobs = Array.isArray(rows) ? rows : [];
+        byId('jobsTitle').textContent = isCompany ? 'Jobs posted' : 'Job applications';
+        if (!jobs.length) {
+          showEmpty(
+            container,
+            isCompany ? 'No jobs posted yet.' : 'No job applications yet.',
+            isCompany ? 'Post a job' : 'Find an opportunity',
+            isCompany ? 'post-job.html' : 'jobs.html'
+          );
+          return;
+        }
+        container.replaceChildren();
+        jobs.forEach(row => {
+          const job = isCompany ? row : (Array.isArray(row.jobs) ? row.jobs[0] : row.jobs);
+          if (job) addEntry(container, {
+            icon: isCompany ? '↗' : '✓',
+            title: job.title || 'Opportunity',
+            detail: [job.company, job.type].filter(Boolean).join(' · ') || 'Career opportunity'
+          });
+        });
+      } catch (error) { showSectionError(container, error); }
+    }
+
+    async function loadProfile() {
+      if (!token) {
+        window.location.replace('login.html');
+        return;
+      }
+
+      try {
+        const [user, profile] = await Promise.all([getUser(), getJson('/api/profile/me')]);
+        const name = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.fullName;
+        byId('profile-name').textContent = name || 'Your account';
+        byId('profile-email').textContent = user?.email || 'Signed in to AIConnectPro';
+        const role = profile.role || 'member';
+        byId('profile-role').textContent = role;
+        byId('info').textContent = 'Your profile is up to date.';
+        await Promise.all([loadResumes(), loadReels(), loadJobs(role)]);
+      } catch (error) {
+        byId('info').dataset.state = 'error';
+        byId('info').textContent = error.message || 'Could not load your profile.';
+        if (error.status === 401) {
+          window.location.replace('login.html');
+        }
+      }
+    }
+
+    loadProfile();
+  </script>
 </body>
 </html>
