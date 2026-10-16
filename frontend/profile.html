@@ -61,13 +61,18 @@ async function loadResumes() {
     link.textContent = 'Preview';
     link.addEventListener('click', async event => {
       event.preventDefault();
+      const previewWindow = window.open('about:blank', '_blank');
       try {
         const response = await fetch('/api/resume/' + encodeURIComponent(resume.id) + '/html', { headers });
         if (!response.ok) throw new Error('Could not load resume preview.');
         const html = await response.text();
         const blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-        window.open(blobUrl, '_blank', 'noopener');
-      } catch (error) { byId('info').textContent = error.message; }
+        if (previewWindow) previewWindow.location = blobUrl;
+        else window.location.assign(blobUrl);
+      } catch (error) {
+        if (previewWindow) previewWindow.close();
+        byId('info').textContent = error.message;
+      }
     });
     card.appendChild(link);
     container.appendChild(card);
