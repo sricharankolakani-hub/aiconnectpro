@@ -37,4 +37,4 @@ The login and signup pages offer both email/password and Google sign-in. The OAu
 
 ## Deployment notes
 
-Vercel can serve the static files from `frontend/`. The current frontend calls API paths beginning with `/api`; when the API is hosted on a separate Render domain, configure a Vercel rewrite to the Render service URL. The actual Render URL and production frontend domain are account-specific, so they are not hard-coded here.
+Set the Vercel project root directory to `frontend/`. The included `frontend/vercel.json` rewrites `/api/*` requests to the Render API URL already used by the demo frontend. Confirm that this matches the selected Render backend before deployment. Add the production frontend origin and OAuth callback URL to Supabase Authentication → URL Configuration.
