@@ -2,7 +2,7 @@
 // Paste this file into frontend/app.js in your repo
 
 const API = 'https://aiconnectpro-backend.onrender.com/api';
-const TOKEN_KEY = 'aiconnectpro_token';
+const TOKEN_KEY = 'token';
 let token = null;
 
 function el(id){ return document.getElementById(id); }
