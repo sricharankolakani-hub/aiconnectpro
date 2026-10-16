@@ -39,16 +39,6 @@ async function initialize() {
 
   try {
     await getUser();
-    const response = await fetch('/api/profile/me', {
-      headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
-    });
-    const profile = await response.json().catch(() => ({}));
-    if (response.status === 401) {
-      showAccess('Your session has expired', 'Log in again to continue.', 'Log in', 'login.html');
-      return;
-    }
-    if (!response.ok) throw new Error(profile.error || 'We could not check this account right now.');
-
     const organizationResponse = await fetch('/api/organizations/mine', {
       headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
     });
