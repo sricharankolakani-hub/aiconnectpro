@@ -4,7 +4,7 @@
   "description": "Backend for AIConnectPro",
   "main": "server.js",
   "engines": {
-    "node": ">=16"
+    "node": "20.x"
   },
   "scripts": {
     "start": "node server.js",
