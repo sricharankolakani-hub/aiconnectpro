@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Review applications to your AIConnectPro opportunities.">
+  <title>Applicant inbox – AIConnectPro</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="company-applications.css">
+</head>
+<body class="company-applications-page">
+  <header class="site-header">
+    <div class="shell nav-shell">
+      <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+      <nav class="primary-nav" aria-label="Main navigation">
+        <a href="jobs.html">Jobs</a>
+        <a href="post-job.html">Post an opportunity</a>
+        <a href="profile.html">My Profile</a>
+      </nav>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
+    </div>
+  </header>
+
+  <main class="shell inbox-main">
+    <section class="inbox-intro">
+      <p class="eyebrow"><span class="eyebrow-dot"></span> EMPLOYER WORKSPACE</p>
+      <h1>Your applicant inbox</h1>
+      <p>Review applications submitted to the opportunities you’ve posted.</p>
+    </section>
+
+    <section id="access-state" class="inbox-state" role="status" aria-live="polite">
+      <h2>Checking employer access…</h2>
+      <p>We’re confirming this account can view applicant information.</p>
+    </section>
+
+    <section id="inbox" class="inbox-panel" hidden>
+      <div class="inbox-toolbar">
+        <div>
+          <h2>Applications</h2>
+          <p id="inbox-summary">Choose one of your opportunities to review its applicants.</p>
+        </div>
+        <label for="job-select">Your opportunity
+          <select id="job-select"><option value="">Choose a listing</option></select>
+        </label>
+      </div>
+      <p id="inbox-status" class="inbox-status" role="status" aria-live="polite"></p>
+      <div id="application-list" class="application-list"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <a class="brand brand-footer" href="index.html"><span class="brand-mark">A</span> AIConnectPro</a>
+      <span>Every application deserves a thoughtful review.</span>
+    </div>
+  </footer>
+  <script src="theme.js" defer></script>
+  <script type="module" src="company-applications.js"></script>
+</body>
+</html>
