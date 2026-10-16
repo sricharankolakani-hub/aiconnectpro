@@ -2,19 +2,20 @@
   "name": "aiconnectpro-backend",
   "version": "0.1.0",
   "description": "Backend for AIConnectPro",
-  "main": "src/backend/server.js",
+  "main": "server.js",
   "engines": {
     "node": ">=16"
   },
   "scripts": {
-    "start": "node src/backend/server.js",
-    "dev": "NODE_ENV=development node src/backend/server.js"
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node server.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.25.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.18.2",
+    "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.0",
     "puppeteer": "^21.0.0",
     "uuid": "^9.0.0"
