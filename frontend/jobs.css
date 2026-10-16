@@ -85,3 +85,42 @@
   .detail-placeholder { min-height:120px; }
   .results-heading h2 { font-size:20px; }
 }
+
+
+body[data-theme="dark"] .jobs-art-orb { background: radial-gradient(circle at 38% 38%, #263b5d, #342d58 58%, rgba(17,24,39,0) 72%); }
+body[data-theme="dark"] .jobs-art-card,
+body[data-theme="dark"] .job-search-panel,
+body[data-theme="dark"] .job-card,
+body[data-theme="dark"] .job-detail,
+body[data-theme="dark"] .empty-state { color: var(--ink); background: #1b2535; border-color: #354156; }
+body[data-theme="dark"] .jobs-art-caption,
+body[data-theme="dark"] .jobs-art-row small,
+body[data-theme="dark"] .result-count { color: #9ba9be; }
+body[data-theme="dark"] .jobs-art-row strong,
+body[data-theme="dark"] .search-panel-heading h2,
+body[data-theme="dark"] .results-heading h2,
+body[data-theme="dark"] .detail-placeholder h2,
+body[data-theme="dark"] .job-card h3,
+body[data-theme="dark"] .application-form h3 { color: #edf2fb; }
+body[data-theme="dark"] .jobs-art-icon { color: #a9c5ff; background: #263c60; }
+body[data-theme="dark"] .jobs-art-icon.purple,
+body[data-theme="dark"] .detail-placeholder-icon { color: #c2b5ff; background: #3b315e; }
+body[data-theme="dark"] .jobs-art-line { background: linear-gradient(90deg,#354d75 0 43%,#443b68 43% 75%,#303b4e 75%); }
+body[data-theme="dark"] .job-filters label > span,
+body[data-theme="dark"] .application-form label { color: #b7c1d1; }
+body[data-theme="dark"] .job-filters input,
+body[data-theme="dark"] .job-filters select,
+body[data-theme="dark"] .application-form select,
+body[data-theme="dark"] .application-form textarea { color: #e8edf7; background: #151f2e; border-color: #3a465a; }
+body[data-theme="dark"] .job-meta span { color: #c0cada; background: #29364a; }
+body[data-theme="dark"] .job-excerpt,
+body[data-theme="dark"] .job-detail-body { color: #b7c1d1; }
+body[data-theme="dark"] .btn { color: #bfd2ff; background: #263c60; border-color: #354d75; }
+body[data-theme="dark"] .btn:hover { background: #304b74; }
+body[data-theme="dark"] .btn--primary { color: #101827; background: #91b4ff; border-color: #91b4ff; }
+body[data-theme="dark"] .btn--primary:hover { background: #aac6ff; }
+body[data-theme="dark"] .job-status { color: #b7c1d1; }
+body[data-theme="dark"] .job-status.error { color: #ffaaaa; }
+body[data-theme="dark"] .empty-state-icon,
+body[data-theme="dark"] .search-panel-mark { color: #a9c5ff; background: #263c60; }
+body[data-theme="dark"] .job-card:hover { border-color: #52617a; }
