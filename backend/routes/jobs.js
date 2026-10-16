@@ -107,7 +107,7 @@ router.get('/', auth, async (req, res) => {
  * Fetch job details
  * Auth required (as per your choice)
  */
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id([0-9a-fA-F-]{36})', auth, async (req, res) => {
   try {
     const id = req.params.id;
     const { data, error } = await supabase.from('jobs').select('*').eq('id', id).limit(1).single();
