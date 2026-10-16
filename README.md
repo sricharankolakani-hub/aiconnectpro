@@ -23,6 +23,8 @@ Optional:
 
 Never put the service role key in frontend files, Vercel settings, or GitHub.
 
+Company posting access is restricted to users whose server-managed Supabase `app_metadata.roles` includes `company`. Grant that claim only after verifying the organization, using a trusted administrator process. The profile API rejects attempts to assign the company role from ordinary user input.
+
 ## Supabase email and Google sign-in
 
 1. In `frontend/auth.js`, replace the project URL and public anon key with the values from Supabase **Project Settings → API**. The anon key is intended for browser use; the service role key is not.
