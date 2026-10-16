@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Login – AIConnectPro</title>
-  <style>
-    body { font: 16px Arial, sans-serif; max-width: 420px; margin: 48px auto; padding: 0 20px; color: #17202a; }
-    input, button { box-sizing: border-box; width: 100%; padding: 12px; margin: 8px 0; }
-    button { cursor: pointer; }
-    #msg { min-height: 1.5em; }
-  </style>
+
+  <link rel="stylesheet" href="workspace.css">
 </head>
-<body>
-  <main>
+<body class="workspace-page auth-page"><header class="workspace-header"><div class="workspace-header-inner">
+  <a class="workspace-brand" href="index.html"><span class="workspace-mark">A</span> AIConnectPro</a>
+  <nav class="workspace-nav" aria-label="Main navigation"><a href="jobs.html">Jobs</a><a href="resume.html">Resume Builder</a><a href="profile.html">My Profile</a></nav>
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode">☾</button>
+</div></header>
+  <main class="auth-main">
     <h1>Welcome back</h1>
     <form id="login-form">
       <label for="email">Email</label>
@@ -26,6 +26,7 @@
     <p>New here? <a href="signup.html">Create an account</a></p>
   </main>
 
+  <script src="theme.js" defer></script>
   <script type="module">
     import { signIn, signInWithGoogle } from './auth.js';
 
