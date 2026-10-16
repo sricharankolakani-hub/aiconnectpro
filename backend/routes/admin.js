@@ -107,7 +107,7 @@ router.patch('/company-access-requests/:id', async (req, res) => {
     }
   }
 
-  if (decision === 'approved') {
+  if (decision === 'approved' && !request.organization_id) {
     const { data: authData, error: userError } = await supabase.auth.admin.getUserById(request.requester_id);
     if (userError || !authData?.user) return res.status(404).json({ error: 'requester_not_found' });
 
