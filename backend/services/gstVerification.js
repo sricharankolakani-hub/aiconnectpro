@@ -13,9 +13,6 @@ async function verifyGstin({ gstin, organizationName, registeredAddress }) {
       reference: null,
       result: {
         reason: 'provider_not_configured',
-        submittedGstin: gstin,
-        submittedOrganizationName: organizationName,
-        submittedRegisteredAddress: registeredAddress
       }
     };
   }
