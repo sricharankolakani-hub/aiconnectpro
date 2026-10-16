@@ -49,13 +49,27 @@ async function initialize() {
     }
     if (!response.ok) throw new Error(profile.error || 'We could not check this account right now.');
 
-    if (profile.role !== 'company') {
+    const organizationResponse = await fetch('/api/organizations/mine', {
+      headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
+    });
+    const organizationResult = await organizationResponse.json().catch(() => ({}));
+    if (!organizationResponse.ok) throw new Error(organizationResult.error || 'We could not load your organizations.');
+    const organizations = (organizationResult.organizations || [])
+      .filter(organization => organization.verification_status === 'verified');
+    if (!organizations.length) {
       showAccess(
-        'Company access is required',
-        'Posting is available to verified company accounts. An administrator must approve company access before this account can publish.',
-        'Request company access', 'company-access.html'
+        'A verified organization is required',
+        'Your personal login is ready. Register an organization and complete its manual verification before publishing.',
+        'Register an organization', 'company-access.html'
       );
       return;
+    }
+    const organizationSelect = document.getElementById('organization-id');
+    for (const organization of organizations) {
+      const option = document.createElement('option');
+      option.value = organization.id;
+      option.textContent = organization.name;
+      organizationSelect.append(option);
     }
 
     accessState.hidden = true;
@@ -79,6 +93,7 @@ form.addEventListener('submit', async event => {
   submitButton.disabled = true;
   setStatus('Publishing your opportunity…');
   const payload = {
+    company_id: document.getElementById('organization-id').value,
     title: document.getElementById('title').value.trim(),
     type: document.getElementById('type').value,
     location: document.getElementById('location').value.trim() || null,
@@ -98,7 +113,7 @@ form.addEventListener('submit', async event => {
     const result = await response.json().catch(() => ({}));
 
     if (response.status === 401) throw new Error('Your session has expired. Please log in again.');
-    if (response.status === 403) throw new Error('Company access is required. An administrator must approve this account before it can publish.');
+    if (response.status === 403) throw new Error('A verified organization membership is required before it can publish.');
     if (!response.ok) throw new Error(result.details || result.error || 'The opportunity could not be published.');
 
     form.reset();
