@@ -2,8 +2,8 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 // These are public client settings. Replace them with your Supabase project values.
-const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_PUBLIC_ANON_KEY';
+const SUPABASE_URL = 'https://yrjkkmvrmiieqozuvbqp.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyamtrbXZybWlpZXFvenV2YnFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MTE1NzAsImV4cCI6MjA3ODA4NzU3MH0.uITpRtUsm-R9xeYW8R48gDjZILUqtkkLB1-4utarwns';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
