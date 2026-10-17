@@ -17,10 +17,20 @@ supabase.auth.onAuthStateChange((_event, session) => {
 });
 
 // SIGN UP
-export async function signUp(email, password) {
+export async function signUp(email, password, consent) {
+  if (!consent?.acceptedAt || consent.policyVersion !== '2026-10-17') {
+    throw new Error('Please agree to the current Privacy Policy before creating an account.');
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email,
-    password
+    password,
+    options: {
+      data: {
+        privacy_policy_accepted_at: consent.acceptedAt,
+        privacy_policy_version: consent.policyVersion
+      }
+    }
   });
   if (error) throw error;
   return data;

@@ -35,6 +35,24 @@
         throw new Error('No active session was returned. Please try signing in again.');
       }
 
+      const signupConsentKey = 'aiconnectpro.signup-privacy-consent';
+      const rawConsent = sessionStorage.getItem(signupConsentKey);
+      if (rawConsent) {
+        const consent = JSON.parse(rawConsent);
+        if (!consent.acceptedAt || consent.policyVersion !== '2026-10-17') {
+          throw new Error('Privacy Policy agreement could not be confirmed. Please return to sign up and try again.');
+        }
+
+        const { error: consentError } = await supabase.auth.updateUser({
+          data: {
+            privacy_policy_accepted_at: consent.acceptedAt,
+            privacy_policy_version: consent.policyVersion
+          }
+        });
+        if (consentError) throw consentError;
+        sessionStorage.removeItem(signupConsentKey);
+      }
+
       localStorage.setItem('token', data.session.access_token);
       message.textContent = 'Signed in. Opening AIConnectPro…';
       window.location.replace('index.html');
