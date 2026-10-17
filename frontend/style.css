@@ -218,6 +218,10 @@ body[data-theme="dark"] .chip-check { color: #91e0c1; background: #244d43; }
 .auth-form input { width: 100%; min-height: 48px; padding: 0 14px; color: var(--ink); background: var(--white); border: 1px solid var(--line); border-radius: 10px; }
 .auth-form input::placeholder { color: #9aa6b8; }
 .auth-form input:focus { border-color: var(--primary); outline: 3px solid rgba(37,99,235,.12); }
+.auth-consent { display: flex; align-items: flex-start; gap: 10px; margin-top: 5px; }
+.auth-form .auth-consent input[type="checkbox"] { flex: 0 0 auto; width: 18px; min-height: 18px; height: 18px; margin: 2px 0 0; padding: 0; }
+.auth-form .auth-consent label { margin: 0; font-size: 13px; font-weight: 500; line-height: 1.5; }
+.auth-consent a { color: var(--primary); text-underline-offset: 2px; }
 .auth-password-field { display: flex; align-items: center; gap: 8px; }
 .auth-password-field input { flex: 1; min-width: 0; }
 .auth-password-toggle { display: grid; place-items: center; flex: 0 0 46px; width: 46px; height: 46px; color: var(--muted); background: var(--white); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
