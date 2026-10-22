@@ -54,6 +54,13 @@
         </div>
         <button class="auth-submit" type="submit">Create account</button>
       </form>
+      <form id="verify-form" class="auth-form" hidden>
+        <p class="auth-subtitle">Enter the 6-digit code sent to <strong id="verification-email"></strong>.</p>
+        <label for="email-code">Email verification code</label>
+        <input id="email-code" name="email-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+        <button class="auth-submit" type="submit">Verify email</button>
+        <button class="auth-google" id="resend-code" type="button">Resend code</button>
+      </form>
       <div class="auth-divider">or</div>
       <button class="auth-google" id="google-signup" type="button">Continue with Google</button>
       <p id="msg" class="auth-message" role="status" aria-live="polite"></p>
@@ -63,17 +70,30 @@
 
   <script src="theme.js" defer></script>
   <script type="module">
-    import { signUp, signInWithGoogle } from './auth.js';
+    import { signUp, verifySignupCode, resendSignupCode, signInWithGoogle } from './auth.js';
 
     const form = document.getElementById('signup-form');
+    const verifyForm = document.getElementById('verify-form');
     const message = document.getElementById('msg');
     const submitButton = form.querySelector('[type="submit"]');
     const googleButton = document.getElementById('google-signup');
+    const resendButton = document.getElementById('resend-code');
     const password = document.getElementById('password');
+    const emailInput = document.getElementById('email');
     const passwordToggle = document.querySelector('.auth-password-toggle');
     const privacyConsent = document.getElementById('privacy-consent');
     const privacyPolicyVersion = '2026-10-17';
     const signupConsentKey = 'aiconnectpro.signup-privacy-consent';
+    let verificationEmail = sessionStorage.getItem('aicp_signup_email') || '';
+
+    function showCodeForm(email) {
+      verificationEmail = email;
+      sessionStorage.setItem('aicp_signup_email', email);
+      document.getElementById('verification-email').textContent = email;
+      form.hidden = true;
+      verifyForm.hidden = false;
+    }
+    if (verificationEmail) showCodeForm(verificationEmail);
 
     passwordToggle.addEventListener('click', () => {
       const isHidden = password.type === 'password';
@@ -86,25 +106,65 @@
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
+      if (!privacyConsent.checked) {
+        privacyConsent.reportValidity();
+        return;
+      }
       message.dataset.state = '';
       message.textContent = 'Creating your account…';
       submitButton.disabled = true;
       try {
+        const email = emailInput.value.trim();
         const consent = { policyVersion: privacyPolicyVersion, acceptedAt: new Date().toISOString() };
-        const data = await signUp(document.getElementById('email').value, password.value, consent);
+        const data = await signUp(email, password.value, consent);
         if (data.session) {
-          message.dataset.state = 'success';
-          message.textContent = 'Account created. Taking you to your home page…';
-          window.location.assign('index.html');
+          sessionStorage.removeItem('aicp_signup_email');
+          window.location.assign('auth-mfa.html?mode=enroll');
         } else {
-          submitButton.disabled = false;
+          showCodeForm(email);
           message.dataset.state = 'success';
-          message.textContent = 'Account created. Check your email to confirm, then log in.';
+          message.textContent = 'We sent a verification code. Check your inbox and spam folder.';
         }
       } catch (error) {
-        submitButton.disabled = false;
         message.dataset.state = 'error';
         message.textContent = error.message || 'Could not create your account. Please try again.';
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    verifyForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const codeInput = document.getElementById('email-code');
+      const verifyButton = verifyForm.querySelector('[type="submit"]');
+      verifyButton.disabled = true;
+      message.dataset.state = '';
+      message.textContent = 'Verifying your email…';
+      try {
+        await verifySignupCode(verificationEmail, codeInput.value);
+        sessionStorage.removeItem('aicp_signup_email');
+        window.location.assign('auth-mfa.html?mode=enroll');
+      } catch (error) {
+        message.dataset.state = 'error';
+        message.textContent = error.message || 'That code could not be verified. Request a new one and try again.';
+      } finally {
+        verifyButton.disabled = false;
+      }
+    });
+
+    resendButton.addEventListener('click', async () => {
+      resendButton.disabled = true;
+      message.dataset.state = '';
+      message.textContent = 'Sending a new code…';
+      try {
+        await resendSignupCode(verificationEmail);
+        message.dataset.state = 'success';
+        message.textContent = 'A new verification code has been sent.';
+      } catch (error) {
+        message.dataset.state = 'error';
+        message.textContent = error.message || 'Could not resend the code. Please try again later.';
+      } finally {
+        resendButton.disabled = false;
       }
     });
 
@@ -113,7 +173,6 @@
         privacyConsent.reportValidity();
         return;
       }
-
       const consent = { policyVersion: privacyPolicyVersion, acceptedAt: new Date().toISOString() };
       sessionStorage.setItem(signupConsentKey, JSON.stringify(consent));
       message.dataset.state = '';

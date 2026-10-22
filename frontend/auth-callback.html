@@ -13,7 +13,7 @@
   </main>
 
   <script type="module">
-    import { supabase } from './auth.js';
+    import { supabase, getMfaStep } from './auth.js';
 
     const message = document.getElementById('message');
     const loginLink = document.getElementById('login-link');
@@ -54,8 +54,9 @@
       }
 
       localStorage.setItem('token', data.session.access_token);
-      message.textContent = 'Signed in. Opening AIConnectPro…';
-      window.location.replace('index.html');
+      const mode = await getMfaStep();
+      message.textContent = 'Signed in. Continue with your authenticator…';
+      window.location.replace('auth-mfa.html?mode=' + mode);
     } catch (error) {
       message.textContent = error.message || 'Sign-in could not be completed.';
       loginLink.hidden = false;

@@ -16,6 +16,10 @@ supabase.auth.onAuthStateChange((_event, session) => {
   }
 });
 
+function authCallbackUrl() {
+  return new URL('/auth-callback.html', window.location.origin).toString();
+}
+
 // SIGN UP
 export async function signUp(email, password, consent) {
   if (!consent?.acceptedAt || consent.policyVersion !== '2026-10-17') {
@@ -23,9 +27,10 @@ export async function signUp(email, password, consent) {
   }
 
   const { data, error } = await supabase.auth.signUp({
-    email,
+    email: email.trim(),
     password,
     options: {
+      emailRedirectTo: authCallbackUrl(),
       data: {
         privacy_policy_accepted_at: consent.acceptedAt,
         privacy_policy_version: consent.policyVersion
@@ -36,16 +41,42 @@ export async function signUp(email, password, consent) {
   return data;
 }
 
+export async function verifySignupCode(email, token) {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: email.trim(),
+    token: token.trim(),
+    type: 'signup'
+  });
+  if (error) throw error;
+  if (!data.session) throw new Error('Email confirmed, but no sign-in session was returned. Please log in.');
+  return data;
+}
+
+export async function resendSignupCode(email) {
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email: email.trim(),
+    options: { emailRedirectTo: authCallbackUrl() }
+  });
+  if (error) throw error;
+}
+
 // LOGIN
 export async function signIn(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({
-    email,
+    email: email.trim(),
     password
   });
   if (error) throw error;
   if (!data.session) throw new Error('Login did not return an active session.');
   localStorage.setItem('token', data.session.access_token);
   return data;
+}
+
+export async function getMfaStep() {
+  const { data, error } = await supabase.auth.mfa.listFactors();
+  if (error) throw error;
+  return (data.totp || []).some(factor => factor.status === 'verified') ? 'challenge' : 'enroll';
 }
 
 // GOOGLE LOGIN
