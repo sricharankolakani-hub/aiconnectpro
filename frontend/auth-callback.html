@@ -56,6 +56,13 @@
       const { data: currentUserData, error: currentUserError } = await supabase.auth.getUser();
       if (currentUserError) throw currentUserError;
       const currentUser = currentUserData.user;
+      const createdAt = Date.parse(currentUser.created_at || '');
+      const hasCurrentPrivacyConsent = currentUser.user_metadata?.privacy_policy_version === '2026-10-17';
+      if (!rawConsent && !hasCurrentPrivacyConsent && Number.isFinite(createdAt) && Date.now() - createdAt < 10 * 60 * 1000) {
+        sessionStorage.setItem('aicp_signup_email', currentUser.email || '');
+        window.location.replace('signup.html?stage=google-consent');
+        return;
+      }
       if (rawConsent && sessionStorage.getItem('aicp_google_email_code_sent') !== 'true') {
         await beginGoogleEmailSignupVerification();
         sessionStorage.setItem('aicp_google_email_code_sent', 'true');
