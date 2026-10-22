@@ -13,7 +13,7 @@
   </main>
 
   <script type="module">
-    import { supabase, getMfaStep } from './auth.js';
+    import { supabase, getMfaStep, beginPhoneSignup, beginGoogleEmailSignupVerification } from './auth.js';
 
     const message = document.getElementById('message');
     const loginLink = document.getElementById('login-link');
@@ -50,13 +50,43 @@
           }
         });
         if (consentError) throw consentError;
-        sessionStorage.removeItem(signupConsentKey);
       }
 
       localStorage.setItem('token', data.session.access_token);
+      const { data: currentUserData, error: currentUserError } = await supabase.auth.getUser();
+      if (currentUserError) throw currentUserError;
+      const currentUser = currentUserData.user;
+      if (rawConsent && sessionStorage.getItem('aicp_google_email_code_sent') !== 'true') {
+        await beginGoogleEmailSignupVerification();
+        sessionStorage.setItem('aicp_google_email_code_sent', 'true');
+        sessionStorage.setItem('aicp_email_verification_type', 'reauthentication');
+        sessionStorage.setItem('aicp_signup_email', currentUser.email || '');
+        sessionStorage.removeItem(signupConsentKey);
+        window.location.replace('signup.html?stage=google-email');
+        return;
+      }
+      const pendingPhone = sessionStorage.getItem('aicp_signup_phone');
+      if (pendingPhone && (!currentUser.phone_confirmed_at || currentUser.phone !== pendingPhone.replace(/[^+\d]/g, ''))) {
+        await beginPhoneSignup(pendingPhone);
+        sessionStorage.setItem('aicp_signup_phone', pendingPhone);
+        sessionStorage.setItem('aicp_phone_code_sent', 'true');
+        window.location.replace('signup.html?stage=phone');
+        return;
+      }
+      if (!currentUser.phone_confirmed_at) {
+        window.location.replace('signup.html?stage=phone');
+        return;
+      }
+      sessionStorage.removeItem('aicp_signup_phone');
+      sessionStorage.removeItem('aicp_phone_code_sent');
       const mode = await getMfaStep();
-      message.textContent = 'Signed in. Continue with your authenticator…';
-      window.location.replace('auth-mfa.html?mode=' + mode);
+      if (mode === 'challenge') {
+        message.textContent = 'Signed in. Enter your second-step code…';
+        window.location.replace('auth-mfa.html?mode=challenge');
+      } else {
+        message.textContent = 'Signed in. Opening AIConnectPro…';
+        window.location.replace('index.html');
+      }
     } catch (error) {
       message.textContent = error.message || 'Sign-in could not be completed.';
       loginLink.hidden = false;
