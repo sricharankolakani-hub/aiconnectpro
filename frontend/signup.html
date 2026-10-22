@@ -8,357 +8,147 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="auth-page">
-  <header class="site-header">
-    <div class="shell nav-shell">
-      <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
-      <nav class="primary-nav" aria-label="Main navigation">
-        <a href="index.html">Home</a>
-        <a href="jobs.html">Jobs</a>
-      </nav>
-      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
-    </div>
-  </header>
-
+  <header class="site-header"><div class="shell nav-shell">
+    <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+    <nav class="primary-nav" aria-label="Main navigation"><a href="index.html">Home</a><a href="jobs.html">Jobs</a></nav>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
+  </div></header>
   <main class="auth-layout">
-    <section class="auth-intro" aria-labelledby="welcome-title">
-      <div class="auth-intro-copy">
-        <p class="eyebrow">START YOUR NEXT CHAPTER</p>
-        <h1>Build a career workspace that moves with you.</h1>
-        <p>Create your account to organize your profile, prepare your resume, and explore opportunities in one place.</p>
-      </div>
-      <div class="auth-benefits" aria-label="AIConnectPro benefits">
-        <span><b aria-hidden="true">✓</b> Save your career profile and resumes</span>
-        <span><b aria-hidden="true">✓</b> Explore opportunities at your pace</span>
-      </div>
-    </section>
-
+    <section class="auth-intro"><div class="auth-intro-copy">
+      <p class="eyebrow">START YOUR NEXT CHAPTER</p><h1>Build a career workspace that moves with you.</h1>
+      <p>Create your account to organize your profile, prepare your resume, and explore opportunities in one place.</p>
+    </div><div class="auth-benefits"><span><b aria-hidden="true">✓</b> Save your career profile and resumes</span><span><b aria-hidden="true">✓</b> Explore opportunities at your pace</span></div></section>
     <section class="auth-panel" aria-labelledby="signup-title">
       <h2 id="signup-title">Create your account</h2>
-      <p class="auth-subtitle">A few details get your career workspace started.</p>
-      <form id="google-consent-form" class="auth-form" hidden>
-        <p class="auth-subtitle">Finish setting up your Google account. We’ll verify your email and mobile number before you continue.</p>
-        <label for="google-phone">Mobile number</label>
-        <input id="google-phone" type="tel" placeholder="+91 98765 43210" autocomplete="tel" inputmode="tel" required>
-        <div class="auth-consent">
-          <input id="google-privacy-consent" type="checkbox" required>
-          <label for="google-privacy-consent">I have read and agree to the <a href="privacy-policy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</label>
-        </div>
-        <button class="auth-submit" type="submit">Continue verification</button>
-      </form>
+      <p class="auth-subtitle">Verify your email to get started. Mobile verification will be added when a messaging provider is available.</p>
       <form id="signup-form" class="auth-form">
-        <label for="email">Email address</label>
-        <input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
-        <label for="phone">Mobile number</label>
-        <input id="phone" name="phone" type="tel" placeholder="+91 98765 43210" autocomplete="tel" inputmode="tel" required>
-        <p class="auth-subtitle">We’ll verify both your email and mobile number with one-time codes.</p>
-        <label for="password">Create a password</label>
-        <div class="auth-password-field">
+        <label for="email">Email address</label><input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+        <label for="password">Create a password</label><div class="auth-password-field">
           <input id="password" name="password" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
           <button class="auth-password-toggle" type="button" aria-controls="password" aria-label="Show password" title="Show password" aria-pressed="false">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path class="eye-open" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle class="eye-open" cx="12" cy="12" r="3"/>
-              <g class="eye-closed"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path d="m3 3 18 18"/></g>
-            </svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="eye-open" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle class="eye-open" cx="12" cy="12" r="3"/><g class="eye-closed"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path d="m3 3 18 18"/></g></svg>
           </button>
         </div>
-        <div class="auth-consent">
-          <input id="privacy-consent" name="privacy-consent" type="checkbox" required>
-          <label for="privacy-consent">I have read and agree to the <a href="privacy-policy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</label>
-        </div>
+        <div class="auth-consent"><input id="privacy-consent" name="privacy-consent" type="checkbox" required><label for="privacy-consent">I have read and agree to the <a href="privacy-policy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</label></div>
         <button class="auth-submit" type="submit">Create account</button>
+      </form>
+      <form id="google-consent-form" class="auth-form" hidden>
+        <p class="auth-subtitle">Review and accept the Privacy Policy to finish creating your Google account.</p>
+        <div class="auth-consent"><input id="google-privacy-consent" type="checkbox" required><label for="google-privacy-consent">I have read and agree to the <a href="privacy-policy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</label></div>
+        <button class="auth-submit" type="submit">Continue</button>
       </form>
       <form id="verify-form" class="auth-form" hidden>
         <p class="auth-subtitle">Enter the 6-digit code sent to <strong id="verification-email"></strong>.</p>
-        <label for="email-code">Email verification code</label>
-        <input id="email-code" name="email-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
-        <button class="auth-submit" type="submit">Verify email</button>
-        <button class="auth-google" id="resend-code" type="button">Resend code</button>
+        <label for="email-code">Email verification code</label><input id="email-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+        <button class="auth-submit" type="submit">Verify email</button><button class="auth-google" id="resend-code" type="button">Resend code</button>
       </form>
-      <form id="phone-start-form" class="auth-form" hidden>
-        <p class="auth-subtitle">A verified mobile number is required. Include your country code, for example +91 98765 43210.</p>
-        <label for="verify-phone">Mobile number</label>
-        <input id="verify-phone" name="verify-phone" type="tel" placeholder="+91 98765 43210" autocomplete="tel" inputmode="tel" required>
-        <button class="auth-submit" type="submit">Send mobile code</button>
-      </form>
-      <form id="verify-phone-form" class="auth-form" hidden>
-        <p class="auth-subtitle">Enter the 6-digit code sent to <strong id="verification-phone"></strong>.</p>
-        <label for="phone-code">Mobile verification code</label>
-        <input id="phone-code" name="phone-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
-        <button class="auth-submit" type="submit">Verify mobile</button>
-        <button class="auth-google" id="resend-phone-code" type="button">Resend code</button>
-      </form>
-      <div class="auth-divider">or</div>
-      <button class="auth-google" id="google-signup" type="button">Continue with Google</button>
+      <div class="auth-divider">or</div><button class="auth-google" id="google-signup" type="button">Continue with Google</button>
       <p id="msg" class="auth-message" role="status" aria-live="polite"></p>
       <p class="auth-switch">Already have an account? <a href="login.html">Log in</a></p>
     </section>
   </main>
-
   <script src="theme.js" defer></script>
   <script type="module">
-    import { supabase, signUp, verifySignupCode, resendSignupCode, beginPhoneSignup, beginGoogleEmailSignupVerification, verifyGoogleEmailSignupCode, verifyPhoneSignupCode, resendPhoneSignupCode, signInWithGoogle } from './auth.js';
-
+    import { supabase, signUp, verifySignupCode, resendSignupCode, beginGoogleEmailSignupVerification, verifyGoogleEmailSignupCode, signInWithGoogle } from './auth.js';
     const form = document.getElementById('signup-form');
     const googleConsentForm = document.getElementById('google-consent-form');
     const verifyForm = document.getElementById('verify-form');
-    const verifyPhoneForm = document.getElementById('verify-phone-form');
-    const phoneStartForm = document.getElementById('phone-start-form');
     const message = document.getElementById('msg');
-    const submitButton = form.querySelector('[type="submit"]');
+    const emailInput = document.getElementById('email');
+    const password = document.getElementById('password');
+    const toggle = document.querySelector('.auth-password-toggle');
     const googleButton = document.getElementById('google-signup');
     const resendButton = document.getElementById('resend-code');
-    const resendPhoneButton = document.getElementById('resend-phone-code');
-    const password = document.getElementById('password');
-    const emailInput = document.getElementById('email');
-    const phoneInput = document.getElementById('phone');
-    const passwordToggle = document.querySelector('.auth-password-toggle');
-    const privacyConsent = document.getElementById('privacy-consent');
-    const privacyPolicyVersion = '2026-10-17';
-    const signupConsentKey = 'aiconnectpro.signup-privacy-consent';
-    let verificationEmail = sessionStorage.getItem('aicp_signup_email') || '';
-    let emailVerificationType = 'signup';
-    let verificationPhone = sessionStorage.getItem('aicp_signup_phone') || '';
+    const policyVersion = '2026-10-17';
+    const consentKey = 'aiconnectpro.signup-privacy-consent';
+    let email = sessionStorage.getItem('aicp_signup_email') || '';
+    let verificationType = sessionStorage.getItem('aicp_email_verification_type') || 'signup';
 
-    function showEmailCodeForm(email, phone) {
-      verificationEmail = email;
-      verificationPhone = phone;
-      sessionStorage.setItem('aicp_signup_email', email);
-      sessionStorage.setItem('aicp_signup_phone', phone);
-      document.getElementById('verification-email').textContent = email;
-      form.hidden = true;
-      verifyPhoneForm.hidden = true;
-      verifyForm.hidden = false;
+    function showCodeForm(address, type) {
+      email = address; verificationType = type;
+      sessionStorage.setItem('aicp_signup_email', address);
+      sessionStorage.setItem('aicp_email_verification_type', type);
+      document.getElementById('verification-email').textContent = address;
+      form.hidden = true; googleConsentForm.hidden = true; verifyForm.hidden = false;
+      document.querySelector('.auth-divider').hidden = true; googleButton.hidden = true;
     }
-    function showPhoneStartForm(phone = '') {
-      form.hidden = true;
-      verifyForm.hidden = true;
-      phoneStartForm.hidden = false;
-      verifyPhoneForm.hidden = true;
-      document.getElementById('verify-phone').value = phone;
-      document.querySelector('.auth-divider').hidden = true;
-      googleButton.hidden = true;
-    }
-    function showPhoneCodeForm(phone) {
-      verificationPhone = phone;
-      sessionStorage.setItem('aicp_signup_phone', phone);
-      document.getElementById('verification-phone').textContent = phone;
-      form.hidden = true;
-      verifyForm.hidden = true;
-      phoneStartForm.hidden = true;
-      verifyPhoneForm.hidden = false;
-      document.querySelector('.auth-divider').hidden = true;
-      googleButton.hidden = true;
-    }
-
     const params = new URLSearchParams(location.search);
     if (params.get('stage') === 'google-consent') {
-      form.hidden = true;
-      verifyForm.hidden = true;
-      phoneStartForm.hidden = true;
-      verifyPhoneForm.hidden = true;
-      googleConsentForm.hidden = false;
-      document.querySelector('.auth-divider').hidden = true;
-      googleButton.hidden = true;
-      message.textContent = 'Confirm the Privacy Policy and add a mobile number to finish creating your account.';
+      form.hidden = true; googleConsentForm.hidden = false;
+      document.querySelector('.auth-divider').hidden = true; googleButton.hidden = true;
     } else if (params.get('stage') === 'google-email') {
-      emailVerificationType = 'reauthentication';
-      form.hidden = true;
-      phoneStartForm.hidden = true;
-      verifyPhoneForm.hidden = true;
-      verifyForm.hidden = false;
-      document.getElementById('verification-email').textContent = verificationEmail;
-      document.querySelector('.auth-divider').hidden = true;
-      googleButton.hidden = true;
-      message.textContent = 'Enter the verification code sent to your Google account email to finish signing up.';
-    } else if (params.get('stage') === 'phone') {
-      if (verificationPhone && sessionStorage.getItem('aicp_phone_code_sent') === 'true') showPhoneCodeForm(verificationPhone);
-      else showPhoneStartForm(verificationPhone);
-      message.textContent = 'Verify your mobile number to finish setting up your account.';
-    } else if (verificationEmail && verificationPhone) {
-      emailVerificationType = sessionStorage.getItem('aicp_email_verification_type') || 'signup';
-      showEmailCodeForm(verificationEmail, verificationPhone);
+      showCodeForm(email, 'reauthentication');
+      message.textContent = 'Enter the code sent to your email to finish setting up your account.';
+    } else if (email) {
+      showCodeForm(email, verificationType);
     }
-
-    passwordToggle.addEventListener('click', () => {
-      const isHidden = password.type === 'password';
-      password.type = isHidden ? 'text' : 'password';
-      passwordToggle.dataset.visible = String(isHidden);
-      passwordToggle.setAttribute('aria-pressed', String(isHidden));
-      passwordToggle.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
-      passwordToggle.title = isHidden ? 'Hide password' : 'Show password';
+    toggle.addEventListener('click', () => {
+      const hidden = password.type === 'password'; password.type = hidden ? 'text' : 'password';
+      toggle.setAttribute('aria-pressed', String(hidden)); toggle.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password'); toggle.title = hidden ? 'Hide password' : 'Show password';
     });
-
-    googleConsentForm.addEventListener('submit', async (event) => {
+    form.addEventListener('submit', async event => {
       event.preventDefault();
-      const phone = document.getElementById('google-phone').value.trim();
-      const consentCheckbox = document.getElementById('google-privacy-consent');
-      if (!consentCheckbox.checked) { consentCheckbox.reportValidity(); return; }
-      const submit = googleConsentForm.querySelector('[type="submit"]');
-      submit.disabled = true;
+      if (!document.getElementById('privacy-consent').checked) return;
+      const button = form.querySelector('[type="submit"]'); button.disabled = true;
+      message.textContent = 'Creating your account…';
       try {
-        const normalizedPhone = phone.replace(/[^+\d]/g, '');
-        if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) {
-          throw new Error('Enter a valid mobile number with country code, for example +91 98765 43210.');
-        }
-        sessionStorage.setItem('aicp_signup_phone', phone);
-        const currentUser = await supabase.auth.getUser();
-        if (currentUser.error) throw currentUser.error;
-        const consent = { policyVersion: privacyPolicyVersion, acceptedAt: new Date().toISOString() };
-        const { error } = await supabase.auth.updateUser({ data: {
-          privacy_policy_accepted_at: consent.acceptedAt,
-          privacy_policy_version: consent.policyVersion
-        }});
+        email = emailInput.value.trim();
+        const consent = { policyVersion, acceptedAt: new Date().toISOString() };
+        const data = await signUp(email, password.value, consent);
+        if (data.session) {
+          await beginGoogleEmailSignupVerification();
+          showCodeForm(email, 'reauthentication');
+        } else showCodeForm(email, 'signup');
+        message.dataset.state = 'success'; message.textContent = 'We sent an email code. Check your inbox and spam folder.';
+      } catch(error) { message.dataset.state = 'error'; message.textContent = error.message || 'Could not create your account.'; }
+      finally { button.disabled = false; }
+    });
+    googleConsentForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const checkbox = document.getElementById('google-privacy-consent');
+      if (!checkbox.checked) return;
+      const button = googleConsentForm.querySelector('[type="submit"]'); button.disabled = true;
+      try {
+        const userResult = await supabase.auth.getUser(); if (userResult.error) throw userResult.error;
+        const acceptedAt = new Date().toISOString();
+        const { error } = await supabase.auth.updateUser({ data: { privacy_policy_accepted_at: acceptedAt, privacy_policy_version: policyVersion } });
         if (error) throw error;
         await beginGoogleEmailSignupVerification();
-        sessionStorage.setItem('aicp_signup_email', currentUser.data.user.email || '');
-        sessionStorage.setItem('aicp_email_verification_type', 'reauthentication');
+        email = userResult.data.user.email || '';
         sessionStorage.setItem('aicp_google_email_code_sent', 'true');
-        verificationEmail = currentUser.data.user.email || '';
-        verificationPhone = phone;
-        emailVerificationType = 'reauthentication';
-        googleConsentForm.hidden = true;
-        verifyForm.hidden = false;
-        document.getElementById('verification-email').textContent = verificationEmail;
-        message.dataset.state = 'success';
-        message.textContent = 'We sent a verification code to your email.';
-      } catch (error) {
-        message.dataset.state = 'error';
-        message.textContent = error.message || 'Could not continue account verification.';
-      } finally { submit.disabled = false; }
+        showCodeForm(email, 'reauthentication');
+        message.dataset.state = 'success'; message.textContent = 'We sent an email verification code.';
+      } catch(error) { message.dataset.state = 'error'; message.textContent = error.message || 'Could not continue account setup.'; }
+      finally { button.disabled = false; }
     });
-
-    form.addEventListener('submit', async (event) => {
+    verifyForm.addEventListener('submit', async event => {
       event.preventDefault();
-      if (!privacyConsent.checked) { privacyConsent.reportValidity(); return; }
-      if (!phoneInput.checkValidity()) { phoneInput.reportValidity(); return; }
-      const phone = phoneInput.value.trim();
-      message.dataset.state = '';
-      message.textContent = 'Creating your account…';
-      submitButton.disabled = true;
+      const code = document.getElementById('email-code');
+      const button = verifyForm.querySelector('[type="submit"]'); button.disabled = true;
       try {
-        const email = emailInput.value.trim();
-        const consent = { policyVersion: privacyPolicyVersion, acceptedAt: new Date().toISOString() };
-        const signupData = await signUp(email, password.value, consent);
-        if (signupData.session) {
-          await beginGoogleEmailSignupVerification();
-          emailVerificationType = 'reauthentication';
-        } else {
-          emailVerificationType = 'signup';
-        }
-        sessionStorage.setItem('aicp_email_verification_type', emailVerificationType);
-        showEmailCodeForm(email, phone);
-        message.dataset.state = 'success';
-        message.textContent = 'We sent an email verification code. Check your inbox and spam folder.';
-      } catch (error) {
-        message.dataset.state = 'error';
-        message.textContent = error.message || 'Could not create your account. Please try again.';
-      } finally { submitButton.disabled = false; }
-    });
-
-    verifyForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const codeInput = document.getElementById('email-code');
-      const verifyButton = verifyForm.querySelector('[type="submit"]');
-      verifyButton.disabled = true;
-      message.dataset.state = '';
-      message.textContent = 'Verifying your email…';
-      try {
-        if (emailVerificationType === 'reauthentication') await verifyGoogleEmailSignupCode(verificationEmail, codeInput.value);
-        else await verifySignupCode(verificationEmail, codeInput.value);
-        if (emailVerificationType === 'reauthentication') sessionStorage.removeItem('aicp_google_email_code_sent');
-        sessionStorage.removeItem('aicp_email_verification_type');
-        message.textContent = 'Email verified. Sending a mobile verification code…';
-        await beginPhoneSignup(verificationPhone);
-        sessionStorage.setItem('aicp_phone_code_sent', 'true');
-        showPhoneCodeForm(verificationPhone);
-        message.dataset.state = 'success';
-        message.textContent = 'We sent a code to your mobile number.';
-      } catch (error) {
-        message.dataset.state = 'error';
-        message.textContent = error.message || 'That code could not be verified. Please try again.';
-      } finally { verifyButton.disabled = false; codeInput.value = ''; }
-    });
-
-    phoneStartForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const button = phoneStartForm.querySelector('[type="submit"]');
-      const phone = document.getElementById('verify-phone').value.trim();
-      button.disabled = true;
-      message.textContent = 'Sending a mobile verification code…';
-      try {
-        await beginPhoneSignup(phone);
-        sessionStorage.setItem('aicp_signup_phone', phone);
-        sessionStorage.setItem('aicp_phone_code_sent', 'true');
-        showPhoneCodeForm(phone);
-        message.dataset.state = 'success';
-        message.textContent = 'A code has been sent to your mobile number.';
-      } catch (error) {
-        message.dataset.state = 'error';
-        message.textContent = error.message || 'Could not send the code. Check the number and try again.';
-      } finally { button.disabled = false; }
-    });
-
-    verifyPhoneForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const codeInput = document.getElementById('phone-code');
-      const verifyButton = verifyPhoneForm.querySelector('[type="submit"]');
-      verifyButton.disabled = true;
-      message.dataset.state = '';
-      message.textContent = 'Verifying your mobile number…';
-      try {
-        await verifyPhoneSignupCode(verificationPhone, codeInput.value);
-        sessionStorage.removeItem('aicp_signup_email');
-        sessionStorage.removeItem('aicp_signup_phone');
-        sessionStorage.removeItem('aicp_phone_code_sent');
-        message.dataset.state = 'success';
-        message.textContent = 'Email and mobile verified. Choose whether to enable two-step verification.';
+        if (verificationType === 'reauthentication') await verifyGoogleEmailSignupCode(email, code.value);
+        else await verifySignupCode(email, code.value);
+        sessionStorage.removeItem('aicp_signup_email'); sessionStorage.removeItem('aicp_email_verification_type'); sessionStorage.removeItem('aicp_google_email_code_sent');
+        message.dataset.state = 'success'; message.textContent = 'Email verified. You can optionally enable authenticator-app two-step verification.';
         location.assign('auth-mfa.html?mode=enroll');
-      } catch (error) {
-        message.dataset.state = 'error';
-        message.textContent = error.message || 'That code could not be verified. Request a new one and try again.';
-      } finally { verifyButton.disabled = false; codeInput.value = ''; }
+      } catch(error) { message.dataset.state = 'error'; message.textContent = error.message || 'That code could not be verified.'; }
+      finally { button.disabled = false; code.value = ''; }
     });
-
     resendButton.addEventListener('click', async () => {
       resendButton.disabled = true;
-      message.textContent = 'Sending a new email code…';
       try {
-        if (emailVerificationType === 'reauthentication') await beginGoogleEmailSignupVerification();
-        else await resendSignupCode(verificationEmail);
-        message.dataset.state='success'; message.textContent='A new email code has been sent.';
-      }
-      catch (error) { message.dataset.state='error'; message.textContent=error.message || 'Could not resend the email code.'; }
+        if (verificationType === 'reauthentication') await beginGoogleEmailSignupVerification();
+        else await resendSignupCode(email);
+        message.dataset.state = 'success'; message.textContent = 'A new email code has been sent.';
+      } catch(error) { message.dataset.state = 'error'; message.textContent = error.message || 'Could not resend the code.'; }
       finally { resendButton.disabled = false; }
     });
-
-    resendPhoneButton.addEventListener('click', async () => {
-      resendPhoneButton.disabled = true;
-      message.textContent = 'Sending a new mobile code…';
-      try { await resendPhoneSignupCode(verificationPhone); message.dataset.state='success'; message.textContent='A new mobile code has been sent.'; }
-      catch (error) { message.dataset.state='error'; message.textContent=error.message || 'Could not resend the mobile code.'; }
-      finally { resendPhoneButton.disabled = false; }
-    });
-
     googleButton.addEventListener('click', async () => {
-      if (!privacyConsent.checked) { privacyConsent.reportValidity(); return; }
-      if (!phoneInput.checkValidity()) { phoneInput.reportValidity(); return; }
-      const phone = phoneInput.value.trim();
-      const email = emailInput.value.trim();
-      const consent = { policyVersion: privacyPolicyVersion, acceptedAt: new Date().toISOString() };
-      sessionStorage.setItem(signupConsentKey, JSON.stringify(consent));
-      sessionStorage.setItem('aicp_signup_phone', phone);
-      sessionStorage.setItem('aicp_signup_email', email);
-      message.dataset.state = '';
-      message.textContent = 'Connecting to Google…';
-      googleButton.disabled = true;
+      if (!document.getElementById('privacy-consent').checked) { document.getElementById('privacy-consent').reportValidity(); return; }
+      sessionStorage.setItem(consentKey, JSON.stringify({ policyVersion, acceptedAt: new Date().toISOString() }));
+      googleButton.disabled = true; message.textContent = 'Connecting to Google…';
       try { await signInWithGoogle(); }
-      catch (error) {
-        sessionStorage.removeItem(signupConsentKey);
-        sessionStorage.removeItem('aicp_signup_phone');
-        googleButton.disabled = false;
-        message.dataset.state='error';
-        message.textContent=error.message || 'Could not start Google sign-in. Please try again.';
-      }
+      catch(error) { sessionStorage.removeItem(consentKey); googleButton.disabled = false; message.dataset.state = 'error'; message.textContent = error.message || 'Could not start Google sign-in.'; }
     });
   </script>
 </body>
