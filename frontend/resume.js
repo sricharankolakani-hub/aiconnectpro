@@ -34,13 +34,21 @@ function collectData() {
     experience,
     education,
     skills,
-    template: el('template-select') ? el('template-select').value : 'classic'
+    template: el('template-select') ? el('template-select').value : 'ats',
+    fontFamily: el('font-select') ? el('font-select').value : 'Arial',
+    pageBackground: document.querySelector('input[name="background"]:checked')?.value || 'white',
+    atsFriendly: !!el('ats-mode')?.checked
   };
 }
 
 async function generateResume(save = false) {
   const resultEl = el('result');
   resultEl.textContent = 'Generating...';
+  if (!el('name').value.trim()) {
+    el('name').reportValidity();
+    resultEl.textContent = 'Please add your name before continuing.';
+    return;
+  }
   const token = localStorage.getItem('token');
   if (!token) {
     resultEl.textContent = 'Please sign in before generating a resume.';
@@ -54,7 +62,7 @@ async function generateResume(save = false) {
     const res = await fetch(API_BASE + '/resume/generate', {
       method: 'POST',
       headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
-      body: JSON.stringify(data)
+      body: JSON.stringify({ ...data, save })
     });
     const j = await res.json();
 
@@ -64,12 +72,15 @@ async function generateResume(save = false) {
       return;
     }
 
-    resultEl.textContent = 'Template: ' + (j.template || data.template || 'classic') + ' — Preview opened in a new tab.';
+    resultEl.textContent = (save ? 'Resume saved to your profile. ' : 'Preview opened in a new tab. ') + 'Use Print / Save as PDF in the preview to download a PDF.';
 
-    if (!j.previewUrl) throw new Error('The resume preview link was not returned.');
-    const previewResponse = await fetch(j.previewUrl, { headers: authHeaders() });
-    if (!previewResponse.ok) throw new Error('Could not load the saved resume preview.');
-    const html = await previewResponse.text();
+    let html = j.html;
+    if (!html) {
+      if (!j.previewUrl) throw new Error('The resume preview link was not returned.');
+      const previewResponse = await fetch(j.previewUrl, { headers: authHeaders() });
+      if (!previewResponse.ok) throw new Error('Could not load the saved resume preview.');
+      html = await previewResponse.text();
+    }
     const previewUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
     if (previewWindow) previewWindow.location = previewUrl;
     else window.open(previewUrl, '_blank');
@@ -82,6 +93,7 @@ async function generateResume(save = false) {
       pdfLink.id = 'resume-pdf-link';
       pdfLink.href = j.pdfUrl;
       pdfLink.textContent = 'Download PDF';
+      pdfLink.download = (data.name || 'AIConnectPro-Resume').trim().replace(/[^a-z0-9-_]+/gi, '-') + '.pdf';
       pdfLink.target = '_blank';
       pdfLink.style.display = 'inline-block';
       pdfLink.style.marginTop = '10px';
@@ -91,9 +103,7 @@ async function generateResume(save = false) {
       resultEl.appendChild(pdfLink);
     }
 
-    if (save && j.id) {
-      resultEl.textContent += ' Saved on server (id: ' + j.id + ')';
-    }
+    if (save && j.id) resultEl.dataset.resumeId = j.id;
   } catch (err) {
     if (previewWindow) previewWindow.close();
     console.error(err);
@@ -111,8 +121,9 @@ function initTemplateThumbs() {
     if (select) select.value = template;
     // visual highlight
     thumbs.forEach(t => {
-      if (t.getAttribute('data-template') === template) t.classList.add('selected');
-      else t.classList.remove('selected');
+      const selected = t.getAttribute('data-template') === template;
+      t.classList.toggle('selected', selected);
+      t.setAttribute('aria-pressed', String(selected));
     });
   }
 
@@ -120,6 +131,9 @@ function initTemplateThumbs() {
     t.addEventListener('click', () => {
       const template = t.getAttribute('data-template');
       setSelected(template);
+      const atsMode = el('ats-mode');
+      if (atsMode) atsMode.checked = template === 'ats';
+      updateStyleControls();
     });
     t.addEventListener('keyup', (e) => { if (e.key === 'Enter' || e.key === ' ') { t.click(); }});
   });
@@ -131,8 +145,38 @@ function initTemplateThumbs() {
   }
 }
 
+function updateStyleControls() {
+  const locked = !!el('ats-mode')?.checked;
+  const font = el('font-select');
+  if (font) font.disabled = locked;
+  document.querySelectorAll('input[name="background"]').forEach(input => input.disabled = locked);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initTemplateThumbs();
+  const atsMode = el('ats-mode');
+  if (atsMode) {
+    atsMode.addEventListener('change', () => {
+      if (atsMode.checked) {
+        const select = el('template-select');
+        if (select) select.value = 'ats';
+        document.querySelectorAll('.template-card[data-template]').forEach(card => {
+          const selected = card.dataset.template === 'ats';
+          card.classList.toggle('selected', selected);
+          card.setAttribute('aria-pressed', String(selected));
+        });
+      } else if (el('template-select')?.value === 'ats') {
+        el('template-select').value = 'modern';
+        document.querySelectorAll('.template-card[data-template]').forEach(card => {
+          const selected = card.dataset.template === 'modern';
+          card.classList.toggle('selected', selected);
+          card.setAttribute('aria-pressed', String(selected));
+        });
+      }
+      updateStyleControls();
+    });
+  }
+  updateStyleControls();
   const gen = el('generate-resume'); if (gen) gen.addEventListener('click', () => generateResume(false));
   const genSave = el('generate-and-save'); if (genSave) genSave.addEventListener('click', () => generateResume(true));
 });
