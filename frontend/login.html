@@ -83,9 +83,13 @@
       message.textContent = 'Signing you in…';
       submitButton.disabled = true;
       try {
-        await signIn(document.getElementById('email').value, password.value);
+        const data = await signIn(document.getElementById('email').value, password.value);
+        if (!data.user?.phone_confirmed_at) {
+          window.location.assign('signup.html?stage=phone');
+          return;
+        }
         const mode = await getMfaStep();
-        window.location.assign('auth-mfa.html?mode=' + mode);
+        window.location.assign(mode === 'challenge' ? 'auth-mfa.html?mode=challenge' : 'index.html');
       } catch (error) {
         message.dataset.state = 'error';
         message.textContent = error.message || 'Could not sign in. Check your details and try again.';
