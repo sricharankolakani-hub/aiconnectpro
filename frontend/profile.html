@@ -45,10 +45,9 @@
       <div class="profile-section-heading">
         <div><h2 id="security-title">Account security</h2><p id="mfa-status">Checking verification settings…</p></div>
       </div>
-      <p id="contact-status" class="profile-status"></p>
+      <p id="contact-status" class="profile-status">Email verification is required. Mobile verification will be available when phone messaging is configured.</p>
       <div class="profile-actions">
-        <button id="enable-mfa" class="button button-primary" type="button" hidden>Enable two-step verification</button>
-        <button id="verify-mobile" class="button button-outline" type="button" hidden>Verify mobile number</button>
+        <button id="enable-mfa" class="button button-primary" type="button" hidden>Enable authenticator-app verification</button>
         <button id="disable-mfa" class="button button-outline" type="button" hidden>Turn off two-step verification</button>
       </div>
     </section>
@@ -234,14 +233,9 @@
       const status = byId('mfa-status');
       const enableButton = byId('enable-mfa');
       const disableButton = byId('disable-mfa');
-      const verifyMobileButton = byId('verify-mobile');
-      byId('contact-status').textContent = user?.phone_confirmed_at
-        ? 'Email and mobile number are verified.'
-        : 'Verify your mobile number to finish securing your account.';
-      if (!user?.phone_confirmed_at) {
-        verifyMobileButton.hidden = false;
-        verifyMobileButton.addEventListener('click', () => window.location.assign('signup.html?stage=phone'));
-      }
+      byId('contact-status').textContent = user?.email_confirmed_at
+        ? 'Email is verified. Mobile verification is deferred until phone messaging is configured.'
+        : 'Verify your email to secure your account.';
       const { data, error } = await supabase.auth.mfa.listFactors();
       if (error) throw error;
       const verifiedFactors = [...(data.phone || []), ...(data.totp || [])].filter(factor => factor.status === 'verified');
@@ -265,11 +259,9 @@
           } finally { disableButton.disabled = false; }
         });
       } else {
-        status.textContent = 'Two-step verification is off. You can turn it on with a WhatsApp code.';
-        if (user?.phone_confirmed_at) {
-          enableButton.hidden = false;
-          enableButton.addEventListener('click', () => window.location.assign('auth-mfa.html?mode=enroll'));
-        }
+        status.textContent = 'Two-step verification is off. You can turn it on with an authenticator app.';
+        enableButton.hidden = false;
+        enableButton.addEventListener('click', () => window.location.assign('auth-mfa.html?mode=enroll'));
       }
     }
 
