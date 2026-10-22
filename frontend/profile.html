@@ -41,6 +41,18 @@
       <span id="profile-role" class="profile-role">Member</span>
     </section>
 
+    <section class="profile-section" aria-labelledby="security-title">
+      <div class="profile-section-heading">
+        <div><h2 id="security-title">Account security</h2><p id="mfa-status">Checking verification settings…</p></div>
+      </div>
+      <p id="contact-status" class="profile-status"></p>
+      <div class="profile-actions">
+        <button id="enable-mfa" class="button button-primary" type="button" hidden>Enable two-step verification</button>
+        <button id="verify-mobile" class="button button-outline" type="button" hidden>Verify mobile number</button>
+        <button id="disable-mfa" class="button button-outline" type="button" hidden>Turn off two-step verification</button>
+      </div>
+    </section>
+
     <section class="profile-section" aria-labelledby="resumes-title">
       <div class="profile-section-heading">
         <div><h2 id="resumes-title">My resumes</h2><p>Your saved resumes are ready to preview.</p></div>
@@ -69,7 +81,7 @@
 
   <script src="theme.js" defer></script>
   <script type="module">
-    import { getUser } from './auth.js';
+    import { getUser, supabase } from './auth.js';
 
     const token = localStorage.getItem('token');
     const headers = token ? { Authorization: 'Bearer ' + token } : {};
@@ -218,6 +230,49 @@
       } catch (error) { showSectionError(container, error); }
     }
 
+    async function loadSecurity(user) {
+      const status = byId('mfa-status');
+      const enableButton = byId('enable-mfa');
+      const disableButton = byId('disable-mfa');
+      const verifyMobileButton = byId('verify-mobile');
+      byId('contact-status').textContent = user?.phone_confirmed_at
+        ? 'Email and mobile number are verified.'
+        : 'Verify your mobile number to finish securing your account.';
+      if (!user?.phone_confirmed_at) {
+        verifyMobileButton.hidden = false;
+        verifyMobileButton.addEventListener('click', () => window.location.assign('signup.html?stage=phone'));
+      }
+      const { data, error } = await supabase.auth.mfa.listFactors();
+      if (error) throw error;
+      const verifiedFactors = [...(data.phone || []), ...(data.totp || [])].filter(factor => factor.status === 'verified');
+      if (verifiedFactors.length) {
+        status.textContent = 'Two-step verification is on.';
+        disableButton.hidden = false;
+        disableButton.addEventListener('click', async () => {
+          if (!window.confirm('Turn off two-step verification for your account?')) return;
+          disableButton.disabled = true;
+          try {
+            for (const factor of verifiedFactors) {
+              const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId: factor.id });
+              if (unenrollError) throw unenrollError;
+            }
+            status.textContent = 'Two-step verification is off.';
+            disableButton.hidden = true;
+            enableButton.hidden = false;
+          } catch (error) {
+            status.dataset.state = 'error';
+            status.textContent = error.message || 'Could not turn off two-step verification.';
+          } finally { disableButton.disabled = false; }
+        });
+      } else {
+        status.textContent = 'Two-step verification is off. You can turn it on with a WhatsApp code.';
+        if (user?.phone_confirmed_at) {
+          enableButton.hidden = false;
+          enableButton.addEventListener('click', () => window.location.assign('auth-mfa.html?mode=enroll'));
+        }
+      }
+    }
+
     async function loadProfile() {
       if (!token) {
         window.location.replace('login.html');
@@ -229,6 +284,7 @@
         const name = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.fullName;
         byId('profile-name').textContent = name || 'Your account';
         byId('profile-email').textContent = user?.email || 'Signed in to AIConnectPro';
+        await loadSecurity(user);
         const role = profile.role || 'member';
         byId('profile-role').textContent = role;
         byId('info').textContent = 'Your profile is up to date.';
