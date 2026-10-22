@@ -100,7 +100,9 @@ export async function verifyPhoneSignupCode(phone, token) {
 }
 
 export async function resendPhoneSignupCode(phone) {
-  return beginPhoneSignup(phone);
+  const normalized = phone.replace(/[^+\d]/g, '');
+  const { error } = await supabase.auth.resend({ type: 'phone_change', phone: normalized });
+  if (error) throw error;
 }
 
 // LOGIN
