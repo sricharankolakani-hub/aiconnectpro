@@ -1,163 +1,71 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Choose whether to add phone-based two-step verification to AIConnectPro.">
-  <title>Account security – AIConnectPro</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body class="auth-page">
-  <main class="auth-layout">
-    <section class="auth-panel" aria-labelledby="mfa-title">
-      <p class="eyebrow">ACCOUNT SECURITY</p>
-      <h1 id="mfa-title">Add two-step verification?</h1>
-      <p id="instructions" class="auth-subtitle">It’s your choice. If enabled, we’ll ask for a one-time code sent to your verified mobile number each time you sign in.</p>
-      <div id="choice">
-        <button class="auth-submit" id="enable-mfa" type="button">Enable with WhatsApp code</button>
-        <button class="auth-google" id="skip-mfa" type="button">Skip for now</button>
-      </div>
-      <form id="mfa-form" class="auth-form" hidden>
-        <p id="delivery-note" class="auth-subtitle"></p>
-        <label for="code">6-digit verification code</label>
-        <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
-        <button class="auth-submit" type="submit" id="verify-button">Verify and continue</button>
-        <button class="auth-google" id="resend-code" type="button">Resend code</button>
-      </form>
-      <p id="msg" class="auth-message" role="status" aria-live="polite"></p>
-      <p><button id="sign-out" class="auth-google" type="button">Sign out</button></p>
-    </section>
-  </main>
-  <script type="module">
-    import { supabase, signOut } from './auth.js';
-    const message = document.getElementById('msg');
-    const form = document.getElementById('mfa-form');
-    const codeInput = document.getElementById('code');
-    const verifyButton = document.getElementById('verify-button');
-    const params = new URLSearchParams(location.search);
-    let mode = params.get('mode') === 'challenge' ? 'challenge' : 'enroll';
-    let factorId = '';
-    let factorType = '';
-    let challengeId = '';
-    let userPhone = '';
-
-    function showError(error, fallback) {
-      message.dataset.state = 'error';
-      message.textContent = error?.message || fallback;
-    }
-
-    async function createChallenge() {
-      const options = { factorId };
-      if (factorType === 'phone') options.channel = 'whatsapp';
-      const { data, error } = await supabase.auth.mfa.challenge(options);
-      if (error) throw error;
-      challengeId = data.id;
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Optional authenticator app verification for AIConnectPro."><title>Account security – AIConnectPro</title><link rel="stylesheet" href="style.css"></head>
+<body class="auth-page"><main class="auth-layout"><section class="auth-panel" aria-labelledby="mfa-title">
+  <p class="eyebrow">ACCOUNT SECURITY</p><h1 id="mfa-title">Add two-step verification?</h1>
+  <p id="instructions" class="auth-subtitle">It’s optional. Use a free authenticator app to add a second step when you sign in. No phone messaging is needed.</p>
+  <div id="choice"><button class="auth-submit" id="enable-mfa" type="button">Set up authenticator app</button><button class="auth-google" id="skip-mfa" type="button">Skip for now</button></div>
+  <div id="enrollment" hidden><p class="auth-subtitle">Scan this code with an authenticator app, or enter the setup key manually if scanning doesn’t work.</p><img id="qr" alt="Authenticator setup QR code" style="display:block;max-width:220px;margin:16px auto"><p><strong>Setup key</strong></p><code id="secret" style="word-break:break-all"></code><form id="mfa-form" class="auth-form"><label for="code">6-digit code from your authenticator app</label><input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required><button class="auth-submit" type="submit">Verify and enable</button></form></div>
+  <form id="challenge-form" class="auth-form" hidden><p class="auth-subtitle">Enter the current code from your authenticator app.</p><label for="challenge-code">6-digit code</label><input id="challenge-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required><button class="auth-submit" type="submit">Verify and continue</button></form>
+  <p id="msg" class="auth-message" role="status" aria-live="polite"></p><p><button id="sign-out" class="auth-google" type="button">Sign out</button></p>
+</section></main>
+<script type="module">
+  import { supabase, signOut } from './auth.js';
+  const msg = document.getElementById('msg'), params = new URLSearchParams(location.search);
+  const mode = params.get('mode') === 'challenge' ? 'challenge' : 'enroll';
+  let factorId = '', challengeId = '';
+  function fail(error) { msg.dataset.state = 'error'; msg.textContent = error?.message || 'Could not complete verification.'; }
+  async function initialize() {
+    const { data: session, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!session.session) { location.replace('login.html'); return; }
+    const { data, error } = await supabase.auth.mfa.listFactors(); if (error) throw error;
+    const factors = (data.totp || []).filter(f => f.status === 'verified');
+    if (mode === 'challenge') {
+      if (!factors.length) { location.replace('index.html'); return; }
+      factorId = factors[0].id;
+      const challenge = await supabase.auth.mfa.challenge({ factorId }); if (challenge.error) throw challenge.error;
+      challengeId = challenge.data.id;
       document.getElementById('choice').hidden = true;
-      form.hidden = false;
-      document.getElementById('delivery-note').textContent = factorType === 'phone'
-        ? 'Enter the code sent to your verified mobile number via WhatsApp.'
-        : 'Enter the current code from your authenticator app.';
-      document.getElementById('mfa-title').textContent = mode === 'enroll' ? 'Confirm your mobile number' : 'Verify it’s you';
-      document.getElementById('instructions').textContent = 'This extra step protects your account when you sign in.';
-      document.getElementById('resend-code').hidden = factorType !== 'phone';
+      document.getElementById('instructions').hidden = true;
+      document.getElementById('challenge-form').hidden = false;
+      return;
     }
-
-    async function initialize() {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
-      if (!sessionData.session) { location.replace('login.html'); return; }
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      userPhone = userData.user?.phone || '';
-      const { data, error } = await supabase.auth.mfa.listFactors();
-      if (error) throw error;
-      const phoneFactor = (data.phone || []).find(item => item.status === 'verified');
-      const totpFactor = (data.totp || []).find(item => item.status === 'verified');
-
-      if (mode === 'challenge') {
-        if (phoneFactor) { factorId = phoneFactor.id; factorType = 'phone'; }
-        else if (totpFactor) { factorId = totpFactor.id; factorType = 'totp'; }
-        else { location.replace('index.html'); return; }
-        await createChallenge();
-        return;
-      }
-
-      if (phoneFactor || totpFactor) {
-        location.replace('index.html');
-        return;
-      }
-      if (!userData.user?.phone_confirmed_at || !userPhone) {
-        throw new Error('Verify your mobile number before enabling two-step verification. Please complete mobile verification first.');
-      }
-      document.getElementById('enable-mfa').addEventListener('click', async () => {
-        const button = document.getElementById('enable-mfa');
-        button.disabled = true;
-        message.textContent = 'Preparing WhatsApp verification…';
-        try {
-          const pendingPhone = (data.phone || []).find(item => item.status !== 'verified');
-          if (pendingPhone) {
-            factorId = pendingPhone.id;
-          } else {
-            const { data: factor, error: enrollError } = await supabase.auth.mfa.enroll({
-              factorType: 'phone',
-              phone: userPhone,
-              friendlyName: 'AIConnectPro mobile'
-            });
-            if (enrollError) throw enrollError;
-            factorId = factor.id;
-          }
-          factorType = 'phone';
-          mode = 'enroll';
-          await createChallenge();
-        } catch (error) {
-          showError(error, 'Could not send the WhatsApp code. Check that phone messaging is configured in Supabase.');
-          button.disabled = false;
-        }
-      });
-      document.getElementById('skip-mfa').addEventListener('click', () => location.replace('index.html'));
-    }
-
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      verifyButton.disabled = true;
-      message.dataset.state = '';
-      message.textContent = 'Checking your code…';
+    if (factors.length) { location.replace('index.html'); return; }
+    document.getElementById('enable-mfa').addEventListener('click', async () => {
+      const button = document.getElementById('enable-mfa'); button.disabled = true;
       try {
-        const { error } = await supabase.auth.mfa.verify({
-          factorId,
-          challengeId,
-          code: codeInput.value.trim()
-        });
-        if (error) throw error;
-        message.dataset.state = 'success';
-        message.textContent = mode === 'enroll' ? 'Two-step verification is now enabled.' : 'Verified. Opening your home page…';
-        location.replace('index.html');
-      } catch (error) {
-        showError(error, 'That code could not be verified. Check it and try again.');
-      } finally {
-        verifyButton.disabled = false;
-        codeInput.value = '';
-      }
+        const { data: enrolled, error: enrollError } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'AIConnectPro authenticator' });
+        if (enrollError) throw enrollError;
+        factorId = enrolled.id;
+        document.getElementById('choice').hidden = true;
+        document.getElementById('enrollment').hidden = false;
+        document.getElementById('qr').src = enrolled.totp.qr;
+        document.getElementById('secret').textContent = enrolled.totp.secret;
+        msg.textContent = '';
+      } catch(error) { fail(error); button.disabled = false; }
     });
-
-    document.getElementById('resend-code').addEventListener('click', async () => {
-      const button = document.getElementById('resend-code');
-      button.disabled = true;
-      try {
-        await createChallenge();
-        message.dataset.state = 'success';
-        message.textContent = 'A new WhatsApp code has been sent.';
-      } catch (error) {
-        showError(error, 'Could not resend the code. Please try again later.');
-      } finally { button.disabled = false; }
-    });
-
-    document.getElementById('sign-out').addEventListener('click', async () => {
-      try { await signOut(); location.replace('login.html'); }
-      catch (error) { showError(error, 'Could not sign out.'); }
-    });
-
-    initialize().catch(error => showError(error, 'Could not prepare account security.'));
-  </script>
-</body>
-</html>
+    document.getElementById('skip-mfa').addEventListener('click', () => location.replace('index.html'));
+  }
+  document.getElementById('mfa-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = event.currentTarget.querySelector('[type="submit"]'); button.disabled = true;
+    try {
+      const challenge = await supabase.auth.mfa.challenge({ factorId }); if (challenge.error) throw challenge.error;
+      const result = await supabase.auth.mfa.verify({ factorId, challengeId: challenge.data.id, code: document.getElementById('code').value.trim() });
+      if (result.error) throw result.error;
+      location.replace('index.html');
+    } catch(error) { fail(error); } finally { button.disabled = false; }
+  });
+  document.getElementById('challenge-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = event.currentTarget.querySelector('[type="submit"]'); button.disabled = true;
+    try {
+      const result = await supabase.auth.mfa.verify({ factorId, challengeId, code: document.getElementById('challenge-code').value.trim() });
+      if (result.error) throw result.error;
+      location.replace('index.html');
+    } catch(error) { fail(error); } finally { button.disabled = false; }
+  });
+  document.getElementById('sign-out').addEventListener('click', async () => { try { await signOut(); location.replace('login.html'); } catch(error) { fail(error); } });
+  initialize().catch(fail);
+</script></body></html>
