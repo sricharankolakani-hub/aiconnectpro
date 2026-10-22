@@ -280,11 +280,12 @@
       }
 
       try {
-        const [user, profile] = await Promise.all([getUser(), getJson('/api/profile/me')]);
+        const user = await getUser();
+        await loadSecurity(user);
+        const profile = await getJson('/api/profile/me');
         const name = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.fullName;
         byId('profile-name').textContent = name || 'Your account';
         byId('profile-email').textContent = user?.email || 'Signed in to AIConnectPro';
-        await loadSecurity(user);
         const role = profile.role || 'member';
         byId('profile-role').textContent = role;
         byId('info').textContent = 'Your profile is up to date.';
