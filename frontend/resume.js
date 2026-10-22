@@ -41,6 +41,30 @@ function collectData() {
   };
 }
 
+
+function escapeResumeText(value) {
+  return String(value == null ? '' : value).replaceAll('&','&amp;').replaceAll('<','&lt;')
+    .replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+}
+function buildLocalPreview(data) {
+  const safe = escapeResumeText;
+  const palettes = { white:'#fff', ivory:'#fbf7ef', blue:'#f1f6ff', sage:'#f1f6f1', lavender:'#f6f2fb' };
+  const accents = { ats:'#172033', classic:'#355f9f', modern:'#2457c5', compact:'#26364b', creative:'#7652b8', editorial:'#a25c38', 'two-column':'#275c86' };
+  const ats = data.atsFriendly || data.template === 'ats';
+  const template = Object.hasOwn(accents, data.template) ? data.template : 'ats';
+  const fonts = { Arial:'Arial,Helvetica,sans-serif', Aptos:'Aptos,Calibri,sans-serif', Georgia:'Georgia,serif', Cambria:'Cambria,Georgia,serif', 'Trebuchet MS':'"Trebuchet MS",Arial,sans-serif', Verdana:'Verdana,Arial,sans-serif' };
+  const font = fonts[data.fontFamily] || fonts.Arial, bg = ats ? '#fff' : (palettes[data.pageBackground] || '#fff'), accent = accents[template];
+  const items = (data.experience || []).map(item => '<article><div class="heading"><h3>'+safe(item.role)+'</h3><b>'+safe(item.company)+'</b></div><p class="muted">'+safe([item.from,item.to].filter(Boolean).join(' – '))+'</p><p>'+safe(item.desc)+'</p></article>').join('');
+  const schools = (data.education || []).map(item => '<article><div class="heading"><h3>'+safe(item.school)+'</h3><b>'+safe(item.year)+'</b></div><p>'+safe(item.degree)+'</p></article>').join('');
+  const common = '<section><h2>Professional Summary</h2><p>'+safe(data.summary)+'</p></section><section><h2>Experience</h2>'+(items||'<p class="muted">No experience added</p>')+'</section><section><h2>Education</h2>'+(schools||'<p class="muted">No education added</p>')+'</section>';
+  const skills = '<section><h2>Skills</h2><p>'+safe((data.skills||[]).join(' · '))+'</p></section>';
+  const columns = !ats && template === 'two-column'
+    ? '<div class="columns"><main>'+common+'</main><aside>'+skills+'</aside></div>'
+    : '<main>'+common+skills+'</main>';
+  const css = '@page{size:A4;margin:14mm}*{box-sizing:border-box}body{margin:0;background:'+bg+';color:#1b2433;font:10.5pt/1.48 '+font+'}.toolbar{position:sticky;top:0;text-align:center;padding:12px;background:#172033}.toolbar button{padding:10px 16px;border:0;border-radius:8px;font-weight:700;cursor:pointer}.paper{max-width:820px;margin:26px auto;padding:42px 50px;background:'+bg+'}header{border-bottom:2px solid '+accent+';padding-bottom:16px;margin-bottom:18px}h1{font-size:28pt;line-height:1.1;margin:0 0 4px;color:'+accent+'}h2{font-size:11pt;letter-spacing:.06em;text-transform:uppercase;color:'+accent+';border-bottom:1px solid #d9dee8;padding-bottom:5px;margin:0 0 9px}h3{font-size:11pt;margin:0}section{margin:17px 0 0}p{margin:0 0 7px;white-space:pre-line}.heading{display:flex;justify-content:space-between;gap:12px}.muted{color:#586579;font-size:9.5pt}.columns{display:grid;grid-template-columns:2fr .85fr;gap:30px}.columns aside{border-left:1px solid #d9dee8;padding-left:20px}.template-compact{font-size:9.5pt}.template-creative header{border-left:5px solid '+accent+';padding-left:16px}.template-editorial h1{font-family:Georgia,serif;font-weight:500}.template-modern h2{text-transform:none}@media print{.toolbar{display:none}.paper{max-width:none;margin:0;padding:0;background:#fff}body{background:#fff!important}.columns{display:block}.columns aside{border:0;padding:0}}@media(max-width:650px){.paper{padding:24px}.columns{grid-template-columns:1fr}}';
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Resume — '+safe(data.name)+'</title><style>'+css+'</style></head><body class="'+(ats?'ats ':'')+'template-'+template+'"><div class="toolbar"><button onclick="window.print()">Print / Save as PDF</button></div><article class="paper"><header><h1>'+safe(data.name)+'</h1><p><strong>'+safe(data.title)+'</strong></p><p>'+safe([data.email,data.phone,data.location].filter(Boolean).join(' · '))+'</p></header>'+columns+'</article></body></html>';
+}
+
 async function generateResume(save = false) {
   const resultEl = el('result');
   resultEl.textContent = 'Generating...';
@@ -59,27 +83,46 @@ async function generateResume(save = false) {
   const previewWindow = window.open('about:blank', '_blank');
   const data = collectData();
   try {
-    const res = await fetch(API_BASE + '/resume/generate', {
-      method: 'POST',
-      headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
-      body: JSON.stringify({ ...data, save })
-    });
-    const j = await res.json();
-
-    if (!res.ok || j.error) {
-      if (previewWindow) previewWindow.close();
-      resultEl.textContent = 'Error: ' + JSON.stringify(j);
-      return;
-    }
-
-    resultEl.textContent = (save ? 'Resume saved to your profile. ' : 'Preview opened in a new tab. ') + 'Use Print / Save as PDF in the preview to download a PDF.';
-
-    let html = j.html;
-    if (!html) {
-      if (!j.previewUrl) throw new Error('The resume preview link was not returned.');
-      const previewResponse = await fetch(j.previewUrl, { headers: authHeaders() });
-      if (!previewResponse.ok) throw new Error('Could not load the saved resume preview.');
-      html = await previewResponse.text();
+    let j = {};
+    let html = '';
+    if (save) {
+      const res = await fetch(API_BASE + '/resume/save', {
+        method: 'POST',
+        headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+        body: JSON.stringify(data)
+      });
+      j = await res.json().catch(() => ({}));
+      if (!res.ok || j.error) {
+        if (previewWindow) previewWindow.close();
+        resultEl.textContent = res.status === 404
+          ? 'Profile saving will be available after the backend update is deployed. You can preview and download a PDF now.'
+          : 'Could not save this resume: ' + (j.error || res.statusText);
+        return;
+      }
+      if (j.html) html = j.html;
+      else if (j.previewUrl) {
+        const previewResponse = await fetch(j.previewUrl, { headers: authHeaders() });
+        if (!previewResponse.ok) throw new Error('Resume saved, but its preview could not be loaded.');
+        html = await previewResponse.text();
+      }
+      resultEl.textContent = 'Resume saved to your profile. Use Print / Save as PDF in the preview to download a PDF.';
+    } else {
+      const res = await fetch(API_BASE + '/resume/preview', {
+        method: 'POST',
+        headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        j = await res.json();
+        html = j.html || '';
+      } else if (res.status === 404 || res.status === 405) {
+        html = buildLocalPreview(data);
+      } else {
+        const errorBody = await res.json().catch(() => ({}));
+        throw new Error(errorBody.error || 'Could not generate the resume preview.');
+      }
+      if (!html) html = buildLocalPreview(data);
+      resultEl.textContent = 'Preview opened in a new tab. Use Print / Save as PDF in the preview to download a PDF.';
     }
     const previewUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
     if (previewWindow) previewWindow.location = previewUrl;
