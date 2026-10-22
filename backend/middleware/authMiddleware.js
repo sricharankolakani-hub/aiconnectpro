@@ -22,7 +22,7 @@ module.exports = async function auth(req, res, next) {
     // MFA is optional. If this user has a verified factor, require an AAL2 session.
     const { data: factorData, error: factorError } = await supabase.auth.admin.mfa.listFactors({ userId: user.id });
     if (factorError) return res.status(503).json({ error: 'auth_verification_unavailable' });
-    const hasVerifiedFactor = (factorData.factors || []).some(factor => factor.status === 'verified');
+    const hasVerifiedFactor = (factorData.factors || []).some(factor => factor.factor_type === 'totp' && factor.status === 'verified');
     if (hasVerifiedFactor) {
       const parts = token.split('.');
       if (parts.length !== 3) return res.status(401).json({ error: 'Invalid token' });
