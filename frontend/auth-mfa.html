@@ -67,7 +67,7 @@
         qrCode = data.totp.qr_code;
         secret = data.totp.secret;
         document.getElementById('setup').hidden = false;
-        document.getElementById('qr-code').src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(qrCode);
+        document.getElementById('qr-code').src = qrCode;
         document.getElementById('secret').textContent = secret;
         document.getElementById('mfa-title').textContent = 'Set up two-step verification';
         document.getElementById('instructions').textContent = 'Scan this QR code with your authenticator app, then enter the 6-digit code it generates.';
