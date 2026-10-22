@@ -35,6 +35,16 @@
     <section class="auth-panel" aria-labelledby="signup-title">
       <h2 id="signup-title">Create your account</h2>
       <p class="auth-subtitle">A few details get your career workspace started.</p>
+      <form id="google-consent-form" class="auth-form" hidden>
+        <p class="auth-subtitle">Finish setting up your Google account. We’ll verify your email and mobile number before you continue.</p>
+        <label for="google-phone">Mobile number</label>
+        <input id="google-phone" type="tel" placeholder="+91 98765 43210" autocomplete="tel" inputmode="tel" required>
+        <div class="auth-consent">
+          <input id="google-privacy-consent" type="checkbox" required>
+          <label for="google-privacy-consent">I have read and agree to the <a href="privacy-policy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</label>
+        </div>
+        <button class="auth-submit" type="submit">Continue verification</button>
+      </form>
       <form id="signup-form" class="auth-form">
         <label for="email">Email address</label>
         <input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
@@ -86,9 +96,10 @@
 
   <script src="theme.js" defer></script>
   <script type="module">
-    import { signUp, verifySignupCode, resendSignupCode, beginPhoneSignup, beginGoogleEmailSignupVerification, verifyGoogleEmailSignupCode, verifyPhoneSignupCode, resendPhoneSignupCode, signInWithGoogle } from './auth.js';
+    import { supabase, signUp, verifySignupCode, resendSignupCode, beginPhoneSignup, beginGoogleEmailSignupVerification, verifyGoogleEmailSignupCode, verifyPhoneSignupCode, resendPhoneSignupCode, signInWithGoogle } from './auth.js';
 
     const form = document.getElementById('signup-form');
+    const googleConsentForm = document.getElementById('google-consent-form');
     const verifyForm = document.getElementById('verify-form');
     const verifyPhoneForm = document.getElementById('verify-phone-form');
     const phoneStartForm = document.getElementById('phone-start-form');
@@ -140,7 +151,16 @@
     }
 
     const params = new URLSearchParams(location.search);
-    if (params.get('stage') === 'google-email') {
+    if (params.get('stage') === 'google-consent') {
+      form.hidden = true;
+      verifyForm.hidden = true;
+      phoneStartForm.hidden = true;
+      verifyPhoneForm.hidden = true;
+      googleConsentForm.hidden = false;
+      document.querySelector('.auth-divider').hidden = true;
+      googleButton.hidden = true;
+      message.textContent = 'Confirm the Privacy Policy and add a mobile number to finish creating your account.';
+    } else if (params.get('stage') === 'google-email') {
       emailVerificationType = 'reauthentication';
       form.hidden = true;
       phoneStartForm.hidden = true;
@@ -166,6 +186,45 @@
       passwordToggle.setAttribute('aria-pressed', String(isHidden));
       passwordToggle.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
       passwordToggle.title = isHidden ? 'Hide password' : 'Show password';
+    });
+
+    googleConsentForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const phone = document.getElementById('google-phone').value.trim();
+      const consentCheckbox = document.getElementById('google-privacy-consent');
+      if (!consentCheckbox.checked) { consentCheckbox.reportValidity(); return; }
+      const submit = googleConsentForm.querySelector('[type="submit"]');
+      submit.disabled = true;
+      try {
+        const normalizedPhone = phone.replace(/[^+\d]/g, '');
+        if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) {
+          throw new Error('Enter a valid mobile number with country code, for example +91 98765 43210.');
+        }
+        sessionStorage.setItem('aicp_signup_phone', phone);
+        const currentUser = await supabase.auth.getUser();
+        if (currentUser.error) throw currentUser.error;
+        const consent = { policyVersion: privacyPolicyVersion, acceptedAt: new Date().toISOString() };
+        const { error } = await supabase.auth.updateUser({ data: {
+          privacy_policy_accepted_at: consent.acceptedAt,
+          privacy_policy_version: consent.policyVersion
+        }});
+        if (error) throw error;
+        await beginGoogleEmailSignupVerification();
+        sessionStorage.setItem('aicp_signup_email', currentUser.data.user.email || '');
+        sessionStorage.setItem('aicp_email_verification_type', 'reauthentication');
+        sessionStorage.setItem('aicp_google_email_code_sent', 'true');
+        verificationEmail = currentUser.data.user.email || '';
+        verificationPhone = phone;
+        emailVerificationType = 'reauthentication';
+        googleConsentForm.hidden = true;
+        verifyForm.hidden = false;
+        document.getElementById('verification-email').textContent = verificationEmail;
+        message.dataset.state = 'success';
+        message.textContent = 'We sent a verification code to your email.';
+      } catch (error) {
+        message.dataset.state = 'error';
+        message.textContent = error.message || 'Could not continue account verification.';
+      } finally { submit.disabled = false; }
     });
 
     form.addEventListener('submit', async (event) => {
