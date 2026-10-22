@@ -84,10 +84,6 @@
       submitButton.disabled = true;
       try {
         const data = await signIn(document.getElementById('email').value, password.value);
-        if (!data.user?.phone_confirmed_at) {
-          window.location.assign('signup.html?stage=phone');
-          return;
-        }
         const mode = await getMfaStep();
         window.location.assign(mode === 'challenge' ? 'auth-mfa.html?mode=challenge' : 'index.html');
       } catch (error) {
