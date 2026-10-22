@@ -15,8 +15,8 @@ module.exports = async function auth(req, res, next) {
     }
 
     const user = data.user;
-    if (!user.email_confirmed_at || !user.phone_confirmed_at) {
-      return res.status(403).json({ error: 'contact_verification_required', message: 'Verify your email and mobile number before using AIConnectPro.' });
+    if (!user.email_confirmed_at) {
+      return res.status(403).json({ error: 'email_verification_required', message: 'Verify your email before using AIConnectPro.' });
     }
 
     // MFA is optional. If this user has a verified factor, require an AAL2 session.
