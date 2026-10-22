@@ -123,12 +123,24 @@ function escapeHtml(s) {
     .replaceAll("'", '&#39;');
 }
 
+// Generate an authenticated preview without creating or changing a resume record.
+router.post('/preview', authMiddleware, async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const template = payload.template || 'ats';
+    return res.json({ html: buildResumeHtml(payload, template), template: payload.atsFriendly || template === 'ats' ? 'ats' : template });
+  } catch (err) {
+    console.error('Resume preview failed:', err && (err.message || err));
+    return res.status(500).json({ error: 'preview_failed' });
+  }
+});
+
 /**
  * POST /api/resume/generate
  * Body: JSON containing resume data (name, title, summary, experience[], education[], skills[], template)
  * Auth required.
  */
-router.post('/generate', authMiddleware, async (req, res) => {
+router.post(['/generate', '/save'], authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
 
@@ -137,11 +149,6 @@ router.post('/generate', authMiddleware, async (req, res) => {
 
     // Build HTML
     const renderedHtml = buildResumeHtml(payload, template);
-
-    // Preview is generated on demand without saving personal data to the account.
-    if (payload.save !== true) {
-      return res.json({ html: renderedHtml, template: template === 'ats' || payload.atsFriendly ? 'ats' : template });
-    }
 
     // Create DB record in Supabase (table: resumes)
     const resumeId = uuidv4();
