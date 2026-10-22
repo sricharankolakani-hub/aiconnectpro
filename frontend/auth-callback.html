@@ -13,7 +13,7 @@
   </main>
 
   <script type="module">
-    import { supabase, getMfaStep, beginPhoneSignup, beginGoogleEmailSignupVerification } from './auth.js';
+    import { supabase, getMfaStep, beginGoogleEmailSignupVerification } from './auth.js';
 
     const message = document.getElementById('message');
     const loginLink = document.getElementById('login-link');
@@ -72,18 +72,7 @@
         window.location.replace('signup.html?stage=google-email');
         return;
       }
-      const pendingPhone = sessionStorage.getItem('aicp_signup_phone');
-      if (pendingPhone && (!currentUser.phone_confirmed_at || currentUser.phone !== pendingPhone.replace(/[^+\d]/g, ''))) {
-        await beginPhoneSignup(pendingPhone);
-        sessionStorage.setItem('aicp_signup_phone', pendingPhone);
-        sessionStorage.setItem('aicp_phone_code_sent', 'true');
-        window.location.replace('signup.html?stage=phone');
-        return;
-      }
-      if (!currentUser.phone_confirmed_at) {
-        window.location.replace('signup.html?stage=phone');
-        return;
-      }
+      // Phone verification is deferred until an affordable messaging provider is configured.
       sessionStorage.removeItem('aicp_signup_phone');
       sessionStorage.removeItem('aicp_phone_code_sent');
       const mode = await getMfaStep();
