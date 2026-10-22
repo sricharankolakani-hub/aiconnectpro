@@ -20,119 +20,96 @@ const supabase = require('../services/supabaseClient');
 const authMiddleware = require('../middleware/authMiddleware');
 const { htmlToPdfBuffer, uploadPdfBufferToSupabase } = require('../services/resumePdfService');
 
-// Helper: build simple resume HTML (inline CSS). This is intentionally simple and safe.
-function buildResumeHtml(data = {}, template = 'classic') {
-  const name = data.name || '';
-  const title = data.title || '';
-  const contactEmail = data.email || '';
-  const phone = data.phone || '';
-  const location = data.location || '';
-  const summary = data.summary || '';
+// Render accessible, readable HTML. ATS mode deliberately stays single-column and unadorned.
+function buildResumeHtml(data = {}, requestedTemplate = 'ats') {
+  const allowedTemplates = ['ats', 'classic', 'modern', 'compact', 'creative', 'editorial', 'two-column'];
+  const template = allowedTemplates.includes(requestedTemplate) ? requestedTemplate : 'ats';
+  const ats = data.atsFriendly === true || template === 'ats';
+  const fonts = {
+    'Arial': 'Arial, Helvetica, sans-serif',
+    'Aptos': 'Aptos, Calibri, sans-serif',
+    'Georgia': 'Georgia, serif',
+    'Cambria': 'Cambria, Georgia, serif',
+    'Trebuchet MS': '"Trebuchet MS", Arial, sans-serif',
+    'Verdana': 'Verdana, Arial, sans-serif'
+  };
+  const font = fonts[data.fontFamily] || fonts['Arial'];
+  const backgrounds = { white:'#ffffff', ivory:'#fbf7ef', blue:'#f1f6ff', sage:'#f1f6f1', lavender:'#f6f2fb' };
+  const background = ats ? '#ffffff' : (backgrounds[data.pageBackground] || '#ffffff');
+  const accents = { ats:'#172033', classic:'#355f9f', modern:'#2457c5', compact:'#26364b', creative:'#7652b8', editorial:'#a25c38', 'two-column':'#275c86' };
+  const accent = accents[template];
+  const safe = value => escapeHtml(value == null ? '' : String(value).trim());
+  const name = safe(data.name), title = safe(data.title), email = safe(data.email);
+  const phone = safe(data.phone), location = safe(data.location), summary = safe(data.summary);
   const experience = Array.isArray(data.experience) ? data.experience : [];
   const education = Array.isArray(data.education) ? data.education : [];
   const skills = Array.isArray(data.skills) ? data.skills : [];
-
-  // Template variations may change colors or font — simple switch
-  let accent = '#0b76ff';
-  if (template === 'creative') accent = '#ff6b6b';
-  if (template === 'modern') accent = '#2b6cb0';
-  if (template === 'compact') accent = '#1f2937';
-  if (template === 'two-column') accent = '#0b76ff';
-
-  // Basic CSS
-  const css = `
-    :root{ --accent:${accent}; --muted:#666; --bg:#ffffff; --font:Inter, Arial, sans-serif; }
-    body{ font-family:var(--font); margin:20px; color:#111; background:#fff; }
-    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    h1{ margin:0; font-size:28px; color:var(--accent); }
-    h2{ margin:10px 0 6px 0; font-size:16px; color:#222; }
-    .muted{ color:var(--muted); font-size:13px; }
-    .section{ margin-top:12px; }
-    .experience-item{ margin-bottom:10px; }
-    .skills{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
-    .skill{ background:linear-gradient(90deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02)); padding:6px 8px; border-radius:6px; font-size:13px; }
-    .two-column { display:grid; grid-template-columns: 1fr 320px; gap:20px; }
-    @media print { body{ margin:10mm } }
-  `;
-
-  // Build HTML blocks
-  const expHtml = experience.map(exp => {
-    const company = exp.company || '';
-    const role = exp.role || '';
-    const from = exp.from || '';
-    const to = exp.to || '';
-    const desc = exp.desc ? `<div>${escapeHtml(exp.desc)}</div>` : '';
-    return `<div class="experience-item">
-      <div style="font-weight:700">${escapeHtml(role)} ${company ? `<span class="muted"> — ${escapeHtml(company)}</span>` : ''}</div>
-      <div class="muted" style="font-size:13px">${escapeHtml(from)} ${to ? '– ' + escapeHtml(to) : ''}</div>
-      ${desc}
-    </div>`;
+  const experienceHtml = experience.map(item => {
+    const position = safe(item.role), company = safe(item.company), from = safe(item.from), to = safe(item.to), desc = safe(item.desc);
+    const dates = [from, to].filter(Boolean).join(' – ');
+    return '<article class="entry"><div class="entry-heading"><h3>' + position + '</h3>' +
+      (company ? '<span class="company">' + company + '</span>' : '') + '</div>' +
+      (dates ? '<p class="dates">' + dates + '</p>' : '') +
+      (desc ? '<p class="entry-description">' + desc + '</p>' : '') + '</article>';
   }).join('');
-
-  const eduHtml = education.map(ed => {
-    const school = ed.school || '';
-    const degree = ed.degree || '';
-    const year = ed.year || '';
-    return `<div style="margin-bottom:8px;">
-      <div style="font-weight:700">${escapeHtml(school)}</div>
-      <div class="muted">${escapeHtml(degree)} ${year ? `• ${escapeHtml(year)}` : ''}</div>
-    </div>`;
+  const educationHtml = education.map(item => {
+    const school = safe(item.school), degree = safe(item.degree), year = safe(item.year);
+    return '<article class="entry"><div class="entry-heading"><h3>' + school + '</h3>' +
+      (year ? '<span class="dates">' + year + '</span>' : '') + '</div>' +
+      (degree ? '<p class="entry-description">' + degree + '</p>' : '') + '</article>';
   }).join('');
-
-  const skillsHtml = (skills || []).map(s => `<div class="skill">${escapeHtml(s)}</div>`).join('');
-
-  // Choose layout class for two-column template
-  const layoutClass = template === 'two-column' ? 'two-column' : '';
-
-  const html = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Resume — ${escapeHtml(name)}</title>
-<style>${css}</style>
-</head>
-<body>
-  <div class="${layoutClass}">
-    <main>
-      <header>
-        <div>
-          <h1>${escapeHtml(name)}</h1>
-          <div style="font-weight:600">${escapeHtml(title)}</div>
-        </div>
-        <div style="text-align:right;">
-          <div class="muted">${escapeHtml(contactEmail)}</div>
-          <div class="muted">${escapeHtml(phone)} ${location ? ' • ' + escapeHtml(location) : ''}</div>
-        </div>
-      </header>
-
-      <section class="section">
-        <h2>Professional Summary</h2>
-        <div>${escapeHtml(summary)}</div>
-      </section>
-
-      <section class="section">
-        <h2>Experience</h2>
-        ${expHtml || '<div class="muted">No experience added</div>'}
-      </section>
-
-      <section class="section">
-        <h2>Education</h2>
-        ${eduHtml || '<div class="muted">No education added</div>'}
-      </section>
-    </main>
-
-    <aside style="min-width:220px;">
-      <section class="section">
-        <h2>Skills</h2>
-        <div class="skills">${skillsHtml || '<div class="muted">No skills added</div>'}</div>
-      </section>
-    </aside>
-  </div>
-</body>
-</html>`;
-
-  return html;
+  const skillsText = skills.map(safe).filter(Boolean).join(' · ');
+  const twoColumn = !ats && template === 'two-column';
+  const layout = twoColumn
+    ? '<div class="columns"><main>' +
+        '<section><h2>Professional Summary</h2><p>' + summary + '</p></section>' +
+        '<section><h2>Experience</h2>' + (experienceHtml || '<p class="muted">Add experience to complete this section.</p>') + '</section>' +
+        '<section><h2>Education</h2>' + (educationHtml || '<p class="muted">Add education to complete this section.</p>') + '</section>' +
+      '</main><aside><section><h2>Skills</h2><p class="skills-text">' + skillsText + '</p></section></aside></div>'
+    : '<main>' +
+        '<section><h2>Professional Summary</h2><p>' + summary + '</p></section>' +
+        '<section><h2>Experience</h2>' + (experienceHtml || '<p class="muted">Add experience to complete this section.</p>') + '</section>' +
+        '<section><h2>Education</h2>' + (educationHtml || '<p class="muted">Add education to complete this section.</p>') + '</section>' +
+        '<section><h2>Skills</h2><p class="skills-text">' + skillsText + '</p></section>' +
+      '</main>';
+  const css = [
+    '@page{size:A4;margin:14mm}',
+    '*{box-sizing:border-box}',
+    'body{margin:0;background:' + background + ';color:#1b2433;font-family:' + font + ';font-size:10.5pt;line-height:1.48;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+    '.paper{max-width:820px;margin:26px auto;padding:42px 50px;background:' + background + '}',
+    '.toolbar{position:sticky;top:0;display:flex;justify-content:center;gap:10px;padding:12px;background:#172033;color:white;font:600 14px Arial,sans-serif}',
+    '.toolbar button{border:0;border-radius:8px;background:#fff;color:#172033;padding:10px 16px;font-weight:700;cursor:pointer}',
+    'header{border-bottom:2px solid ' + accent + ';padding-bottom:16px;margin-bottom:18px}',
+    'h1{font-size:28pt;line-height:1.1;margin:0 0 4px;color:' + accent + ';letter-spacing:-.035em}',
+    '.headline{font-size:13pt;font-weight:600;margin:0 0 8px}',
+    '.contact{display:flex;flex-wrap:wrap;gap:5px 14px;color:#4b5565;font-size:9.5pt}',
+    'section{margin:17px 0 0;break-inside:avoid}',
+    'h2{font-size:11pt;letter-spacing:.08em;text-transform:uppercase;color:' + accent + ';border-bottom:1px solid #d9dee8;padding-bottom:5px;margin:0 0 9px}',
+    'h3{font-size:11pt;margin:0;font-weight:700}',
+    'p{margin:0 0 7px;white-space:pre-line}',
+    '.entry{margin:0 0 11px;break-inside:avoid}',
+    '.entry-heading{display:flex;justify-content:space-between;gap:12px;align-items:baseline}',
+    '.company{font-weight:600}.dates,.muted{color:#586579;font-size:9.5pt}',
+    '.dates{margin:1px 0 5px}.entry-description{margin-top:4px}',
+    '.skills-text{line-height:1.65}',
+    '.columns{display:grid;grid-template-columns:minmax(0,2fr) minmax(180px,.85fr);gap:30px}',
+    '.columns aside{border-left:1px solid #d9dee8;padding-left:20px}',
+    'body.template-compact{font-size:9.5pt}.template-compact .paper{padding-top:28px}.template-compact section{margin-top:12px}',
+    'body.template-creative header{border-bottom:0;border-left:5px solid ' + accent + ';padding:4px 0 4px 16px}',
+    'body.template-editorial h1{font-weight:500;font-family:Georgia,serif}',
+    'body.template-modern h2{letter-spacing:.025em;text-transform:none;font-size:12pt}',
+    'body.ats h2{text-transform:uppercase;letter-spacing:.03em;color:#111;border-bottom:1px solid #777}',
+    '.muted{font-style:italic}',
+    '@media(max-width:650px){.paper{padding:24px;margin:0}.columns{grid-template-columns:1fr}.columns aside{border-left:0;padding-left:0}.entry-heading{display:block}}',
+    '@media print{.toolbar{display:none!important}.paper{max-width:none;margin:0;padding:0;background:#fff}body{background:#fff!important;color:#111}.columns{display:block}.columns aside{border:0;padding:0}a{color:inherit;text-decoration:none}}'
+  ].join('');
+  const classes = (ats ? 'ats ' : '') + 'template-' + template;
+  const contact = [email, phone, location].filter(Boolean).join(' · ');
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<meta name="description" content="Resume for ' + name + '"><title>Resume — ' + name + '</title><style>' + css +
+    '</style></head><body class="' + classes + '"><div class="toolbar"><button type="button" onclick="window.print()">Print / Save as PDF</button></div>' +
+    '<article class="paper"><header><h1>' + name + '</h1><p class="headline">' + title + '</p><div class="contact">' + contact + '</div></header>' + layout +
+    '</article></body></html>';
 }
 
 // simple HTML escape
@@ -160,6 +137,11 @@ router.post('/generate', authMiddleware, async (req, res) => {
 
     // Build HTML
     const renderedHtml = buildResumeHtml(payload, template);
+
+    // Preview is generated on demand without saving personal data to the account.
+    if (payload.save !== true) {
+      return res.json({ html: renderedHtml, template: template === 'ats' || payload.atsFriendly ? 'ats' : template });
+    }
 
     // Create DB record in Supabase (table: resumes)
     const resumeId = uuidv4();
