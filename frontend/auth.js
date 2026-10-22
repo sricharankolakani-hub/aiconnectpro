@@ -120,7 +120,7 @@ export async function signIn(email, password) {
 export async function getMfaStep() {
   const { data, error } = await supabase.auth.mfa.listFactors();
   if (error) throw error;
-  return [...(data.phone || []), ...(data.totp || [])].some(factor => factor.status === 'verified') ? 'challenge' : 'skip';
+  return (data.totp || []).some(factor => factor.status === 'verified') ? 'challenge' : 'skip';
 }
 
 // GOOGLE LOGIN
