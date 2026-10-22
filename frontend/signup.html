@@ -38,6 +38,9 @@
       <form id="signup-form" class="auth-form">
         <label for="email">Email address</label>
         <input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+        <label for="phone">Mobile number</label>
+        <input id="phone" name="phone" type="tel" placeholder="+91 98765 43210" autocomplete="tel" inputmode="tel" required>
+        <p class="auth-subtitle">We’ll verify both your email and mobile number with one-time codes.</p>
         <label for="password">Create a password</label>
         <div class="auth-password-field">
           <input id="password" name="password" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
@@ -61,6 +64,19 @@
         <button class="auth-submit" type="submit">Verify email</button>
         <button class="auth-google" id="resend-code" type="button">Resend code</button>
       </form>
+      <form id="phone-start-form" class="auth-form" hidden>
+        <p class="auth-subtitle">A verified mobile number is required. Include your country code, for example +91 98765 43210.</p>
+        <label for="verify-phone">Mobile number</label>
+        <input id="verify-phone" name="verify-phone" type="tel" placeholder="+91 98765 43210" autocomplete="tel" inputmode="tel" required>
+        <button class="auth-submit" type="submit">Send mobile code</button>
+      </form>
+      <form id="verify-phone-form" class="auth-form" hidden>
+        <p class="auth-subtitle">Enter the 6-digit code sent to <strong id="verification-phone"></strong>.</p>
+        <label for="phone-code">Mobile verification code</label>
+        <input id="phone-code" name="phone-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+        <button class="auth-submit" type="submit">Verify mobile</button>
+        <button class="auth-google" id="resend-phone-code" type="button">Resend code</button>
+      </form>
       <div class="auth-divider">or</div>
       <button class="auth-google" id="google-signup" type="button">Continue with Google</button>
       <p id="msg" class="auth-message" role="status" aria-live="polite"></p>
@@ -70,30 +86,78 @@
 
   <script src="theme.js" defer></script>
   <script type="module">
-    import { signUp, verifySignupCode, resendSignupCode, signInWithGoogle } from './auth.js';
+    import { signUp, verifySignupCode, resendSignupCode, beginPhoneSignup, beginGoogleEmailSignupVerification, verifyGoogleEmailSignupCode, verifyPhoneSignupCode, resendPhoneSignupCode, signInWithGoogle } from './auth.js';
 
     const form = document.getElementById('signup-form');
     const verifyForm = document.getElementById('verify-form');
+    const verifyPhoneForm = document.getElementById('verify-phone-form');
+    const phoneStartForm = document.getElementById('phone-start-form');
     const message = document.getElementById('msg');
     const submitButton = form.querySelector('[type="submit"]');
     const googleButton = document.getElementById('google-signup');
     const resendButton = document.getElementById('resend-code');
+    const resendPhoneButton = document.getElementById('resend-phone-code');
     const password = document.getElementById('password');
     const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
     const passwordToggle = document.querySelector('.auth-password-toggle');
     const privacyConsent = document.getElementById('privacy-consent');
     const privacyPolicyVersion = '2026-10-17';
     const signupConsentKey = 'aiconnectpro.signup-privacy-consent';
     let verificationEmail = sessionStorage.getItem('aicp_signup_email') || '';
+    let emailVerificationType = 'signup';
+    let verificationPhone = sessionStorage.getItem('aicp_signup_phone') || '';
 
-    function showCodeForm(email) {
+    function showEmailCodeForm(email, phone) {
       verificationEmail = email;
+      verificationPhone = phone;
       sessionStorage.setItem('aicp_signup_email', email);
+      sessionStorage.setItem('aicp_signup_phone', phone);
       document.getElementById('verification-email').textContent = email;
       form.hidden = true;
+      verifyPhoneForm.hidden = true;
       verifyForm.hidden = false;
     }
-    if (verificationEmail) showCodeForm(verificationEmail);
+    function showPhoneStartForm(phone = '') {
+      form.hidden = true;
+      verifyForm.hidden = true;
+      phoneStartForm.hidden = false;
+      verifyPhoneForm.hidden = true;
+      document.getElementById('verify-phone').value = phone;
+      document.querySelector('.auth-divider').hidden = true;
+      googleButton.hidden = true;
+    }
+    function showPhoneCodeForm(phone) {
+      verificationPhone = phone;
+      sessionStorage.setItem('aicp_signup_phone', phone);
+      document.getElementById('verification-phone').textContent = phone;
+      form.hidden = true;
+      verifyForm.hidden = true;
+      phoneStartForm.hidden = true;
+      verifyPhoneForm.hidden = false;
+      document.querySelector('.auth-divider').hidden = true;
+      googleButton.hidden = true;
+    }
+
+    const params = new URLSearchParams(location.search);
+    if (params.get('stage') === 'google-email') {
+      emailVerificationType = 'reauthentication';
+      form.hidden = true;
+      phoneStartForm.hidden = true;
+      verifyPhoneForm.hidden = true;
+      verifyForm.hidden = false;
+      document.getElementById('verification-email').textContent = verificationEmail;
+      document.querySelector('.auth-divider').hidden = true;
+      googleButton.hidden = true;
+      message.textContent = 'Enter the verification code sent to your Google account email to finish signing up.';
+    } else if (params.get('stage') === 'phone') {
+      if (verificationPhone && sessionStorage.getItem('aicp_phone_code_sent') === 'true') showPhoneCodeForm(verificationPhone);
+      else showPhoneStartForm(verificationPhone);
+      message.textContent = 'Verify your mobile number to finish setting up your account.';
+    } else if (verificationEmail && verificationPhone) {
+      emailVerificationType = sessionStorage.getItem('aicp_email_verification_type') || 'signup';
+      showEmailCodeForm(verificationEmail, verificationPhone);
+    }
 
     passwordToggle.addEventListener('click', () => {
       const isHidden = password.type === 'password';
@@ -106,31 +170,30 @@
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      if (!privacyConsent.checked) {
-        privacyConsent.reportValidity();
-        return;
-      }
+      if (!privacyConsent.checked) { privacyConsent.reportValidity(); return; }
+      if (!phoneInput.checkValidity()) { phoneInput.reportValidity(); return; }
+      const phone = phoneInput.value.trim();
       message.dataset.state = '';
       message.textContent = 'Creating your account…';
       submitButton.disabled = true;
       try {
         const email = emailInput.value.trim();
         const consent = { policyVersion: privacyPolicyVersion, acceptedAt: new Date().toISOString() };
-        const data = await signUp(email, password.value, consent);
-        if (data.session) {
-          sessionStorage.removeItem('aicp_signup_email');
-          window.location.assign('auth-mfa.html?mode=enroll');
+        const signupData = await signUp(email, password.value, consent);
+        if (signupData.session) {
+          await beginGoogleEmailSignupVerification();
+          emailVerificationType = 'reauthentication';
         } else {
-          showCodeForm(email);
-          message.dataset.state = 'success';
-          message.textContent = 'We sent a verification code. Check your inbox and spam folder.';
+          emailVerificationType = 'signup';
         }
+        sessionStorage.setItem('aicp_email_verification_type', emailVerificationType);
+        showEmailCodeForm(email, phone);
+        message.dataset.state = 'success';
+        message.textContent = 'We sent an email verification code. Check your inbox and spam folder.';
       } catch (error) {
         message.dataset.state = 'error';
         message.textContent = error.message || 'Could not create your account. Please try again.';
-      } finally {
-        submitButton.disabled = false;
-      }
+      } finally { submitButton.disabled = false; }
     });
 
     verifyForm.addEventListener('submit', async (event) => {
@@ -141,50 +204,101 @@
       message.dataset.state = '';
       message.textContent = 'Verifying your email…';
       try {
-        await verifySignupCode(verificationEmail, codeInput.value);
+        if (emailVerificationType === 'reauthentication') await verifyGoogleEmailSignupCode(verificationEmail, codeInput.value);
+        else await verifySignupCode(verificationEmail, codeInput.value);
+        if (emailVerificationType === 'reauthentication') sessionStorage.removeItem('aicp_google_email_code_sent');
+        sessionStorage.removeItem('aicp_email_verification_type');
+        message.textContent = 'Email verified. Sending a mobile verification code…';
+        await beginPhoneSignup(verificationPhone);
+        sessionStorage.setItem('aicp_phone_code_sent', 'true');
+        showPhoneCodeForm(verificationPhone);
+        message.dataset.state = 'success';
+        message.textContent = 'We sent a code to your mobile number.';
+      } catch (error) {
+        message.dataset.state = 'error';
+        message.textContent = error.message || 'That code could not be verified. Please try again.';
+      } finally { verifyButton.disabled = false; codeInput.value = ''; }
+    });
+
+    phoneStartForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = phoneStartForm.querySelector('[type="submit"]');
+      const phone = document.getElementById('verify-phone').value.trim();
+      button.disabled = true;
+      message.textContent = 'Sending a mobile verification code…';
+      try {
+        await beginPhoneSignup(phone);
+        sessionStorage.setItem('aicp_signup_phone', phone);
+        sessionStorage.setItem('aicp_phone_code_sent', 'true');
+        showPhoneCodeForm(phone);
+        message.dataset.state = 'success';
+        message.textContent = 'A code has been sent to your mobile number.';
+      } catch (error) {
+        message.dataset.state = 'error';
+        message.textContent = error.message || 'Could not send the code. Check the number and try again.';
+      } finally { button.disabled = false; }
+    });
+
+    verifyPhoneForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const codeInput = document.getElementById('phone-code');
+      const verifyButton = verifyPhoneForm.querySelector('[type="submit"]');
+      verifyButton.disabled = true;
+      message.dataset.state = '';
+      message.textContent = 'Verifying your mobile number…';
+      try {
+        await verifyPhoneSignupCode(verificationPhone, codeInput.value);
         sessionStorage.removeItem('aicp_signup_email');
-        window.location.assign('auth-mfa.html?mode=enroll');
+        sessionStorage.removeItem('aicp_signup_phone');
+        sessionStorage.removeItem('aicp_phone_code_sent');
+        message.dataset.state = 'success';
+        message.textContent = 'Email and mobile verified. Choose whether to enable two-step verification.';
+        location.assign('auth-mfa.html?mode=enroll');
       } catch (error) {
         message.dataset.state = 'error';
         message.textContent = error.message || 'That code could not be verified. Request a new one and try again.';
-      } finally {
-        verifyButton.disabled = false;
-      }
+      } finally { verifyButton.disabled = false; codeInput.value = ''; }
     });
 
     resendButton.addEventListener('click', async () => {
       resendButton.disabled = true;
-      message.dataset.state = '';
-      message.textContent = 'Sending a new code…';
+      message.textContent = 'Sending a new email code…';
       try {
-        await resendSignupCode(verificationEmail);
-        message.dataset.state = 'success';
-        message.textContent = 'A new verification code has been sent.';
-      } catch (error) {
-        message.dataset.state = 'error';
-        message.textContent = error.message || 'Could not resend the code. Please try again later.';
-      } finally {
-        resendButton.disabled = false;
+        if (emailVerificationType === 'reauthentication') await beginGoogleEmailSignupVerification();
+        else await resendSignupCode(verificationEmail);
+        message.dataset.state='success'; message.textContent='A new email code has been sent.';
       }
+      catch (error) { message.dataset.state='error'; message.textContent=error.message || 'Could not resend the email code.'; }
+      finally { resendButton.disabled = false; }
+    });
+
+    resendPhoneButton.addEventListener('click', async () => {
+      resendPhoneButton.disabled = true;
+      message.textContent = 'Sending a new mobile code…';
+      try { await resendPhoneSignupCode(verificationPhone); message.dataset.state='success'; message.textContent='A new mobile code has been sent.'; }
+      catch (error) { message.dataset.state='error'; message.textContent=error.message || 'Could not resend the mobile code.'; }
+      finally { resendPhoneButton.disabled = false; }
     });
 
     googleButton.addEventListener('click', async () => {
-      if (!privacyConsent.checked) {
-        privacyConsent.reportValidity();
-        return;
-      }
+      if (!privacyConsent.checked) { privacyConsent.reportValidity(); return; }
+      if (!phoneInput.checkValidity()) { phoneInput.reportValidity(); return; }
+      const phone = phoneInput.value.trim();
+      const email = emailInput.value.trim();
       const consent = { policyVersion: privacyPolicyVersion, acceptedAt: new Date().toISOString() };
       sessionStorage.setItem(signupConsentKey, JSON.stringify(consent));
+      sessionStorage.setItem('aicp_signup_phone', phone);
+      sessionStorage.setItem('aicp_signup_email', email);
       message.dataset.state = '';
       message.textContent = 'Connecting to Google…';
       googleButton.disabled = true;
-      try {
-        await signInWithGoogle();
-      } catch (error) {
+      try { await signInWithGoogle(); }
+      catch (error) {
         sessionStorage.removeItem(signupConsentKey);
+        sessionStorage.removeItem('aicp_signup_phone');
         googleButton.disabled = false;
-        message.dataset.state = 'error';
-        message.textContent = error.message || 'Could not start Google sign-in. Please try again.';
+        message.dataset.state='error';
+        message.textContent=error.message || 'Could not start Google sign-in. Please try again.';
       }
     });
   </script>
