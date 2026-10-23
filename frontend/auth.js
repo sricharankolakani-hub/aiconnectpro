@@ -20,8 +20,30 @@ function authCallbackUrl() {
   return new URL('/auth-callback.html', window.location.origin).toString();
 }
 
+// Account type is descriptive profile data only. Authorization continues to
+// use server-managed app_metadata roles, never this user-editable metadata.
+export function profileIntentMetadata(intent = {}) {
+  const allowed = new Set(['professional', 'student', 'founder']);
+  const accountType = allowed.has(intent.accountType) ? intent.accountType : 'professional';
+  const metadata = { account_type: accountType };
+  if (accountType === 'founder') {
+    metadata.business_profile = {
+      name: String(intent.businessName || '').trim().slice(0, 160),
+      summary: String(intent.businessSummary || '').trim().slice(0, 500),
+      website: String(intent.businessWebsite || '').trim().slice(0, 320)
+    };
+  }
+  if (accountType === 'student') {
+    metadata.student_profile = {
+      institution: String(intent.institution || '').trim().slice(0, 160),
+      field_of_study: String(intent.fieldOfStudy || '').trim().slice(0, 160)
+    };
+  }
+  return metadata;
+}
+
 // SIGN UP
-export async function signUp(email, password, consent) {
+export async function signUp(email, password, consent, profileIntent = {}) {
   if (!consent?.acceptedAt || consent.policyVersion !== '2026-10-17') {
     throw new Error('Please agree to the current Privacy Policy before creating an account.');
   }
@@ -33,7 +55,8 @@ export async function signUp(email, password, consent) {
       emailRedirectTo: authCallbackUrl(),
       data: {
         privacy_policy_accepted_at: consent.acceptedAt,
-        privacy_policy_version: consent.policyVersion
+        privacy_policy_version: consent.policyVersion,
+        ...profileIntentMetadata(profileIntent)
       }
     }
   });
