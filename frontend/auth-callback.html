@@ -13,7 +13,7 @@
   </main>
 
   <script type="module">
-    import { supabase, getMfaStep, beginGoogleEmailSignupVerification } from './auth.js';
+    import { supabase, getMfaStep, beginGoogleEmailSignupVerification, profileIntentMetadata } from './auth.js';
 
     const message = document.getElementById('message');
     const loginLink = document.getElementById('login-link');
@@ -46,7 +46,8 @@
         const { error: consentError } = await supabase.auth.updateUser({
           data: {
             privacy_policy_accepted_at: consent.acceptedAt,
-            privacy_policy_version: consent.policyVersion
+            privacy_policy_version: consent.policyVersion,
+            ...profileIntentMetadata(consent.profileIntent)
           }
         });
         if (consentError) throw consentError;

@@ -37,6 +37,9 @@
       <div class="profile-overview-copy">
         <strong id="profile-name">Your account</strong>
         <span id="profile-email">Loading account details…</span>
+        <span id="profile-type">Profile type: Professional / Employee</span>
+        <span id="business-profile-details" hidden></span>
+        <span id="student-profile-details" hidden></span>
       </div>
       <span id="profile-role" class="profile-role">Member</span>
     </section>
@@ -278,6 +281,19 @@
         const name = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.fullName;
         byId('profile-name').textContent = name || 'Your account';
         byId('profile-email').textContent = user?.email || 'Signed in to AIConnectPro';
+        const accountType = user?.user_metadata?.account_type || 'professional';
+        const typeLabels = { professional: 'Professional / Employee', student: 'Student', founder: 'Founder / Business Owner' };
+        byId('profile-type').textContent = 'Profile type: ' + (typeLabels[accountType] || typeLabels.professional);
+        if (accountType === 'founder' && user?.user_metadata?.business_profile) {
+          const business = user.user_metadata.business_profile;
+          const details = [business.name, business.summary, business.website].filter(Boolean).join(' · ');
+          if (details) { byId('business-profile-details').hidden = false; byId('business-profile-details').textContent = 'Business profile · ' + details; }
+        }
+        if (accountType === 'student' && user?.user_metadata?.student_profile) {
+          const student = user.user_metadata.student_profile;
+          const details = [student.institution, student.field_of_study].filter(Boolean).join(' · ');
+          if (details) { byId('student-profile-details').hidden = false; byId('student-profile-details').textContent = 'Student details · ' + details; }
+        }
         const role = profile.role || 'member';
         byId('profile-role').textContent = role;
         byId('info').textContent = 'Your profile is up to date.';

@@ -23,6 +23,23 @@
       <p class="auth-subtitle">Verify your email to get started. Mobile verification will be added when a messaging provider is available.</p>
       <form id="signup-form" class="auth-form">
         <label for="email">Email address</label><input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+        <label for="account-type">I’m joining as</label>
+        <select id="account-type" name="account_type" required>
+          <option value="professional">Professional / Employee</option>
+          <option value="student">Student</option>
+          <option value="founder">Founder / Entrepreneur / Business Owner</option>
+        </select>
+        <section id="student-profile-fields" class="auth-profile-fields" hidden>
+          <p class="auth-subtitle">Add optional details to personalize your student profile.</p>
+          <label for="student-institution">School, college, or university</label><input id="student-institution" maxlength="160" autocomplete="organization">
+          <label for="student-field">Field of study</label><input id="student-field" maxlength="160">
+        </section>
+        <section id="founder-profile-fields" class="auth-profile-fields" hidden>
+          <p class="auth-subtitle">Create a personal founder profile. These details appear only on your private account profile for now. This does not create a verified employer organization or grant job-posting access.</p>
+          <label for="business-name">Business or venture name</label><input id="business-name" maxlength="160" autocomplete="organization">
+          <label for="business-summary">What are you building?</label><textarea id="business-summary" rows="3" maxlength="500"></textarea>
+          <label for="business-website">Business website</label><input id="business-website" type="url" maxlength="320" placeholder="https://example.com" autocomplete="url">
+        </section>
         <label for="password">Create a password</label><div class="auth-password-field">
           <input id="password" name="password" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
           <button class="auth-password-toggle" type="button" aria-controls="password" aria-label="Show password" title="Show password" aria-pressed="false">
@@ -49,7 +66,7 @@
   </main>
   <script src="theme.js" defer></script>
   <script type="module">
-    import { supabase, signUp, verifySignupCode, resendSignupCode, beginGoogleEmailSignupVerification, verifyGoogleEmailSignupCode, signInWithGoogle } from './auth.js';
+    import { supabase, signUp, verifySignupCode, resendSignupCode, beginGoogleEmailSignupVerification, verifyGoogleEmailSignupCode, signInWithGoogle, profileIntentMetadata } from './auth.js';
     const form = document.getElementById('signup-form');
     const googleConsentForm = document.getElementById('google-consent-form');
     const verifyForm = document.getElementById('verify-form');
@@ -59,10 +76,31 @@
     const toggle = document.querySelector('.auth-password-toggle');
     const googleButton = document.getElementById('google-signup');
     const resendButton = document.getElementById('resend-code');
+    const accountType = document.getElementById('account-type');
+    const founderFields = document.getElementById('founder-profile-fields');
+    const studentFields = document.getElementById('student-profile-fields');
     const policyVersion = '2026-10-17';
     const consentKey = 'aiconnectpro.signup-privacy-consent';
     let email = sessionStorage.getItem('aicp_signup_email') || '';
     let verificationType = sessionStorage.getItem('aicp_email_verification_type') || 'signup';
+
+    function selectedProfileIntent() {
+      return {
+        accountType: accountType.value,
+        businessName: document.getElementById('business-name').value,
+        businessSummary: document.getElementById('business-summary').value,
+        businessWebsite: document.getElementById('business-website').value,
+        institution: document.getElementById('student-institution').value,
+        fieldOfStudy: document.getElementById('student-field').value
+      };
+    }
+    function updateProfileFields() {
+      founderFields.hidden = accountType.value !== 'founder';
+      studentFields.hidden = accountType.value !== 'student';
+      document.getElementById('business-name').required = accountType.value === 'founder';
+    }
+    accountType.addEventListener('change', updateProfileFields);
+    updateProfileFields();
 
     function showCodeForm(address, type) {
       email = address; verificationType = type;
@@ -94,7 +132,7 @@
       try {
         email = emailInput.value.trim();
         const consent = { policyVersion, acceptedAt: new Date().toISOString() };
-        const data = await signUp(email, password.value, consent);
+        const data = await signUp(email, password.value, consent, selectedProfileIntent());
         if (data.session) {
           await beginGoogleEmailSignupVerification();
           showCodeForm(email, 'reauthentication');
@@ -111,7 +149,12 @@
       try {
         const userResult = await supabase.auth.getUser(); if (userResult.error) throw userResult.error;
         const acceptedAt = new Date().toISOString();
-        const { error } = await supabase.auth.updateUser({ data: { privacy_policy_accepted_at: acceptedAt, privacy_policy_version: policyVersion } });
+        const profileIntent = selectedProfileIntent();
+        const { error } = await supabase.auth.updateUser({ data: {
+          privacy_policy_accepted_at: acceptedAt,
+          privacy_policy_version: policyVersion,
+          ...profileIntentMetadata(profileIntent)
+        } });
         if (error) throw error;
         await beginGoogleEmailSignupVerification();
         email = userResult.data.user.email || '';
@@ -145,7 +188,7 @@
     });
     googleButton.addEventListener('click', async () => {
       if (!document.getElementById('privacy-consent').checked) { document.getElementById('privacy-consent').reportValidity(); return; }
-      sessionStorage.setItem(consentKey, JSON.stringify({ policyVersion, acceptedAt: new Date().toISOString() }));
+      sessionStorage.setItem(consentKey, JSON.stringify({ policyVersion, acceptedAt: new Date().toISOString(), profileIntent: selectedProfileIntent() }));
       googleButton.disabled = true; message.textContent = 'Connecting to Google…';
       try { await signInWithGoogle(); }
       catch(error) { sessionStorage.removeItem(consentKey); googleButton.disabled = false; message.dataset.state = 'error'; message.textContent = error.message || 'Could not start Google sign-in.'; }
