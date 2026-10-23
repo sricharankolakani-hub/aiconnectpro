@@ -8,125 +8,147 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="auth-page">
-  <header class="site-header">
-    <div class="shell nav-shell">
-      <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
-      <nav class="primary-nav" aria-label="Main navigation">
-        <a href="index.html">Home</a>
-        <a href="jobs.html">Jobs</a>
-      </nav>
-      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
-    </div>
-  </header>
-
+  <header class="site-header"><div class="shell nav-shell">
+    <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+    <nav class="primary-nav" aria-label="Main navigation"><a href="index.html">Home</a><a href="jobs.html">Jobs</a></nav>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
+  </div></header>
   <main class="auth-layout">
-    <section class="auth-intro" aria-labelledby="welcome-title">
-      <div class="auth-intro-copy">
-        <p class="eyebrow">START YOUR NEXT CHAPTER</p>
-        <h1>Build a career workspace that moves with you.</h1>
-        <p>Create your account to organize your profile, prepare your resume, and explore opportunities in one place.</p>
-      </div>
-      <div class="auth-benefits" aria-label="AIConnectPro benefits">
-        <span><b aria-hidden="true">✓</b> Save your career profile and resumes</span>
-        <span><b aria-hidden="true">✓</b> Explore opportunities at your pace</span>
-      </div>
-    </section>
-
+    <section class="auth-intro"><div class="auth-intro-copy">
+      <p class="eyebrow">START YOUR NEXT CHAPTER</p><h1>Build a career workspace that moves with you.</h1>
+      <p>Create your account to organize your profile, prepare your resume, and explore opportunities in one place.</p>
+    </div><div class="auth-benefits"><span><b aria-hidden="true">✓</b> Save your career profile and resumes</span><span><b aria-hidden="true">✓</b> Explore opportunities at your pace</span></div></section>
     <section class="auth-panel" aria-labelledby="signup-title">
       <h2 id="signup-title">Create your account</h2>
-      <p class="auth-subtitle">A few details get your career workspace started.</p>
+      <p class="auth-subtitle">Verify your email to get started. Mobile verification will be added when a messaging provider is available.</p>
       <form id="signup-form" class="auth-form">
-        <label for="email">Email address</label>
-        <input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
-        <label for="password">Create a password</label>
-        <div class="auth-password-field">
+        <label for="email">Email address</label><input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+        <label for="password">Create a password</label><div class="auth-password-field">
           <input id="password" name="password" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
           <button class="auth-password-toggle" type="button" aria-controls="password" aria-label="Show password" title="Show password" aria-pressed="false">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path class="eye-open" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle class="eye-open" cx="12" cy="12" r="3"/>
-              <g class="eye-closed"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path d="m3 3 18 18"/></g>
-            </svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="eye-open" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle class="eye-open" cx="12" cy="12" r="3"/><g class="eye-closed"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path d="m3 3 18 18"/></g></svg>
           </button>
         </div>
-        <div class="auth-consent">
-          <input id="privacy-consent" name="privacy-consent" type="checkbox" required>
-          <label for="privacy-consent">I have read and agree to the <a href="privacy-policy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</label>
-        </div>
+        <div class="auth-consent"><input id="privacy-consent" name="privacy-consent" type="checkbox" required><label for="privacy-consent">I have read and agree to the <a href="privacy-policy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</label></div>
         <button class="auth-submit" type="submit">Create account</button>
       </form>
-      <div class="auth-divider">or</div>
-      <button class="auth-google" id="google-signup" type="button">Continue with Google</button>
+      <form id="google-consent-form" class="auth-form" hidden>
+        <p class="auth-subtitle">Review and accept the Privacy Policy to finish creating your Google account.</p>
+        <div class="auth-consent"><input id="google-privacy-consent" type="checkbox" required><label for="google-privacy-consent">I have read and agree to the <a href="privacy-policy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</label></div>
+        <button class="auth-submit" type="submit">Continue</button>
+      </form>
+      <form id="verify-form" class="auth-form" hidden>
+        <p class="auth-subtitle">Enter the 6-digit code sent to <strong id="verification-email"></strong>.</p>
+        <label for="email-code">Email verification code</label><input id="email-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+        <button class="auth-submit" type="submit">Verify email</button><button class="auth-google" id="resend-code" type="button">Resend code</button>
+      </form>
+      <div class="auth-divider">or</div><button class="auth-google" id="google-signup" type="button">Continue with Google</button>
       <p id="msg" class="auth-message" role="status" aria-live="polite"></p>
       <p class="auth-switch">Already have an account? <a href="login.html">Log in</a></p>
     </section>
   </main>
-
   <script src="theme.js" defer></script>
   <script type="module">
-    import { signUp, signInWithGoogle } from './auth.js';
-
+    import { supabase, signUp, verifySignupCode, resendSignupCode, beginGoogleEmailSignupVerification, verifyGoogleEmailSignupCode, signInWithGoogle } from './auth.js';
     const form = document.getElementById('signup-form');
+    const googleConsentForm = document.getElementById('google-consent-form');
+    const verifyForm = document.getElementById('verify-form');
     const message = document.getElementById('msg');
-    const submitButton = form.querySelector('[type="submit"]');
-    const googleButton = document.getElementById('google-signup');
+    const emailInput = document.getElementById('email');
     const password = document.getElementById('password');
-    const passwordToggle = document.querySelector('.auth-password-toggle');
-    const privacyConsent = document.getElementById('privacy-consent');
-    const privacyPolicyVersion = '2026-10-17';
-    const signupConsentKey = 'aiconnectpro.signup-privacy-consent';
+    const toggle = document.querySelector('.auth-password-toggle');
+    const googleButton = document.getElementById('google-signup');
+    const resendButton = document.getElementById('resend-code');
+    const policyVersion = '2026-10-17';
+    const consentKey = 'aiconnectpro.signup-privacy-consent';
+    let email = sessionStorage.getItem('aicp_signup_email') || '';
+    let verificationType = sessionStorage.getItem('aicp_email_verification_type') || 'signup';
 
-    passwordToggle.addEventListener('click', () => {
-      const isHidden = password.type === 'password';
-      password.type = isHidden ? 'text' : 'password';
-      passwordToggle.dataset.visible = String(isHidden);
-      passwordToggle.setAttribute('aria-pressed', String(isHidden));
-      passwordToggle.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
-      passwordToggle.title = isHidden ? 'Hide password' : 'Show password';
+    function showCodeForm(address, type) {
+      email = address; verificationType = type;
+      sessionStorage.setItem('aicp_signup_email', address);
+      sessionStorage.setItem('aicp_email_verification_type', type);
+      document.getElementById('verification-email').textContent = address;
+      form.hidden = true; googleConsentForm.hidden = true; verifyForm.hidden = false;
+      document.querySelector('.auth-divider').hidden = true; googleButton.hidden = true;
+    }
+    const params = new URLSearchParams(location.search);
+    if (params.get('stage') === 'google-consent') {
+      form.hidden = true; googleConsentForm.hidden = false;
+      document.querySelector('.auth-divider').hidden = true; googleButton.hidden = true;
+    } else if (params.get('stage') === 'google-email') {
+      showCodeForm(email, 'reauthentication');
+      message.textContent = 'Enter the code sent to your email to finish setting up your account.';
+    } else if (email) {
+      showCodeForm(email, verificationType);
+    }
+    toggle.addEventListener('click', () => {
+      const hidden = password.type === 'password'; password.type = hidden ? 'text' : 'password';
+      toggle.setAttribute('aria-pressed', String(hidden)); toggle.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password'); toggle.title = hidden ? 'Hide password' : 'Show password';
     });
-
-    form.addEventListener('submit', async (event) => {
+    form.addEventListener('submit', async event => {
       event.preventDefault();
-      message.dataset.state = '';
+      if (!document.getElementById('privacy-consent').checked) return;
+      const button = form.querySelector('[type="submit"]'); button.disabled = true;
       message.textContent = 'Creating your account…';
-      submitButton.disabled = true;
       try {
-        const consent = { policyVersion: privacyPolicyVersion, acceptedAt: new Date().toISOString() };
-        const data = await signUp(document.getElementById('email').value, password.value, consent);
+        email = emailInput.value.trim();
+        const consent = { policyVersion, acceptedAt: new Date().toISOString() };
+        const data = await signUp(email, password.value, consent);
         if (data.session) {
-          message.dataset.state = 'success';
-          message.textContent = 'Account created. Taking you to your home page…';
-          window.location.assign('index.html');
-        } else {
-          submitButton.disabled = false;
-          message.dataset.state = 'success';
-          message.textContent = 'Account created. Check your email to confirm, then log in.';
-        }
-      } catch (error) {
-        submitButton.disabled = false;
-        message.dataset.state = 'error';
-        message.textContent = error.message || 'Could not create your account. Please try again.';
-      }
+          await beginGoogleEmailSignupVerification();
+          showCodeForm(email, 'reauthentication');
+        } else showCodeForm(email, 'signup');
+        message.dataset.state = 'success'; message.textContent = 'We sent an email code. Check your inbox and spam folder.';
+      } catch(error) { message.dataset.state = 'error'; message.textContent = error.message || 'Could not create your account.'; }
+      finally { button.disabled = false; }
     });
-
-    googleButton.addEventListener('click', async () => {
-      if (!privacyConsent.checked) {
-        privacyConsent.reportValidity();
-        return;
-      }
-
-      const consent = { policyVersion: privacyPolicyVersion, acceptedAt: new Date().toISOString() };
-      sessionStorage.setItem(signupConsentKey, JSON.stringify(consent));
-      message.dataset.state = '';
-      message.textContent = 'Connecting to Google…';
-      googleButton.disabled = true;
+    googleConsentForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const checkbox = document.getElementById('google-privacy-consent');
+      if (!checkbox.checked) return;
+      const button = googleConsentForm.querySelector('[type="submit"]'); button.disabled = true;
       try {
-        await signInWithGoogle();
-      } catch (error) {
-        sessionStorage.removeItem(signupConsentKey);
-        googleButton.disabled = false;
-        message.dataset.state = 'error';
-        message.textContent = error.message || 'Could not start Google sign-in. Please try again.';
-      }
+        const userResult = await supabase.auth.getUser(); if (userResult.error) throw userResult.error;
+        const acceptedAt = new Date().toISOString();
+        const { error } = await supabase.auth.updateUser({ data: { privacy_policy_accepted_at: acceptedAt, privacy_policy_version: policyVersion } });
+        if (error) throw error;
+        await beginGoogleEmailSignupVerification();
+        email = userResult.data.user.email || '';
+        sessionStorage.setItem('aicp_google_email_code_sent', 'true');
+        showCodeForm(email, 'reauthentication');
+        message.dataset.state = 'success'; message.textContent = 'We sent an email verification code.';
+      } catch(error) { message.dataset.state = 'error'; message.textContent = error.message || 'Could not continue account setup.'; }
+      finally { button.disabled = false; }
+    });
+    verifyForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const code = document.getElementById('email-code');
+      const button = verifyForm.querySelector('[type="submit"]'); button.disabled = true;
+      try {
+        if (verificationType === 'reauthentication') await verifyGoogleEmailSignupCode(email, code.value);
+        else await verifySignupCode(email, code.value);
+        sessionStorage.removeItem('aicp_signup_email'); sessionStorage.removeItem('aicp_email_verification_type'); sessionStorage.removeItem('aicp_google_email_code_sent');
+        message.dataset.state = 'success'; message.textContent = 'Email verified. You can optionally enable authenticator-app two-step verification.';
+        location.assign('auth-mfa.html?mode=enroll');
+      } catch(error) { message.dataset.state = 'error'; message.textContent = error.message || 'That code could not be verified.'; }
+      finally { button.disabled = false; code.value = ''; }
+    });
+    resendButton.addEventListener('click', async () => {
+      resendButton.disabled = true;
+      try {
+        if (verificationType === 'reauthentication') await beginGoogleEmailSignupVerification();
+        else await resendSignupCode(email);
+        message.dataset.state = 'success'; message.textContent = 'A new email code has been sent.';
+      } catch(error) { message.dataset.state = 'error'; message.textContent = error.message || 'Could not resend the code.'; }
+      finally { resendButton.disabled = false; }
+    });
+    googleButton.addEventListener('click', async () => {
+      if (!document.getElementById('privacy-consent').checked) { document.getElementById('privacy-consent').reportValidity(); return; }
+      sessionStorage.setItem(consentKey, JSON.stringify({ policyVersion, acceptedAt: new Date().toISOString() }));
+      googleButton.disabled = true; message.textContent = 'Connecting to Google…';
+      try { await signInWithGoogle(); }
+      catch(error) { sessionStorage.removeItem(consentKey); googleButton.disabled = false; message.dataset.state = 'error'; message.textContent = error.message || 'Could not start Google sign-in.'; }
     });
   </script>
 </body>

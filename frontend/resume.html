@@ -1,158 +1,136 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AIConnect Pro — Resume Builder</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Build a polished, ATS-aware resume and save or print it as a PDF.">
+  <title>Resume Builder | AIConnectPro</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    :root{ --primary:#0b76ff; --muted:#666; --card-bg:#fff; --gap:10px; --thumb-border:#e6eef8; }
-    body{ font-family: Inter, Arial, sans-serif; background:#f6f8fb; margin:0; color:#111; }
-    .container{ max-width:960px; margin:24px auto; padding:0 16px; }
-    .site-header{ background:var(--primary); color:#fff; padding:12px 0; margin-bottom:18px; }
-    .site-header .container{ display:flex; align-items:center; justify-content:space-between; }
-    h1{ margin:0; font-size:20px; }
-    .card{ background:var(--card-bg); padding:14px; border-radius:10px; box-shadow:0 6px 18px rgba(16,24,40,0.04); margin-bottom:12px; }
-    .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-    .full{ grid-column: 1 / -1; }
-    input, textarea, select { width:100%; padding:8px 10px; border:1px solid #e6eef8; border-radius:8px; font-size:14px; box-sizing:border-box; }
-    textarea{ resize:vertical; min-height:86px; }
-    .template-select{ display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
-    .template-card{ padding:8px; border-radius:6px; border:1px solid var(--thumb-border); background:#fff; display:flex; align-items:center; gap:10px; cursor:pointer; }
-    .template-card.selected{ outline:3px solid rgba(11,118,255,0.12); box-shadow:0 6px 12px rgba(11,118,255,0.06); border-color:rgba(11,118,255,0.22); }
-    .thumb{ width:120px; height:72px; border-radius:6px; overflow:hidden; box-shadow:0 2px 6px rgba(16,24,40,0.06); display:flex; flex-direction:column; justify-content:center; align-items:center; font-size:11px; color:#fff; }
-    .thumb.classic{ background: linear-gradient(180deg,#6b8bff,#4b6bff); font-family: Georgia, serif; }
-    .thumb.modern{ background: linear-gradient(180deg,#eef6ff,#fbfdff); color:#0b3766; border:1px solid #e6f0ff; font-family: 'Segoe UI', Arial; color:#193252; }
-    .thumb.compact{ background: linear-gradient(180deg,#f0f2f5,#fff); color:#222; border:1px solid #eee; font-family: Arial, sans-serif; color:#111; }
-    .thumb.creative{ background: linear-gradient(135deg,#ff6b6b,#6b8bff); font-weight:700; }
-    .thumb.two-column{ background: linear-gradient(180deg,#eef7ff,#f7f9fc); color:#0b3b66; border:1px solid #e6eef8; }
-    .thumb-label{ font-size:12px; margin-top:6px; color:var(--muted); }
-    .template-list{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .row.actions{ display:flex; gap:8px; align-items:center; }
-    .btn{ padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-weight:600; }
-    .btn--primary{ background:var(--primary); color:#fff; }
-    .note{ color:var(--muted); font-size:13px; }
-    #result{ margin-top:12px; color:#0b76ff; font-weight:600; }
-    @media (max-width:640px){ .form-grid{ grid-template-columns:1fr; } .site-header .container{ flex-direction:column; gap:8px; } .thumb{ width:92px; height:60px } }
+    .resume-page{padding:38px 0 72px}
+    .resume-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:26px}
+    .resume-hero h1{font-size:clamp(2rem,4vw,3rem);letter-spacing:-.05em;margin:6px 0}
+    .resume-hero p{color:var(--muted);margin:0}
+    .resume-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(300px,.75fr);gap:20px;align-items:start}
+    .resume-card{background:var(--white);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:var(--shadow);margin-bottom:18px}
+    .resume-card h2{font-size:1.15rem;margin:0 0 6px;letter-spacing:-.02em}
+    .resume-card>p{font-size:.9rem;color:var(--muted);margin:0 0 18px}
+    .template-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+    .template-card{border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--white);text-align:left;color:var(--ink);cursor:pointer;transition:.18s ease}
+    .template-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+    .template-card.selected{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+    .template-card strong,.template-card span{display:block}
+    .template-card strong{font-size:.88rem;margin-top:8px}
+    .template-card span{font-size:.75rem;color:var(--muted);margin-top:2px}
+    .template-thumb{height:76px;border-radius:8px;background:#f4f7fc;border:1px solid #e9edf4;padding:10px;display:flex;flex-direction:column;gap:5px}
+    .template-thumb i{height:4px;border-radius:8px;background:#cbd5e1;width:72%}
+    .template-thumb i:first-child{height:8px;width:56%;background:#4774df}
+    .template-thumb.ats{background:white}.template-thumb.ats i:first-child{background:#111}
+    .template-thumb.creative{background:linear-gradient(145deg,#f0e9ff,#e6f5ff)}.template-thumb.creative i:first-child{background:#7854c8}
+    .template-thumb.two-column{display:grid;grid-template-columns:1fr 2fr;gap:7px;background:#f1f6fb}
+    .template-thumb.two-column:before{content:"";background:#cad7e8;border-radius:5px}
+    .template-thumb.editorial i:first-child{background:#b06c45}
+    .control-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:.84rem;font-weight:650}
+    .field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:var(--white);color:var(--ink)}
+    .field textarea{min-height:100px;resize:vertical;line-height:1.5}
+    .form-fields{display:grid;gap:14px}
+    .span-2{grid-column:1/-1}
+    .section-title{display:flex;justify-content:space-between;gap:14px;align-items:center}
+    .ats-toggle{display:flex;gap:10px;align-items:flex-start;padding:14px;border:1px solid #cddcfb;background:#f5f8ff;border-radius:12px;margin-top:16px}
+    .ats-toggle input{margin-top:4px;accent-color:var(--primary)}
+    .ats-toggle strong,.ats-toggle small{display:block}.ats-toggle small{color:var(--muted);line-height:1.45;margin-top:3px}
+    .background-swatches{display:flex;gap:9px;flex-wrap:wrap}
+    .background-choice{display:flex;align-items:center;gap:7px;border:1px solid var(--line);padding:8px 10px;border-radius:10px;font-size:.82rem;cursor:pointer}
+    .background-choice input{accent-color:var(--primary)}
+    .swatch{width:18px;height:18px;border:1px solid #d8deea;border-radius:50%;display:inline-block}
+    .swatch.white{background:#fff}.swatch.ivory{background:#faf4e9}.swatch.blue{background:#eef5ff}.swatch.sage{background:#edf5ef}.swatch.lavender{background:#f4f0fb}
+    .resume-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .resume-actions button{min-height:46px}
+    #result{min-height:24px;color:var(--muted);font-size:.9rem;margin-top:14px}
+    #resume-pdf-link{display:inline-flex;margin:12px 12px 0 0;color:var(--primary);font-weight:700}
+    .resume-side-note{padding:15px;border-radius:14px;background:#f4f7fc;color:var(--muted);font-size:.85rem;line-height:1.55}
+    @media(max-width:900px){.resume-grid{grid-template-columns:1fr}.resume-side{order:-1}}
+    @media(max-width:600px){.resume-page{padding-top:26px}.resume-hero{display:block}.resume-card{padding:18px}.template-list{grid-template-columns:repeat(2,minmax(0,1fr))}.control-grid{grid-template-columns:1fr}.span-2{grid-column:auto}.resume-actions{display:grid}.resume-actions button{width:100%}}
   </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="container">
-      <h1>AIConnect Pro — Resume Builder</h1>
-      <a href="index.html" style="color:#fff; text-decoration:none; font-weight:600;">← Back</a>
+  <header class="site-header"><div class="shell nav-shell">
+    <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+    <nav class="primary-nav" aria-label="Main navigation"><a href="index.html">Home</a><a href="jobs.html">Jobs</a><a href="profile.html">My profile</a></nav>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
+  </div></header>
+  <main class="shell resume-page">
+    <div class="resume-hero"><div><p class="eyebrow">CAREER TOOLKIT</p><h1>Resume Builder</h1><p>Build a resume that feels like you and reads clearly to hiring teams.</p></div><a class="button button-outline" href="profile.html">← My profile</a></div>
+    <div class="resume-grid">
+      <div>
+        <section class="resume-card">
+          <h2>Choose a layout</h2><p>ATS Clean keeps a simple, single-column structure. Use expressive styles for direct sharing.</p>
+          <div class="template-list" id="template-thumbs" role="group" aria-label="Resume template">
+            <button class="template-card selected" type="button" data-template="ats" aria-pressed="true"><div class="template-thumb ats"><i></i><i></i><i></i><i></i></div><strong>ATS Clean</strong><span>Single column, plain text structure</span></button>
+            <button class="template-card" type="button" data-template="classic" aria-pressed="false"><div class="template-thumb"><i></i><i></i><i></i><i></i></div><strong>Classic</strong><span>Serif, timeless and composed</span></button>
+            <button class="template-card" type="button" data-template="modern" aria-pressed="false"><div class="template-thumb"><i></i><i></i><i></i><i></i></div><strong>Modern</strong><span>Clean lines and crisp sections</span></button>
+            <button class="template-card" type="button" data-template="compact" aria-pressed="false"><div class="template-thumb"><i></i><i></i><i></i><i></i></div><strong>Compact</strong><span>Space conscious and scannable</span></button>
+            <button class="template-card" type="button" data-template="creative" aria-pressed="false"><div class="template-thumb creative"><i></i><i></i><i></i><i></i></div><strong>Creative</strong><span>Soft color for a personal touch</span></button>
+            <button class="template-card" type="button" data-template="editorial" aria-pressed="false"><div class="template-thumb editorial"><i></i><i></i><i></i><i></i></div><strong>Editorial</strong><span>Warm accent and refined headings</span></button>
+            <button class="template-card" type="button" data-template="two-column" aria-pressed="false"><div class="template-thumb two-column"><i></i><i></i><i></i><i></i></div><strong>Two Column</strong><span>Modern layout for sharing</span></button>
+          </div>
+          <select id="template-select" hidden aria-hidden="true"><option value="ats">ATS Clean</option><option value="classic">Classic</option><option value="modern">Modern</option><option value="compact">Compact</option><option value="creative">Creative</option><option value="editorial">Editorial</option><option value="two-column">Two Column</option></select>
+          <label class="ats-toggle"><input id="ats-mode" type="checkbox" checked><span><strong>ATS-friendly format</strong><small>Uses a plain white page, readable type, standard headings, and one-column content. No design can guarantee compatibility with every employer’s software.</small></span></label>
+        </section>
+        <section class="resume-card">
+          <h2>Personal details</h2><p>Use details you’re comfortable sharing with employers.</p>
+          <div class="control-grid form-fields">
+            <div class="field"><label for="name">Full name</label><input id="name" autocomplete="name" placeholder="e.g., Alex Morgan" required></div>
+            <div class="field"><label for="title">Professional headline</label><input id="title" placeholder="e.g., Product Designer"></div>
+            <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="alex@example.com"></div>
+            <div class="field"><label for="phone">Phone</label><input id="phone" type="tel" autocomplete="tel" placeholder="+1 555 010 1234"></div>
+            <div class="field span-2"><label for="location">Location</label><input id="location" autocomplete="address-level2" placeholder="City, Country"></div>
+            <div class="field span-2"><label for="summary">Professional summary</label><textarea id="summary" placeholder="A short summary of your experience, strengths, and the work you want to do."></textarea></div>
+          </div>
+        </section>
+        <section class="resume-card">
+          <h2>Experience</h2><p>Lead with outcomes and specific achievements where possible.</p>
+          <div class="control-grid form-fields">
+            <div class="field"><label for="exp-role">Role</label><input id="exp-role" placeholder="e.g., Senior Product Designer"></div>
+            <div class="field"><label for="exp-company">Company</label><input id="exp-company" placeholder="Company name"></div>
+            <div class="field"><label for="exp-from">From</label><input id="exp-from" placeholder="2021"></div>
+            <div class="field"><label for="exp-to">To</label><input id="exp-to" placeholder="Present"></div>
+            <div class="field span-2"><label for="exp-desc">Achievements and responsibilities</label><textarea id="exp-desc" placeholder="Describe what you delivered, the scope, and the result."></textarea></div>
+          </div>
+        </section>
+        <section class="resume-card">
+          <h2>Education and skills</h2><p>Separate each skill with a comma.</p>
+          <div class="control-grid form-fields">
+            <div class="field"><label for="edu-school">School or university</label><input id="edu-school" placeholder="Institution"></div>
+            <div class="field"><label for="edu-degree">Degree or qualification</label><input id="edu-degree" placeholder="Qualification"></div>
+            <div class="field"><label for="edu-year">Year</label><input id="edu-year" placeholder="2020"></div>
+            <div class="field"><label for="skills">Skills</label><input id="skills" placeholder="Research, SQL, Figma"></div>
+          </div>
+        </section>
+      </div>
+      <aside class="resume-side">
+        <section class="resume-card">
+          <h2>Customize the look</h2><p>Choose type and paper tone. ATS mode will keep a white background.</p>
+          <div class="field"><label for="font-select">Font</label><select id="font-select"><option value="Arial">Arial — clear and familiar</option><option value="Aptos">Aptos — contemporary</option><option value="Georgia">Georgia — warm serif</option><option value="Cambria">Cambria — polished serif</option><option value="Trebuchet MS">Trebuchet — friendly sans serif</option><option value="Verdana">Verdana — highly legible</option></select></div>
+          <div class="field" style="margin-top:18px"><span class="field-label" style="font-weight:650">Page background</span><div class="background-swatches">
+            <label class="background-choice"><input type="radio" name="background" value="white" checked><span class="swatch white"></span>White</label>
+            <label class="background-choice"><input type="radio" name="background" value="ivory"><span class="swatch ivory"></span>Ivory</label>
+            <label class="background-choice"><input type="radio" name="background" value="blue"><span class="swatch blue"></span>Sky</label>
+            <label class="background-choice"><input type="radio" name="background" value="sage"><span class="swatch sage"></span>Sage</label>
+            <label class="background-choice"><input type="radio" name="background" value="lavender"><span class="swatch lavender"></span>Lavender</label>
+          </div></div>
+        </section>
+        <section class="resume-card">
+          <h2>Preview and download</h2><p>Open your resume in a clean preview, then use <strong>Print / Save as PDF</strong> from the preview. If server PDF is available, a direct download link will also appear.</p>
+          <div class="resume-actions"><button id="generate-resume" class="button button-primary" type="button">Preview resume</button><button id="generate-and-save" class="button button-outline" type="button">Save to my profile</button></div>
+          <div id="result" role="status" aria-live="polite"></div>
+        </section>
+        <div class="resume-side-note"><strong>ATS tip:</strong> Match the language in the job description honestly, use standard section titles, and keep important details in the document text rather than in graphics.</div>
+      </aside>
     </div>
-  </header>
-
-  <main class="container">
-    <section class="card">
-      <div class="template-select">
-        <label for="template-select"><strong>Template:</strong></label>
-
-        <!-- template-list: thumbnail cards (clickable) -->
-        <div class="template-list" id="template-thumbs" style="margin-left:6px;">
-          <div class="template-card" data-template="classic" role="button" tabindex="0">
-            <div class="thumb classic"><div style="font-size:13px">Classic</div></div>
-            <div style="min-width:78px">
-              <div style="font-weight:600">Classic</div>
-              <div class="thumb-label">Timeless serif</div>
-            </div>
-          </div>
-
-          <div class="template-card" data-template="modern" role="button" tabindex="0">
-            <div class="thumb modern"><div style="font-size:13px">Modern</div></div>
-            <div style="min-width:78px">
-              <div style="font-weight:600">Modern</div>
-              <div class="thumb-label">Clean & professional</div>
-            </div>
-          </div>
-
-          <div class="template-card" data-template="compact" role="button" tabindex="0">
-            <div class="thumb compact"><div style="font-size:13px">Compact</div></div>
-            <div style="min-width:78px">
-              <div style="font-weight:600">Compact</div>
-              <div class="thumb-label">Dense, ATS-friendly</div>
-            </div>
-          </div>
-
-          <div class="template-card" data-template="creative" role="button" tabindex="0">
-            <div class="thumb creative"><div style="font-size:13px">Creative</div></div>
-            <div style="min-width:78px">
-              <div style="font-weight:600">Creative</div>
-              <div class="thumb-label">Colorful & modern</div>
-            </div>
-          </div>
-
-          <div class="template-card" data-template="two-column" role="button" tabindex="0">
-            <div class="thumb two-column"><div style="font-size:13px">2-Column</div></div>
-            <div style="min-width:78px">
-              <div style="font-weight:600">Two-Column</div>
-              <div class="thumb-label">Professional layout</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- hidden select kept for backward compatibility -->
-        <select id="template-select" class="template-card" style="display:none;">
-          <option value="classic">Classic</option>
-          <option value="modern">Modern</option>
-          <option value="compact">Compact</option>
-          <option value="creative">Creative</option>
-          <option value="two-column">Two-Column</option>
-        </select>
-
-        <div class="note" style="margin-left:auto;">Preview opens in a new tab (Print → Save as PDF)</div>
-      </div>
-
-      <h2 style="margin-top:6px">Basic info</h2>
-      <div class="form-grid">
-        <input id="name" placeholder="Full name" />
-        <input id="title" placeholder="Headline / Title" />
-        <input id="email" placeholder="Email" />
-        <input id="phone" placeholder="Phone" />
-        <input id="location" placeholder="Location" />
-      </div>
-      <div class="full" style="margin-top:8px;">
-        <textarea id="summary" rows="4" placeholder="Professional summary / objective"></textarea>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>Experience (first item)</h2>
-      <div class="form-grid" style="margin-bottom:8px;">
-        <input id="exp-company" placeholder="Company" />
-        <input id="exp-role" placeholder="Role / Title" />
-      </div>
-      <div class="form-grid" style="margin-bottom:8px;">
-        <input id="exp-from" placeholder="From (e.g., 2021)" />
-        <input id="exp-to" placeholder="To (e.g., Present)" />
-      </div>
-      <div class="full">
-        <textarea id="exp-desc" rows="3" placeholder="Describe responsibilities / achievements"></textarea>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>Education & Skills</h2>
-      <div class="form-grid" style="margin-bottom:8px;">
-        <input id="edu-school" placeholder="School / University" />
-        <input id="edu-degree" placeholder="Degree" />
-      </div>
-      <div class="form-grid" style="margin-bottom:8px;">
-        <input id="edu-year" placeholder="Year" />
-        <input id="skills" placeholder="Comma-separated skills (e.g., JavaScript, Node.js, SQL)" />
-      </div>
-    </section>
-
-    <div class="row actions" style="margin-bottom:12px;">
-      <button id="generate-resume" class="btn btn--primary">Generate Resume (Preview & Print)</button>
-      <button id="generate-and-save" class="btn" style="background:#fff;border:1px solid #e6eef8;">Generate & Save (server)</button>
-      <div class="note" style="margin-left:12px;">Try Creative or Two-Column for premium layouts</div>
-    </div>
-
-    <div id="result"></div>
   </main>
-
-  <script src="resume.js"></script>
+  <script src="theme.js" defer></script><script src="resume.js"></script>
 </body>
 </html>

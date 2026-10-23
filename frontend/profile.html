@@ -41,6 +41,17 @@
       <span id="profile-role" class="profile-role">Member</span>
     </section>
 
+    <section class="profile-section" aria-labelledby="security-title">
+      <div class="profile-section-heading">
+        <div><h2 id="security-title">Account security</h2><p id="mfa-status">Checking verification settings…</p></div>
+      </div>
+      <p id="contact-status" class="profile-status">Email verification is required. Mobile verification will be available when phone messaging is configured.</p>
+      <div class="profile-actions">
+        <button id="enable-mfa" class="button button-primary" type="button" hidden>Enable authenticator-app verification</button>
+        <button id="disable-mfa" class="button button-outline" type="button" hidden>Turn off two-step verification</button>
+      </div>
+    </section>
+
     <section class="profile-section" aria-labelledby="resumes-title">
       <div class="profile-section-heading">
         <div><h2 id="resumes-title">My resumes</h2><p>Your saved resumes are ready to preview.</p></div>
@@ -69,7 +80,7 @@
 
   <script src="theme.js" defer></script>
   <script type="module">
-    import { getUser } from './auth.js';
+    import { getUser, supabase } from './auth.js';
 
     const token = localStorage.getItem('token');
     const headers = token ? { Authorization: 'Bearer ' + token } : {};
@@ -218,6 +229,42 @@
       } catch (error) { showSectionError(container, error); }
     }
 
+    async function loadSecurity(user) {
+      const status = byId('mfa-status');
+      const enableButton = byId('enable-mfa');
+      const disableButton = byId('disable-mfa');
+      byId('contact-status').textContent = user?.email_confirmed_at
+        ? 'Email is verified. Mobile verification is deferred until phone messaging is configured.'
+        : 'Verify your email to secure your account.';
+      const { data, error } = await supabase.auth.mfa.listFactors();
+      if (error) throw error;
+      const verifiedFactors = [...(data.phone || []), ...(data.totp || [])].filter(factor => factor.status === 'verified');
+      if (verifiedFactors.length) {
+        status.textContent = 'Two-step verification is on.';
+        disableButton.hidden = false;
+        disableButton.addEventListener('click', async () => {
+          if (!window.confirm('Turn off two-step verification for your account?')) return;
+          disableButton.disabled = true;
+          try {
+            for (const factor of verifiedFactors) {
+              const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId: factor.id });
+              if (unenrollError) throw unenrollError;
+            }
+            status.textContent = 'Two-step verification is off.';
+            disableButton.hidden = true;
+            enableButton.hidden = false;
+          } catch (error) {
+            status.dataset.state = 'error';
+            status.textContent = error.message || 'Could not turn off two-step verification.';
+          } finally { disableButton.disabled = false; }
+        });
+      } else {
+        status.textContent = 'Two-step verification is off. You can turn it on with an authenticator app.';
+        enableButton.hidden = false;
+        enableButton.addEventListener('click', () => window.location.assign('auth-mfa.html?mode=enroll'));
+      }
+    }
+
     async function loadProfile() {
       if (!token) {
         window.location.replace('login.html');
@@ -225,7 +272,9 @@
       }
 
       try {
-        const [user, profile] = await Promise.all([getUser(), getJson('/api/profile/me')]);
+        const user = await getUser();
+        await loadSecurity(user);
+        const profile = await getJson('/api/profile/me');
         const name = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.fullName;
         byId('profile-name').textContent = name || 'Your account';
         byId('profile-email').textContent = user?.email || 'Signed in to AIConnectPro';

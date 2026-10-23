@@ -59,7 +59,7 @@
 
   <script src="theme.js" defer></script>
   <script type="module">
-    import { signIn, signInWithGoogle } from './auth.js';
+    import { signIn, signInWithGoogle, getMfaStep } from './auth.js';
 
     const form = document.getElementById('login-form');
     const message = document.getElementById('msg');
@@ -83,8 +83,9 @@
       message.textContent = 'Signing you in…';
       submitButton.disabled = true;
       try {
-        await signIn(document.getElementById('email').value, password.value);
-        window.location.assign('index.html');
+        const data = await signIn(document.getElementById('email').value, password.value);
+        const mode = await getMfaStep();
+        window.location.assign(mode === 'challenge' ? 'auth-mfa.html?mode=challenge' : 'index.html');
       } catch (error) {
         message.dataset.state = 'error';
         message.textContent = error.message || 'Could not sign in. Check your details and try again.';

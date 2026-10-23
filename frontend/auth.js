@@ -16,6 +16,10 @@ supabase.auth.onAuthStateChange((_event, session) => {
   }
 });
 
+function authCallbackUrl() {
+  return new URL('/auth-callback.html', window.location.origin).toString();
+}
+
 // SIGN UP
 export async function signUp(email, password, consent) {
   if (!consent?.acceptedAt || consent.policyVersion !== '2026-10-17') {
@@ -23,9 +27,10 @@ export async function signUp(email, password, consent) {
   }
 
   const { data, error } = await supabase.auth.signUp({
-    email,
+    email: email.trim(),
     password,
     options: {
+      emailRedirectTo: authCallbackUrl(),
       data: {
         privacy_policy_accepted_at: consent.acceptedAt,
         privacy_policy_version: consent.policyVersion
@@ -36,16 +41,86 @@ export async function signUp(email, password, consent) {
   return data;
 }
 
+export async function verifySignupCode(email, token) {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: email.trim(),
+    token: token.trim(),
+    type: 'signup'
+  });
+  if (error) throw error;
+  if (!data.session) throw new Error('Email confirmed, but no sign-in session was returned. Please log in.');
+  return data;
+}
+
+export async function resendSignupCode(email) {
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email: email.trim(),
+    options: { emailRedirectTo: authCallbackUrl() }
+  });
+  if (error) throw error;
+}
+
+export async function beginGoogleEmailSignupVerification() {
+  const { error } = await supabase.auth.reauthenticate();
+  if (error) throw error;
+}
+
+export async function verifyGoogleEmailSignupCode(email, token) {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: email.trim(),
+    token: token.trim(),
+    type: 'reauthentication'
+  });
+  if (error) throw error;
+  return data;
+}
+
+// Complete the required mobile verification step after email signup or Google signup.
+export async function beginPhoneSignup(phone) {
+  const normalized = phone.replace(/[^+\d]/g, '');
+  if (!/^\+[1-9]\d{7,14}$/.test(normalized)) {
+    throw new Error('Enter a valid mobile number with country code, for example +91 98765 43210.');
+  }
+  const { data, error } = await supabase.auth.updateUser({ phone: normalized });
+  if (error) throw error;
+  return data;
+}
+
+export async function verifyPhoneSignupCode(phone, token) {
+  const normalized = phone.replace(/[^+\d]/g, '');
+  const { data, error } = await supabase.auth.verifyOtp({
+    phone: normalized,
+    token: token.trim(),
+    type: 'phone_change'
+  });
+  if (error) throw error;
+  if (!data.user?.phone_confirmed_at) throw new Error('Mobile number was not confirmed. Please try again.');
+  return data;
+}
+
+export async function resendPhoneSignupCode(phone) {
+  const normalized = phone.replace(/[^+\d]/g, '');
+  const { error } = await supabase.auth.resend({ type: 'phone_change', phone: normalized });
+  if (error) throw error;
+}
+
 // LOGIN
 export async function signIn(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({
-    email,
+    email: email.trim(),
     password
   });
   if (error) throw error;
   if (!data.session) throw new Error('Login did not return an active session.');
   localStorage.setItem('token', data.session.access_token);
   return data;
+}
+
+export async function getMfaStep() {
+  const { data, error } = await supabase.auth.mfa.listFactors();
+  if (error) throw error;
+  return (data.totp || []).some(factor => factor.status === 'verified') ? 'challenge' : 'skip';
 }
 
 // GOOGLE LOGIN

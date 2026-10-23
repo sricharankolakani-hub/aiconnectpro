@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Optional authenticator app verification for AIConnectPro."><title>Account security – AIConnectPro</title><link rel="stylesheet" href="style.css"></head>
+<body class="auth-page"><main class="auth-layout"><section class="auth-panel" aria-labelledby="mfa-title">
+  <p class="eyebrow">ACCOUNT SECURITY</p><h1 id="mfa-title">Add two-step verification?</h1>
+  <p id="instructions" class="auth-subtitle">It’s optional. Use a free authenticator app to add a second step when you sign in. No phone messaging is needed.</p>
+  <div id="choice"><button class="auth-submit" id="enable-mfa" type="button">Set up authenticator app</button><button class="auth-google" id="skip-mfa" type="button">Skip for now</button></div>
+  <div id="enrollment" hidden><p class="auth-subtitle">Scan this code with an authenticator app, or enter the setup key manually if scanning doesn’t work.</p><img id="qr" alt="Authenticator setup QR code" style="display:block;max-width:220px;margin:16px auto"><p><strong>Setup key</strong></p><code id="secret" style="word-break:break-all"></code><form id="mfa-form" class="auth-form"><label for="code">6-digit code from your authenticator app</label><input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required><button class="auth-submit" type="submit">Verify and enable</button></form></div>
+  <form id="challenge-form" class="auth-form" hidden><p class="auth-subtitle">Enter the current code from your authenticator app.</p><label for="challenge-code">6-digit code</label><input id="challenge-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required><button class="auth-submit" type="submit">Verify and continue</button></form>
+  <p id="msg" class="auth-message" role="status" aria-live="polite"></p><p><button id="sign-out" class="auth-google" type="button">Sign out</button></p>
+</section></main>
+<script type="module">
+  import { supabase, signOut } from './auth.js';
+  const msg = document.getElementById('msg'), params = new URLSearchParams(location.search);
+  const mode = params.get('mode') === 'challenge' ? 'challenge' : 'enroll';
+  let factorId = '', challengeId = '';
+  function fail(error) { msg.dataset.state = 'error'; msg.textContent = error?.message || 'Could not complete verification.'; }
+  async function initialize() {
+    const { data: session, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!session.session) { location.replace('login.html'); return; }
+    const { data, error } = await supabase.auth.mfa.listFactors(); if (error) throw error;
+    const factors = (data.totp || []).filter(f => f.status === 'verified');
+    if (mode === 'challenge') {
+      if (!factors.length) { location.replace('index.html'); return; }
+      factorId = factors[0].id;
+      const challenge = await supabase.auth.mfa.challenge({ factorId }); if (challenge.error) throw challenge.error;
+      challengeId = challenge.data.id;
+      document.getElementById('choice').hidden = true;
+      document.getElementById('instructions').hidden = true;
+      document.getElementById('challenge-form').hidden = false;
+      return;
+    }
+    if (factors.length) { location.replace('index.html'); return; }
+    document.getElementById('enable-mfa').addEventListener('click', async () => {
+      const button = document.getElementById('enable-mfa'); button.disabled = true;
+      try {
+        const { data: enrolled, error: enrollError } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'AIConnectPro authenticator' });
+        if (enrollError) throw enrollError;
+        factorId = enrolled.id;
+        document.getElementById('choice').hidden = true;
+        document.getElementById('enrollment').hidden = false;
+        document.getElementById('qr').src = enrolled.totp.qr;
+        document.getElementById('secret').textContent = enrolled.totp.secret;
+        msg.textContent = '';
+      } catch(error) { fail(error); button.disabled = false; }
+    });
+    document.getElementById('skip-mfa').addEventListener('click', () => location.replace('index.html'));
+  }
+  document.getElementById('mfa-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = event.currentTarget.querySelector('[type="submit"]'); button.disabled = true;
+    try {
+      const challenge = await supabase.auth.mfa.challenge({ factorId }); if (challenge.error) throw challenge.error;
+      const result = await supabase.auth.mfa.verify({ factorId, challengeId: challenge.data.id, code: document.getElementById('code').value.trim() });
+      if (result.error) throw result.error;
+      location.replace('index.html');
+    } catch(error) { fail(error); } finally { button.disabled = false; }
+  });
+  document.getElementById('challenge-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = event.currentTarget.querySelector('[type="submit"]'); button.disabled = true;
+    try {
+      const result = await supabase.auth.mfa.verify({ factorId, challengeId, code: document.getElementById('challenge-code').value.trim() });
+      if (result.error) throw result.error;
+      location.replace('index.html');
+    } catch(error) { fail(error); } finally { button.disabled = false; }
+  });
+  document.getElementById('sign-out').addEventListener('click', async () => { try { await signOut(); location.replace('login.html'); } catch(error) { fail(error); } });
+  initialize().catch(fail);
+</script></body></html>
