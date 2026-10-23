@@ -29,3 +29,16 @@ USING (
 );
 
 -- The API uses service_role to issue short-lived URLs after enforcing reel visibility.
+
+CREATE TABLE IF NOT EXISTS public.reel_shares (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  reel_id uuid NOT NULL REFERENCES public.reels(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS reel_shares_reel_id_idx ON public.reel_shares (reel_id);
+CREATE INDEX IF NOT EXISTS reel_comments_reel_created_idx ON public.reel_comments (reel_id, created_at DESC);
+
+ALTER TABLE public.reel_shares ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.reel_shares FROM anon, authenticated;
+GRANT SELECT, INSERT ON TABLE public.reel_shares TO service_role;
