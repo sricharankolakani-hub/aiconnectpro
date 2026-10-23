@@ -34,13 +34,23 @@
       <label for="company-name">Company or organization name <span aria-hidden="true">*</span>
         <input id="company-name" name="company_name" type="text" maxlength="160" autocomplete="organization" required>
       </label>
+      <label for="gstin">GSTIN <span aria-hidden="true">*</span>
+        <input id="gstin" name="gstin" type="text" minlength="15" maxlength="15" pattern="[0-9A-Za-z]{15}" autocomplete="off" autocapitalize="characters" required aria-describedby="gstin-help">
+        <small id="gstin-help">Enter the 15-character GSTIN. It will be checked by an administrator while automated verification is unavailable.</small>
+      </label>
+      <label for="registered-address">Registered business address <span aria-hidden="true">*</span>
+        <textarea id="registered-address" name="registered_address" rows="3" maxlength="500" autocomplete="street-address" required></textarea>
+      </label>
+      <label for="operating-location">Operating location <span aria-hidden="true">*</span>
+        <input id="operating-location" name="operating_location" type="text" maxlength="200" autocomplete="address-level2" required>
+      </label>
       <label for="website">Organization website
         <input id="website" name="website" type="url" maxlength="320" placeholder="https://example.com" autocomplete="url">
       </label>
       <label for="message">Anything you’d like us to know
         <textarea id="message" name="message" rows="5" maxlength="1500" placeholder="Share your role and how you plan to use AIConnectPro."></textarea>
       </label>
-      <p class="privacy-note">Your request is visible only to authorized administrators. Approval enables your account to publish opportunities.</p>
+      <p class="privacy-note">Your GSTIN and business address are visible only to authorized administrators. Requests stay in manual review until an administrator checks the organization details. No automated GST verification provider is connected yet.</p>
       <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
       <div class="form-actions">
         <a class="button button-outline" href="jobs.html">Back to Jobs</a>
