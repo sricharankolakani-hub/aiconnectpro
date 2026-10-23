@@ -70,6 +70,9 @@ function renderRequests(requests) {
     header.append(identity, create('span', 'request-status', request.status));
     card.append(header);
     card.append(create('h4', 'request-company', request.company_name));
+    card.append(create('p', 'request-meta', 'GSTIN: ' + (request.gstin || 'Not provided')));
+    if (request.registered_address) card.append(create('p', 'request-meta', 'Registered address: ' + request.registered_address));
+    if (request.operating_location) card.append(create('p', 'request-meta', 'Operating location: ' + request.operating_location));
     if (request.website) {
       const website = create('a', 'request-meta', request.website);
       website.href = request.website;
