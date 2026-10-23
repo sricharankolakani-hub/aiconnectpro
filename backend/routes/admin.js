@@ -15,7 +15,7 @@ router.get('/company-access-requests', async (req, res) => {
 
   let query = supabase
     .from('company_access_requests')
-    .select('id, requester_id, company_name, website, message, status, created_at, reviewed_at, reviewed_by')
+    .select('id, requester_id, company_name, website, gstin, registered_address, operating_location, message, status, created_at, reviewed_at, reviewed_by')
     .order('created_at', { ascending: false })
     .limit(100);
   if (status !== 'all') query = query.eq('status', status);
@@ -51,6 +51,9 @@ router.get('/company-access-requests', async (req, res) => {
       requester_email: emails.get(row.requester_id) || null,
       company_name: row.company_name,
       website: row.website,
+      gstin: row.gstin,
+      registered_address: row.registered_address,
+      operating_location: row.operating_location,
       message: row.message,
       status: row.status,
       created_at: row.created_at,
@@ -68,7 +71,7 @@ router.patch('/company-access-requests/:id', async (req, res) => {
 
   const { data: request, error: lookupError } = await supabase
     .from('company_access_requests')
-    .select('id, requester_id, company_name, status')
+    .select('id, requester_id, company_name, gstin, registered_address, operating_location, website, status')
     .eq('id', req.params.id)
     .maybeSingle();
   if (lookupError) return res.status(500).json({ error: 'request_lookup_failed' });
