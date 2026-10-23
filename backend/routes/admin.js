@@ -81,7 +81,44 @@ router.patch('/company-access-requests/:id', async (req, res) => {
     return res.status(403).json({ error: 'cannot_review_own_request' });
   }
 
+  let organizationId = null;
   if (decision === 'approved') {
+    const { data: organization, error: organizationError } = await supabase
+      .from('organizations')
+      .insert({
+        name: request.company_name,
+        website: request.website,
+        gstin: request.gstin,
+        registered_address: request.registered_address,
+        operating_location: request.operating_location,
+        verification_status: 'verified',
+        verification_provider: 'manual_review',
+        verification_result: { method: 'manual_admin_review' },
+        created_by: request.requester_id,
+        verified_at: new Date().toISOString(),
+        verified_by: req.user.id
+      })
+      .select('id')
+      .single();
+    if (organizationError) {
+      console.error('Organization creation after manual review failed', organizationError);
+      return res.status(500).json({ error: 'organization_create_failed' });
+    }
+    organizationId = organization.id;
+
+    const { error: membershipError } = await supabase
+      .from('organization_memberships')
+      .insert({
+        organization_id: organizationId,
+        user_id: request.requester_id,
+        role: 'owner',
+        status: 'active'
+      });
+    if (membershipError) {
+      console.error('Organization owner membership create failed', membershipError);
+      return res.status(500).json({ error: 'organization_membership_create_failed' });
+    }
+
     const { data: authData, error: userError } = await supabase.auth.admin.getUserById(request.requester_id);
     if (userError || !authData?.user) return res.status(404).json({ error: 'requester_not_found' });
 
@@ -123,7 +160,8 @@ router.patch('/company-access-requests/:id', async (req, res) => {
     .update({
       status: decision,
       reviewed_at: new Date().toISOString(),
-      reviewed_by: req.user.id
+      reviewed_by: req.user.id,
+      organization_id: organizationId
     })
     .eq('id', request.id)
     .eq('status', 'pending')
