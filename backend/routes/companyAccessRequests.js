@@ -20,10 +20,19 @@ router.post('/', auth, async (req, res) => {
   }
 
   const companyName = cleanText(req.body?.company_name, 160);
+  const gstin = cleanText(req.body?.gstin, 15)?.toUpperCase() || null;
+  const registeredAddress = cleanText(req.body?.registered_address, 500);
+  const operatingLocation = cleanText(req.body?.operating_location, 200);
   const website = cleanText(req.body?.website, 320);
   const message = cleanText(req.body?.message, 1500);
   if (!companyName || companyName.length < 2) {
     return res.status(400).json({ error: 'company_name_required' });
+  }
+  if (!gstin || !/^[0-9A-Z]{15}$/.test(gstin)) {
+    return res.status(400).json({ error: 'gstin_must_be_15_alphanumeric_characters' });
+  }
+  if (!registeredAddress || !operatingLocation) {
+    return res.status(400).json({ error: 'registered_address_and_operating_location_required' });
   }
   if (website) {
     try {
@@ -48,10 +57,13 @@ router.post('/', auth, async (req, res) => {
     .insert({
       requester_id: req.user.id,
       company_name: companyName,
+      gstin,
+      registered_address: registeredAddress,
+      operating_location: operatingLocation,
       website,
       message
     })
-    .select('id, company_name, website, message, status, created_at')
+    .select('id, company_name, website, gstin, registered_address, operating_location, message, status, created_at')
     .single();
 
   if (error) {
@@ -66,7 +78,7 @@ router.post('/', auth, async (req, res) => {
 router.get('/me', auth, async (req, res) => {
   const { data, error } = await supabase
     .from('company_access_requests')
-    .select('id, company_name, website, message, status, created_at, reviewed_at')
+    .select('id, company_name, website, gstin, registered_address, operating_location, message, status, created_at, reviewed_at')
     .eq('requester_id', req.user.id)
     .order('created_at', { ascending: false })
     .limit(1)
