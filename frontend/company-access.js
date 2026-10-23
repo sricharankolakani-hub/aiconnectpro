@@ -90,6 +90,9 @@ form.addEventListener('submit', async event => {
       method: 'POST',
       body: JSON.stringify({
         company_name: document.getElementById('company-name').value.trim(),
+        gstin: document.getElementById('gstin').value.trim().toUpperCase(),
+        registered_address: document.getElementById('registered-address').value.trim(),
+        operating_location: document.getElementById('operating-location').value.trim(),
         website: document.getElementById('website').value.trim() || null,
         message: document.getElementById('message').value.trim() || null
       })
