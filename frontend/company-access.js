@@ -47,29 +47,35 @@ function renderCurrentRequest(request) {
     form.hidden = false;
     return;
   }
-  if (request.status === 'pending') {
-    showState('Your request is being reviewed', 'We received the request for ' + request.company_name + '. We’ll show an update here after an administrator reviews it.', 'Browse opportunities', 'jobs.html');
+  const verification = request.organization?.verification_status;
+  if (request.status === 'pending' || verification === 'pending' || verification === 'manual_review') {
+    showState(
+      'Organization submitted for manual review',
+      'We received the details for ' + request.company_name + '. GST checks are not automated yet, so an administrator must review the organization before employer tools are enabled.',
+      'Browse opportunities', 'jobs.html'
+    );
     return;
   }
-  if (request.status === 'approved') {
-    showState('Company access is approved', 'Sign out and back in to refresh your access, then return to Post an Opportunity.', 'Post an opportunity', 'post-job.html');
+  if (request.status === 'approved' && verification === 'verified') {
+    showState('Organization verified', 'Employer access is connected to your existing login.', 'Post an opportunity', 'post-job.html');
     return;
   }
-  showState('Your previous request was not approved', 'You can update your organization details and send a new request for review.', null, null);
+  showState('The organization needs another review', 'Your organization was not approved. Check the details and submit an updated request.', null, null);
   form.hidden = false;
 }
 
 async function initialize() {
   if (!localStorage.getItem('token')) {
-    showState('Sign in to request company access', 'Use your AIConnectPro account so we can connect the request to the right profile.', 'Log in', 'login.html');
+    showState('Sign in to register an organization', 'Use your AIConnectPro account. Your personal profile and organization will remain separate.', 'Log in', 'login.html');
     return;
   }
 
   try {
     await getUser();
-    const profile = await api('/api/profile/me');
-    if (profile.role === 'company') {
-      showState('Company access is already enabled', 'This account can publish opportunities.', 'Post an opportunity', 'post-job.html');
+    const memberships = await api('/api/organizations/mine');
+    const verifiedOrganizations = (memberships.organizations || []).filter(item => item.verification_status === 'verified');
+    if (verifiedOrganizations.length) {
+      showState('Employer access is ready', 'Your personal profile remains separate from your organization membership.', 'Post an opportunity', 'post-job.html');
       return;
     }
     const result = await api('/api/company-access-requests/me');
@@ -83,23 +89,29 @@ form.addEventListener('submit', async event => {
   event.preventDefault();
   if (!form.reportValidity()) return;
   submitButton.disabled = true;
-  statusEl.textContent = 'Sending your request…';
+  statusEl.textContent = 'Submitting organization details…';
   statusEl.classList.remove('error');
   try {
     const result = await api('/api/company-access-requests', {
       method: 'POST',
       body: JSON.stringify({
         company_name: document.getElementById('company-name').value.trim(),
+        gstin: document.getElementById('gstin').value.trim().toUpperCase() || null,
+        registered_address: document.getElementById('registered-address').value.trim() || null,
+        operating_location: document.getElementById('operating-location').value.trim(),
         website: document.getElementById('website').value.trim() || null,
         message: document.getElementById('message').value.trim() || null
       })
     });
     form.hidden = true;
-    renderCurrentRequest(result.request);
+    renderCurrentRequest({
+      ...result.request,
+      organization: { verification_status: result.organization?.verification_status }
+    });
   } catch (error) {
     statusEl.textContent = error.status === 409
-      ? 'A request is already pending or company access is already enabled for this account.'
-      : error.message || 'We could not send your request.';
+      ? 'A review request is already pending, or this GSTIN is already registered.'
+      : error.message || 'We could not submit the organization.';
     statusEl.classList.add('error');
   } finally {
     submitButton.disabled = false;

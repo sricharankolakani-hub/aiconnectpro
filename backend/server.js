@@ -13,6 +13,7 @@ const reelsRoutes = require('./routes/reels');
 const jobsRoutes = require('./routes/jobs');
 const profileRoutes = require('./routes/profile');
 const companyAccessRequestRoutes = require('./routes/companyAccessRequests');
+const organizationRoutes = require('./routes/organizations');
 const adminRoutes = require('./routes/admin');
 
 
@@ -31,6 +32,7 @@ app.use('/api/reels', reelsRoutes);
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/company-access-requests', companyAccessRequestRoutes);
+app.use('/api/organizations', organizationRoutes);
 app.use('/api/admin', adminRoutes);
 
 // other demo routes

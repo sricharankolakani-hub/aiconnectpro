@@ -25,22 +25,24 @@ const { v4: uuidv4 } = require('uuid');
  * Body: { title, type, description, company_id, location, is_private }
  */
 router.post('/', auth, async (req, res) => {
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', req.user.id)
-    .single();
-
-  if (!profile || profile.role !== 'company' || !Array.isArray(req.user.roles) || !req.user.roles.includes('company')) {
-    return res.status(403).json({ error: 'Only companies can post jobs' });
-  }
-
   try {
     const userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ error: 'unauthorized' });
 
     const { title, type, description, company_id, location, is_private } = req.body || {};
-    if (!title || !type) return res.status(400).json({ error: 'missing_fields', details: 'title and type required' });
+    if (!title || !type || !company_id) return res.status(400).json({ error: 'missing_fields', details: 'title, type, and organization required' });
+
+    const { data: membership, error: membershipError } = await supabase
+      .from('organization_memberships')
+      .select('organization:organizations(id, verification_status)')
+      .eq('organization_id', company_id)
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .maybeSingle();
+    if (membershipError) return res.status(500).json({ error: 'organization_access_check_failed' });
+    if (!membership?.organization || membership.organization.verification_status !== 'verified') {
+      return res.status(403).json({ error: 'verified_organization_membership_required' });
+    }
 
     const rec = {
       id: uuidv4(),
@@ -227,23 +229,24 @@ router.get('/applied', auth, async (req, res) => {
 
 // GET /api/jobs/posted (company)
 router.get('/posted', auth, async (req, res) => {
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', req.user.id)
-    .single();
-
-  if (profile?.role !== 'company' || !Array.isArray(req.user.roles) || !req.user.roles.includes('company')) {
-    return res.status(403).json({ error: 'Only companies' });
-  }
+  const { data: memberships, error: membershipError } = await supabase
+    .from('organization_memberships')
+    .select('organization_id, organization:organizations(verification_status)')
+    .eq('user_id', req.user.id)
+    .eq('status', 'active');
+  if (membershipError) return res.status(500).json({ error: 'organization_lookup_failed' });
+  const organizationIds = (memberships || [])
+    .filter(row => row.organization?.verification_status === 'verified')
+    .map(row => row.organization_id);
+  if (!organizationIds.length) return res.json([]);
 
   const { data, error } = await supabase
     .from('jobs')
     .select('*')
-    .eq('posted_by', req.user.id);
-
-  if (error) return res.status(500).json(error);
-  res.json(data);
+    .in('company_id', organizationIds)
+    .order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: 'db_error' });
+  return res.json(data || []);
 });
 
 
@@ -251,25 +254,23 @@ router.get('/posted', auth, async (req, res) => {
 // Only the company account that owns the listing may view its applicants.
 router.get('/posted/:jobId/applications', auth, async (req, res) => {
   try {
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', req.user.id)
-      .maybeSingle();
-
-    if (profileError) return res.status(500).json({ error: 'db_error' });
-    if (!profile || profile.role !== 'company' || !Array.isArray(req.user.roles) || !req.user.roles.includes('company')) {
-      return res.status(403).json({ error: 'company_access_required' });
-    }
-
     const { data: job, error: jobError } = await supabase
       .from('jobs')
-      .select('id, posted_by')
+      .select('id, company_id')
       .eq('id', req.params.jobId)
       .maybeSingle();
 
     if (jobError) return res.status(500).json({ error: 'db_error' });
-    if (!job || job.posted_by !== req.user.id) {
+    if (!job) return res.status(404).json({ error: 'job_not_found' });
+    const { data: membership, error: membershipError } = await supabase
+      .from('organization_memberships')
+      .select('id, organization:organizations(verification_status)')
+      .eq('organization_id', job.company_id)
+      .eq('user_id', req.user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+    if (membershipError) return res.status(500).json({ error: 'organization_access_check_failed' });
+    if (!membership || membership.organization?.verification_status !== 'verified') {
       return res.status(404).json({ error: 'job_not_found' });
     }
 
