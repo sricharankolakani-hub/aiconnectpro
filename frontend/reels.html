@@ -1,60 +1,73 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>AIConnect Pro — Reels</title>
-  <link rel="stylesheet" href="style.css"/>
-  <style>
-    body{ font-family: Inter, Arial, sans-serif; background:#f6f8fb; margin:0; color:#111; }
-    .container{ max-width:900px; margin:20px auto; padding:16px; }
-    .card{ background:#fff; border-radius:10px; padding:12px; margin-bottom:12px; box-shadow:0 6px 18px rgba(16,24,40,0.04); }
-    .reel{ padding:12px; border-radius:8px; margin-bottom:10px; background:#fff; }
-    .reel .meta{ display:flex; justify-content:space-between; font-size:13px; color:#666; margin-bottom:8px; }
-    .reel .body{ white-space:pre-wrap; margin-bottom:8px; }
-    .actions{ display:flex; gap:8px; align-items:center; }
-    .btn{ padding:8px 10px; border-radius:8px; border:none; cursor:pointer; font-weight:600; }
-    .btn--primary{ background:#0b76ff; color:#fff; }
-    .small{ font-size:13px; color:#666; }
-    .form-row{ display:flex; gap:8px; margin-bottom:8px; }
-    input, textarea { width:100%; padding:8px; border:1px solid #e6eef8; border-radius:8px; box-sizing:border-box; font-size:14px; }
-    textarea{ min-height:84px; resize:vertical; }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Share short professional insights and discover ideas from the AIConnectPro community.">
+  <title>Reels – AIConnectPro</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="reels.css">
 </head>
-<body>
-  <div class="container">
-    <div class="card">
-      <h2>Create Reel</h2>
-      <div id="create-form">
-        <div class="form-row">
-          <input id="reel-title" placeholder="Title (optional)"/>
+<body class="reels-page">
+  <header class="site-header">
+    <div class="shell nav-shell">
+      <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+      <nav class="primary-nav" aria-label="Main navigation">
+        <a href="jobs.html">Jobs</a>
+        <a href="connections.html">Connections</a>
+        <a href="messages.html">Messages</a>
+        <a href="resume.html">Resume Builder</a>
+        <a href="profile.html">My Profile</a>
+      </nav>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
+    </div>
+  </header>
+  <main class="shell reels-main">
+    <section class="reels-intro">
+      <div>
+        <p class="eyebrow"><span class="eyebrow-dot"></span> PROFESSIONAL COMMUNITY</p>
+        <h1>Ideas worth sharing</h1>
+        <p>Share a short tip, a useful update, or a link that could help someone move forward.</p>
+      </div>
+      <a class="button button-outline" href="connections.html">Build your network <span aria-hidden="true">→</span></a>
+    </section>
+
+    <div class="reels-layout">
+      <section id="create-panel" class="reels-card create-card" aria-labelledby="create-heading">
+        <div class="reels-card-heading">
+          <div><p class="eyebrow">CREATE</p><h2 id="create-heading">Share an insight</h2></div>
+          <span class="reels-icon" aria-hidden="true">✦</span>
         </div>
-        <div class="form-row">
-          <textarea id="reel-body" placeholder="Share a short knowledge clip, tip or link"></textarea>
-        </div>
-        <div class="form-row">
-          <input id="reel-media" placeholder="Optional media URL (image/video)" />
-        </div>
-        <div class="form-row">
-          <select id="reel-visibility">
-            <option value="private">Only signed-in users</option>
-            <option value="public">Public (not recommended)</option>
+        <form id="create-form">
+          <label for="reel-title">Title <span class="optional-label">Optional</span></label>
+          <input id="reel-title" name="title" maxlength="120" placeholder="Give your post a clear headline">
+          <label for="reel-body">Your insight</label>
+          <textarea id="reel-body" name="body" maxlength="3000" rows="5" placeholder="What would you like the community to learn?" required></textarea>
+          <label for="reel-media">Link to image or video <span class="optional-label">Optional</span></label>
+          <input id="reel-media" name="media_url" type="url" maxlength="2000" inputmode="url" placeholder="https://…">
+          <label for="reel-visibility">Who can see this?</label>
+          <select id="reel-visibility" name="visibility">
+            <option value="private">Signed-in members</option>
+            <option value="public">Anyone with the link</option>
           </select>
-          <button id="post-reel" class="btn btn--primary">Post Reel</button>
+          <p class="reels-help">You can choose the audience for each post. Avoid sharing personal details you want to keep private.</p>
+          <button id="post-reel" class="button button-primary" type="submit">Publish post <span aria-hidden="true">→</span></button>
+          <p id="create-result" class="reels-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="reels-card feed-card" aria-labelledby="feed-heading">
+        <div class="reels-card-heading">
+          <div><p class="eyebrow">DISCOVER</p><h2 id="feed-heading">Community feed</h2><p class="reels-subtitle">Short ideas and updates from members.</p></div>
+          <button id="refresh-feed" class="button button-outline button-small" type="button">Refresh</button>
         </div>
-        <div id="create-result" class="small"></div>
-      </div>
+        <p id="feed-status" class="reels-status" role="status" aria-live="polite"></p>
+        <div id="feed" class="reel-list"><p class="reels-empty">Loading the latest posts…</p></div>
+        <button id="load-more-btn" class="button button-outline load-more" type="button">Load more</button>
+      </section>
     </div>
-
-    <div class="card">
-      <h2>Feed</h2>
-      <div id="feed"></div>
-      <div id="load-more" style="text-align:center; margin-top:8px;">
-        <button id="load-more-btn" class="btn">Load more</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="reels.js"></script>
+  </main>
+  <script src="theme.js" defer></script>
+  <script src="reels.js" defer></script>
 </body>
 </html>
