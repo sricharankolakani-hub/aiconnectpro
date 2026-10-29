@@ -1,0 +1,40 @@
+.reels-main{padding-block:2.5rem 4rem}
+.reels-intro{display:flex;align-items:end;justify-content:space-between;gap:1.5rem;margin-bottom:1.5rem}
+.reels-intro h1{margin:.25rem 0;font-size:clamp(2.1rem,5vw,3.35rem);letter-spacing:-.055em;line-height:1.05}
+.reels-intro p:not(.eyebrow){max-width:650px;margin:.65rem 0 0;color:var(--muted);line-height:1.6}
+.reels-layout{display:grid;grid-template-columns:minmax(280px,.8fr) minmax(0,1.2fr);gap:1rem;align-items:start}
+.reels-card{min-width:0;padding:clamp(1.1rem,3vw,1.5rem);background:var(--white);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+.reels-card-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.15rem}
+.reels-card-heading .eyebrow{margin:0 0 .4rem;font-size:.65rem}
+.reels-card-heading h2{margin:0;font-size:1.2rem;letter-spacing:-.03em}
+.reels-icon{display:grid;place-items:center;width:2.6rem;height:2.6rem;border-radius:14px;color:var(--primary);background:color-mix(in srgb,var(--primary) 12%,var(--white));font-size:1.2rem}
+#create-form{display:grid;gap:.6rem}
+#create-form label{margin-top:.35rem;font-size:.86rem;font-weight:700}
+#create-form input,#create-form textarea,#create-form select{width:100%;min-width:0;padding:.8rem .85rem;border:1px solid var(--line);border-radius:11px;background:var(--white);color:var(--ink);font:inherit}
+#create-form textarea{resize:vertical;min-height:8rem;line-height:1.55}
+#create-form input:focus,#create-form textarea:focus,#create-form select:focus{outline:3px solid color-mix(in srgb,var(--primary) 22%,transparent);border-color:var(--primary)}
+.optional-label{margin-left:.35rem;color:var(--muted);font-size:.75rem;font-weight:500}
+.reels-help,.reels-subtitle{margin:.25rem 0;color:var(--muted);font-size:.83rem;line-height:1.55}
+.reels-status{min-height:1.3rem;margin:.65rem 0;color:var(--muted);font-size:.85rem;line-height:1.5}
+.reels-status[data-state="error"]{color:#b42318}
+.reel-list{display:grid;gap:.85rem}
+.reel-post{padding:1rem;border:1px solid var(--line);border-radius:16px;background:var(--white)}
+.reel-post h3{margin:0 0 .5rem;font-size:1.05rem;letter-spacing:-.025em}
+.reel-meta{display:flex;justify-content:space-between;gap:.8rem;margin-bottom:.75rem;color:var(--muted);font-size:.78rem}
+.reel-body{margin:0;color:var(--ink);line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.reel-media{display:inline-flex;margin-top:.75rem;color:var(--primary);font-weight:700;text-decoration:none;overflow-wrap:anywhere}
+.reel-media:hover{text-decoration:underline}
+.reel-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.9rem;padding-top:.8rem;border-top:1px solid var(--line)}
+.reel-action{min-height:36px;padding:.4rem .75rem;border:1px solid var(--line);border-radius:999px;background:var(--white);color:var(--ink);font:inherit;font-size:.82rem;font-weight:650;cursor:pointer}
+.reel-action:hover,.reel-action[aria-pressed="true"]{border-color:var(--primary);color:var(--primary)}
+.reel-comments{display:grid;gap:.55rem;margin-top:.75rem}
+.reel-comment-form{display:flex;gap:.5rem}
+.reel-comment-form input{flex:1;min-width:0;padding:.65rem .75rem;border:1px solid var(--line);border-radius:10px;background:var(--white);color:var(--ink);font:inherit}
+.reel-comment{padding:.55rem .7rem;border-radius:10px;background:var(--paper);font-size:.84rem;line-height:1.5;overflow-wrap:anywhere}
+.reels-empty{padding:2rem 1rem;text-align:center;color:var(--muted);line-height:1.6}
+.load-more{display:flex;margin:1rem auto 0}
+body[data-theme="dark"] .reels-card,body[data-theme="dark"] .reel-post{background:#171c2b;border-color:#2c3448}
+body[data-theme="dark"] #create-form input,body[data-theme="dark"] #create-form textarea,body[data-theme="dark"] #create-form select,body[data-theme="dark"] .reel-comment-form input,body[data-theme="dark"] .reel-action{background:#111626;color:#edf0f8;border-color:#39435c}
+body[data-theme="dark"] .reel-comment{background:#111626;color:#dce3f0}
+@media(max-width:780px){.reels-layout{grid-template-columns:1fr}.create-card{order:0}.feed-card{order:1}}
+@media(max-width:560px){.reels-main{padding-top:1.5rem}.reels-intro{align-items:flex-start;flex-direction:column}.reels-intro>.button{width:100%}.reel-meta{flex-direction:column;gap:.2rem}.reel-comment-form{flex-direction:column}}

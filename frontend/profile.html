@@ -14,7 +14,6 @@
       <nav class="primary-nav" aria-label="Main navigation">
         <a href="jobs.html">Jobs</a>
         <a href="connections.html">Connections</a>
-        <a href="connections.html">Connections</a>
         <a href="resume.html">Resume Builder</a>
         <a href="company-access.html">For employers</a>
       </nav>
@@ -26,6 +25,7 @@
     <div class="profile-heading">
       <div>
         <p class="eyebrow">YOUR CAREER WORKSPACE</p>
+        <p id="profile-greeting" class="profile-greeting" aria-live="polite">Hi</p>
         <h1>My profile</h1>
         <p>Your resumes and career activity, together in one place.</p>
       </div>
@@ -81,15 +81,34 @@
         </section>
       </div>
     </section>
+
+    <section class="profile-section profile-signout" aria-labelledby="signout-title">
+      <div>
+        <h2 id="signout-title">Sign out</h2>
+        <p>Finished for now? Sign out of this device.</p>
+      </div>
+      <button id="profile-logout" class="button button-outline" type="button">Log out</button>
+    </section>
   </main>
 
   <script src="theme.js" defer></script>
   <script type="module">
-    import { getUser, supabase } from './auth.js';
+    import { getUser, signOut, supabase } from './auth.js';
 
     const token = localStorage.getItem('token');
     const headers = token ? { Authorization: 'Bearer ' + token } : {};
     const byId = id => document.getElementById(id);
+
+    byId('profile-logout')?.addEventListener('click', async event => {
+      const button = event.currentTarget;
+      button.disabled = true;
+      button.textContent = 'Signing out…';
+      try {
+        await signOut();
+      } finally {
+        window.location.replace('index.html');
+      }
+    });
 
     async function getJson(url) {
       const response = await fetch(url, { headers });
@@ -282,6 +301,7 @@
         const profile = await getJson('/api/profile/me');
         const name = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.fullName;
         byId('profile-name').textContent = name || 'Your account';
+        byId('profile-greeting').textContent = 'Hi, ' + (name || 'there');
         byId('profile-email').textContent = user?.email || 'Signed in to AIConnectPro';
         const accountType = user?.user_metadata?.account_type || 'professional';
         const typeLabels = { professional: 'Professional / Employee', student: 'Student', founder: 'Founder / Business Owner' };
