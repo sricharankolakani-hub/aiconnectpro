@@ -60,11 +60,6 @@ router.get('/', async (req, res) => {
     const peers = (links || []).map(row => row.sender_id === userId ? row.recipient_id : row.sender_id);
     if (!peers.length) return res.json({ conversations: [] });
 
-    const [member_a, member_b] = [userId, ...peers].reduce((acc, id) => {
-      acc.push(id); return acc;
-    }, []).sort(); // Used only to keep deterministic matching below.
-    void member_a; void member_b;
-
     const { data: all, error } = await supabase.from('direct_conversations')
       .select('id, member_a, member_b, created_at')
       .or(`member_a.eq.${userId},member_b.eq.${userId}`)
