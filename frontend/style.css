@@ -743,3 +743,55 @@ body[data-theme="dark"] .next-step-banner {
 
 /* Keep decorative full-bleed hero art from creating sideways page scroll. */
 html { overflow-x: clip; }
+
+
+/* Connect homepage sections into one calm canvas and group related destinations. */
+:root { --premium-canvas: #f5f3ee; }
+body { background: var(--premium-canvas); }
+.section-wrap {
+  background: var(--premium-canvas);
+  border-color: rgba(91,82,65,.12);
+}
+.feature-grid {
+  gap: 0;
+  overflow: hidden;
+  background: #fbfaf7;
+  border: 1px solid #e6e1d7;
+  border-radius: 18px;
+  box-shadow: 0 12px 34px rgba(37,43,53,.045);
+}
+.feature-card,
+.feature-card:hover {
+  transform: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.feature-card + .feature-card { border-left: 1px solid #e6e1d7; }
+.feature-card:hover {
+  background: rgba(168,135,85,.055);
+}
+body[data-theme="dark"] {
+  --premium-canvas: #151b24;
+}
+body[data-theme="dark"] .section-wrap {
+  background: var(--premium-canvas);
+  border-color: #2b3038;
+}
+body[data-theme="dark"] .feature-grid {
+  background: #1b222c;
+  border-color: #343a43;
+  box-shadow: 0 14px 36px rgba(0,0,0,.14);
+}
+body[data-theme="dark"] .feature-card + .feature-card { border-left-color: #343a43; }
+body[data-theme="dark"] .feature-card,
+body[data-theme="dark"] .feature-card:hover { background: transparent; }
+body[data-theme="dark"] .feature-card:hover { background: rgba(196,168,118,.07); }
+@media (max-width: 760px) {
+  .feature-card + .feature-card {
+    border-left: 0;
+    border-top: 1px solid #e6e1d7;
+  }
+  body[data-theme="dark"] .feature-card + .feature-card { border-top-color: #343a43; }
+}
