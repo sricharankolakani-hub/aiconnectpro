@@ -55,6 +55,9 @@ function renderPersonList(containerId, rows, kind) {
     } else if (kind === 'outgoing') {
       actions.append(actionButton('Withdraw', 'withdraw', row.id));
     } else {
+      const messageLink = make('a', 'connection-message-link', 'Message');
+      messageLink.href = 'messages.html?user=' + encodeURIComponent(person.id);
+      actions.append(messageLink);
       actions.append(actionButton('Remove connection', 'disconnect', row.id));
     }
     item.append(actions);

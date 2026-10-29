@@ -15,6 +15,7 @@ const profileRoutes = require('./routes/profile');
 const companyAccessRequestRoutes = require('./routes/companyAccessRequests');
 const adminRoutes = require('./routes/admin');
 const connectionsRoutes = require('./routes/connections');
+const messagesRoutes = require('./routes/messages');
 
 
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/company-access-requests', companyAccessRequestRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/connections', connectionsRoutes);
+app.use('/api/messages', messagesRoutes);
 
 // other demo routes
 app.get('/health', (req, res) => res.json({ status: 'ok', message: 'AIConnect Pro backend running' }));
