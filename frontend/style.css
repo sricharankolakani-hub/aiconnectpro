@@ -313,3 +313,21 @@ body[data-theme="dark"] .profile-subsection h3 { color: var(--ink); }
 @media (max-width: 620px) {
   .profile-activity-grid { grid-template-columns: 1fr; }
 }
+
+/* Consistent navigation, focus, and page-footing across the product. */
+.primary-nav { gap: clamp(10px, 1.6vw, 22px); }
+.primary-nav a[aria-current="page"] { color: var(--primary); position: relative; }
+.primary-nav a[aria-current="page"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -9px; height: 2px; border-radius: 2px; background: currentColor; }
+.footer-privacy { color: var(--muted); font-size: 12px; text-decoration: none; }
+.footer-privacy:hover { color: var(--primary); text-decoration: underline; }
+@media (max-width: 680px) {
+  .primary-nav { justify-content: flex-start; gap: 20px; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: none; }
+  .primary-nav::-webkit-scrollbar { display: none; }
+  .primary-nav a { flex: 0 0 auto; white-space: nowrap; }
+  .primary-nav a[aria-current="page"]::after { bottom: -5px; }
+  .footer-inner { position: relative; padding-right: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
