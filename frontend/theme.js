@@ -4,6 +4,85 @@
   const saved = localStorage.getItem(storageKey);
   const initial = saved === 'dark' || saved === 'light' ? saved : (media.matches ? 'dark' : 'light');
 
+  function polishNavigation() {
+    const nav = document.querySelector('.primary-nav');
+    if (!nav) return;
+    const page = window.location.pathname.split('/').pop() || 'index.html';
+    const authPage = page === 'login.html' || page === 'signup.html';
+    const common = authPage
+      ? [['index.html', 'Home'], ['jobs.html', 'Jobs']]
+      : [['jobs.html', 'Jobs'], ['connections.html', 'Connections'], ['messages.html', 'Messages'], ['resume.html', 'Resume Builder'], ['profile.html', 'My Profile']];
+    const existing = [...nav.querySelectorAll('a')];
+    const byPath = new Map();
+    for (const link of existing) {
+      const key = new URL(link.getAttribute('href'), window.location.href).pathname.split('/').pop();
+      if (!byPath.has(key)) byPath.set(key, link);
+    }
+    const ordered = [];
+    for (const [href, label] of common) {
+      let link = byPath.get(href);
+      if (!link) {
+        link = document.createElement('a');
+        link.href = href;
+      }
+      link.textContent = label;
+      const isCurrent = page === href;
+      if (isCurrent) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+      ordered.push(link);
+      byPath.delete(href);
+    }
+    for (const [href, label] of [
+      ['post-job.html', 'Post an opportunity'],
+      ['company-applications.html', 'Applicant inbox'],
+      ['company-access.html', 'For employers'],
+      ['admin-company-requests.html', 'Admin Requests']
+    ]) {
+      let link = byPath.get(href);
+      if (page === href && !link) {
+        link = document.createElement('a');
+        link.href = href;
+        link.textContent = label;
+      }
+      if (link) {
+        if (page === href) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+        ordered.push(link);
+        byPath.delete(href);
+      }
+    }
+    for (const link of existing) {
+      const key = new URL(link.getAttribute('href'), window.location.href).pathname.split('/').pop();
+      if (!common.some(([href]) => href === key) && !ordered.includes(link)) ordered.push(link);
+    }
+    nav.replaceChildren(...ordered);
+    const themeToggle = document.getElementById('theme-toggle');
+    const navShell = nav.closest('.nav-shell');
+    if (themeToggle && navShell) navShell.append(themeToggle);
+  }
+
+  function addSharedFooter() {
+    if (!document.querySelector('.site-header') || !document.querySelector('main') || document.querySelector('.site-footer')) return;
+    const footer = document.createElement('footer');
+    footer.className = 'site-footer';
+    const inner = document.createElement('div');
+    inner.className = 'shell footer-inner';
+    const brand = document.createElement('a');
+    brand.className = 'brand brand-footer';
+    brand.href = 'index.html';
+    brand.setAttribute('aria-label', 'AIConnectPro home');
+    brand.innerHTML = '<span class="brand-mark" aria-hidden="true">A</span> AIConnectPro';
+    const copy = document.createElement('span');
+    copy.textContent = 'Career tools and opportunities for your next step.';
+    const privacy = document.createElement('a');
+    privacy.href = 'privacy-policy.html';
+    privacy.textContent = 'Privacy';
+    privacy.className = 'footer-privacy';
+    inner.append(brand, copy, privacy);
+    footer.appendChild(inner);
+    document.body.appendChild(footer);
+  }
+
   function applyTheme(theme) {
     document.body.dataset.theme = theme;
     const button = document.getElementById('theme-toggle');
