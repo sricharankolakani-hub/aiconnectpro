@@ -1110,3 +1110,6 @@ html body[data-theme="dark"][data-contrast="high"] :focus-visible {
   .profile-heading-actions { margin-top: 15px; }
   .profile-heading-actions .button { width: 100%; }
 }
+
+.profile-bio{max-width:70ch;margin:8px 0 0;color:var(--muted);font-size:.92rem;line-height:1.65;white-space:pre-wrap}
+.profile-overview-copy>span{line-height:1.45}
