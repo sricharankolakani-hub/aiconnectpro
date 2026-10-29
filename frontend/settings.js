@@ -18,6 +18,15 @@ function setStatus(element, message, error = false) {
 function avatarLetters(name) {
   return String(name || 'A').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
 }
+async function getAvatarUrl(user) {
+  const path = user?.user_metadata?.avatar_path;
+  if (path) {
+    const { data, error } = await supabase.storage.from('profile-photos').createSignedUrl(path, 3600);
+    if (error) throw error;
+    return data.signedUrl;
+  }
+  return user?.user_metadata?.avatar_url || null;
+}
 function showAvatar(url, name) {
   initials.textContent = avatarLetters(name);
   if (url) {
@@ -66,7 +75,7 @@ async function loadSettings() {
   const profile = await response.json();
   const name = profile.full_name || currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || '';
   document.getElementById('full-name').value = name;
-  showAvatar(currentUser.user_metadata?.avatar_url, name);
+  showAvatar(await getAvatarUrl(currentUser), name);
 }
 
 profileForm.addEventListener('submit', async event => {
@@ -92,7 +101,7 @@ profileForm.addEventListener('submit', async event => {
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || 'Could not save your profile.');
     currentUser = await getUser();
-    showAvatar(currentUser?.user_metadata?.avatar_url, name);
+    showAvatar(await getAvatarUrl(currentUser), name);
     setStatus(profileStatus, 'Your profile name is updated.');
   } catch (error) {
     setStatus(profileStatus, error.message || 'Could not save your profile.', true);
@@ -139,18 +148,16 @@ photoInput.addEventListener('change', async () => {
       upsert: false
     });
     if (uploadError) throw uploadError;
-    const { data } = supabase.storage.from('profile-photos').getPublicUrl(path);
-    const avatarUrl = data.publicUrl + '?v=' + Date.now();
     const oldPath = currentUser.user_metadata?.avatar_path;
     const { data: updated, error: metadataError } = await supabase.auth.updateUser({
-      data: { avatar_url: avatarUrl, avatar_path: path }
+      data: { avatar_url: null, avatar_path: path }
     });
     if (metadataError) {
       await supabase.storage.from('profile-photos').remove([path]);
       throw metadataError;
     }
     currentUser = updated.user;
-    showAvatar(avatarUrl, document.getElementById('full-name').value);
+    showAvatar(await getAvatarUrl(currentUser), document.getElementById('full-name').value);
     setStatus(photoStatus, 'Your profile photo has been updated.');
     if (oldPath && oldPath !== path) {
       const { error: removeError } = await supabase.storage.from('profile-photos').remove([oldPath]);
