@@ -60,9 +60,12 @@ function renderReel(reel) {
   like.type = 'button'; like.dataset.action = 'like'; like.dataset.id = reel.id; like.setAttribute('aria-pressed', 'false');
   const comment = node('button', 'reel-action', 'Comment');
   comment.type = 'button'; comment.dataset.action = 'comment'; comment.dataset.id = reel.id;
-  const share = node('button', 'reel-action', 'Copy link');
-  share.type = 'button'; share.dataset.action = 'share'; share.dataset.id = reel.id;
-  actions.append(like, comment, share);
+  actions.append(like, comment);
+  if (reel.visibility === 'public') {
+    const share = node('button', 'reel-action', 'Copy link');
+    share.type = 'button'; share.dataset.action = 'share'; share.dataset.id = reel.id;
+    actions.append(share);
+  }
   card.append(actions, node('div', 'reel-comments'));
   return card;
 }
@@ -127,7 +130,7 @@ async function postReel(event) {
     if (response.status === 401) throw new Error('Please sign in to publish a post.');
     if (!response.ok || data.error) throw new Error(data.error || 'Could not publish this post.');
     createForm.reset();
-    setStatus(createResult, 'Your post is live.');
+    setStatus(createResult, 'Your post was saved.');
     await loadReels({ reset: true });
   } catch (error) {
     setStatus(createResult, error.message || 'Could not publish this post.', true);
