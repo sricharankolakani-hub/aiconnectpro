@@ -19,6 +19,7 @@
       if (!byPath.has(key)) byPath.set(key, link);
     }
     const ordered = [];
+    const extras = [];
     for (const [href, label] of common) {
       let link = byPath.get(href);
       if (!link) {
@@ -26,8 +27,7 @@
         link.href = href;
       }
       link.textContent = label;
-      const isCurrent = page === href;
-      if (isCurrent) link.setAttribute('aria-current', 'page');
+      if (page === href) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
       ordered.push(link);
       byPath.delete(href);
@@ -47,13 +47,25 @@
       if (link) {
         if (page === href) link.setAttribute('aria-current', 'page');
         else link.removeAttribute('aria-current');
-        ordered.push(link);
+        extras.push(link);
         byPath.delete(href);
       }
     }
     for (const link of existing) {
       const key = new URL(link.getAttribute('href'), window.location.href).pathname.split('/').pop();
-      if (!common.some(([href]) => href === key) && !ordered.includes(link)) ordered.push(link);
+      if (!common.some(([href]) => href === key) && !extras.includes(link)) extras.push(link);
+    }
+    if (extras.length) {
+      const more = document.createElement('details');
+      more.className = 'nav-more';
+      if (extras.some(link => link.getAttribute('aria-current') === 'page')) more.open = true;
+      const summary = document.createElement('summary');
+      summary.textContent = 'More';
+      const menu = document.createElement('div');
+      menu.className = 'nav-more-menu';
+      for (const link of extras) menu.appendChild(link);
+      more.append(summary, menu);
+      ordered.push(more);
     }
     nav.replaceChildren(...ordered);
     const themeToggle = document.getElementById('theme-toggle');
