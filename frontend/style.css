@@ -1051,3 +1051,62 @@ html body[data-theme="dark"] .site-footer {
 @media (max-width: 680px) {
   body.utility-page > main { width: min(100% - 32px, 540px); }
 }
+
+
+/* Personal appearance settings: font, contrast, and a theme-aware canvas tint. */
+body[data-font="system"] { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+body[data-font="arial"] { font-family: Arial, "Helvetica Neue", sans-serif; }
+body[data-font="serif"] { font-family: Georgia, "Times New Roman", serif; }
+html body[data-theme="light"][data-background="blue"] {
+  --premium-canvas: #e7eef6;
+  background-color: #e7eef6;
+  background-image:
+    radial-gradient(ellipse 80% 55% at 12% 0%, rgba(98,132,179,.16), transparent 100%),
+    linear-gradient(135deg, #e7eef6 0%, #f4f6fa 46%, #dfe8f3 100%);
+}
+html body[data-theme="light"][data-background="sage"] {
+  --premium-canvas: #e7ece3;
+  background-color: #e7ece3;
+  background-image:
+    radial-gradient(ellipse 80% 55% at 12% 0%, rgba(106,140,105,.15), transparent 100%),
+    linear-gradient(135deg, #e7ece3 0%, #f5f6ef 46%, #dce5d7 100%);
+}
+html body[data-theme="dark"][data-background="warm"] {
+  background-image:
+    radial-gradient(ellipse 78% 48% at 14% 0%, rgba(83,117,168,.13), transparent 100%),
+    linear-gradient(135deg, #0d1521 0%, #131e2d 48%, #0b1320 100%);
+}
+html body[data-theme="dark"][data-background="blue"] {
+  background-color: #0c1728;
+  background-image:
+    radial-gradient(ellipse 78% 48% at 14% 0%, rgba(79,126,190,.2), transparent 100%),
+    linear-gradient(135deg, #0c1728 0%, #14243a 48%, #0a1423 100%);
+}
+html body[data-theme="dark"][data-background="sage"] {
+  background-color: #0e1a19;
+  background-image:
+    radial-gradient(ellipse 78% 48% at 14% 0%, rgba(78,132,113,.16), transparent 100%),
+    linear-gradient(135deg, #0e1a19 0%, #142724 48%, #0b1718 100%);
+}
+html body[data-contrast="high"] {
+  --muted: #465264;
+  --line: #7d8998;
+}
+html body[data-theme="dark"][data-contrast="high"] {
+  --muted: #d3dceb;
+  --line: #718198;
+}
+html body[data-contrast="high"] :focus-visible {
+  outline: 3px solid #1257c5;
+  outline-offset: 3px;
+}
+html body[data-theme="dark"][data-contrast="high"] :focus-visible {
+  outline-color: #c4d8ff;
+}
+.profile-heading-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.profile-avatar { position: relative; overflow: hidden; }
+.profile-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+@media (max-width: 520px) {
+  .profile-heading-actions { margin-top: 15px; }
+  .profile-heading-actions .button { width: 100%; }
+}
