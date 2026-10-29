@@ -28,7 +28,7 @@
     const authPage = page === 'login.html' || page === 'signup.html';
     const common = authPage
       ? [['index.html', 'Home'], ['jobs.html', 'Jobs']]
-      : [['jobs.html', 'Jobs'], ['connections.html', 'Connections'], ['messages.html', 'Messages'], ['resume.html', 'Resume Builder'], ['profile.html', 'My Profile']];
+      : [['jobs.html', 'Jobs'], ['connections.html', 'Connections'], ['messages.html', 'Messages'], ['resume.html', 'Resume Builder']];
     const existing = [...nav.querySelectorAll('a')];
     const byPath = new Map();
     for (const link of existing) {
@@ -88,7 +88,18 @@
     syncNavLayout(nav);
     const themeToggle = document.getElementById('theme-toggle');
     const navShell = nav.closest('.nav-shell');
-    if (themeToggle && navShell) navShell.append(themeToggle);
+    if (themeToggle && navShell) {
+      let brandCluster = navShell.querySelector(':scope > .brand-cluster');
+      if (!brandCluster) {
+        brandCluster = document.createElement('div');
+        brandCluster.className = 'brand-cluster';
+        const brand = navShell.querySelector(':scope > .brand');
+        navShell.insertBefore(brandCluster, brand || nav);
+      }
+      const brand = brandCluster.querySelector('.brand') || navShell.querySelector(':scope > .brand');
+      if (brand) brandCluster.appendChild(brand);
+      brandCluster.appendChild(themeToggle);
+    }
   }
 
   function addSharedFooter() {
