@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Choose whether people can find you and manage your AIConnectPro connections.">
+  <title>Connections – AIConnectPro</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .connections-main{max-width:1050px;padding-block:2rem 4rem}
+    .connections-intro{margin-bottom:1.5rem}
+    .connections-intro h1{margin:.4rem 0}
+    .connections-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:1.2rem;align-items:start}
+    .connections-column{display:grid;gap:1.2rem}
+    .connections-card{padding:1.3rem;border:1px solid var(--line);border-radius:20px;background:var(--white);box-shadow:var(--shadow)}
+    .connections-card h2{font-size:1.2rem;margin:.1rem 0 .6rem}
+    .connections-copy{color:var(--muted);line-height:1.55;margin:.3rem 0 1rem}
+    .privacy-choice{display:flex;align-items:flex-start;gap:.8rem;padding:1rem;border-radius:14px;background:var(--paper)}
+    .privacy-choice input{width:1.2rem;height:1.2rem;margin:.2rem 0 0;accent-color:var(--primary)}
+    .privacy-choice strong,.privacy-choice span{display:block}
+    .privacy-choice span{color:var(--muted);font-size:.9rem;line-height:1.5;margin-top:.2rem}
+    .discover-form{display:flex;gap:.6rem;margin-bottom:1rem}
+    .discover-form input{flex:1;min-width:0;padding:.8rem;border:1px solid var(--line);border-radius:10px;background:var(--white);color:var(--ink);font:inherit}
+    .connection-list{display:grid;gap:.65rem}
+    .connection-row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.8rem;border:1px solid var(--line);border-radius:14px}
+    .connection-person{min-width:0}
+    .connection-person strong,.connection-person span{display:block;overflow-wrap:anywhere}
+    .connection-person span{font-size:.86rem;color:var(--muted);margin-top:.15rem}
+    .connection-actions{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:flex-end}
+    .connection-actions button{font:inherit;font-size:.87rem;padding:.5rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--white);color:var(--ink);cursor:pointer}
+    .connection-actions .accept-action{background:var(--primary);border-color:var(--primary);color:#fff}
+    .connection-status{min-height:1.4rem;color:var(--muted);margin:.8rem 0 0}
+    .connection-empty{color:var(--muted);padding:.6rem 0}
+    body[data-theme="dark"] .connections-card{background:#171c2b;border-color:#2c3448}
+    body[data-theme="dark"] .privacy-choice{background:#111626}
+    body[data-theme="dark"] .discover-form input,body[data-theme="dark"] .connection-actions button{background:#111626;color:#edf0f8;border-color:#39435c}
+    @media(max-width:760px){.connections-grid{grid-template-columns:1fr}.discover-form{flex-direction:column}.connection-row{align-items:flex-start;flex-direction:column}.connection-actions{justify-content:flex-start}}
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="shell nav-shell">
+      <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+      <nav class="primary-nav" aria-label="Main navigation">
+        <a href="jobs.html">Jobs</a>
+        <a href="resume.html">Resume Builder</a>
+        <a href="profile.html">My Profile</a>
+      </nav>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
+    </div>
+  </header>
+  <main class="shell connections-main">
+    <section class="connections-intro">
+      <p class="eyebrow"><span class="eyebrow-dot"></span> PROFESSIONAL NETWORK</p>
+      <h1>Build your connections</h1>
+      <p class="connections-copy">Choose who can find you, send connection requests, and manage your network. Messaging and calls will be added after this foundation.</p>
+    </section>
+    <p id="connections-status" class="connection-status" role="status" aria-live="polite">Loading connections…</p>
+    <div class="connections-grid">
+      <div class="connections-column">
+        <section class="connections-card" aria-labelledby="privacy-heading">
+          <h2 id="privacy-heading">Your discovery privacy</h2>
+          <p class="connections-copy">Your profile starts private. If you opt in, your name may appear in member search. You can browse others while staying hidden. Your email and student or business profile details stay hidden.</p>
+          <label class="privacy-choice" for="discoverable">
+            <input id="discoverable" type="checkbox" disabled>
+            <span><strong>Let members find me by name</strong><span>You can turn this off at any time. People will no longer find you in search while your profile is hidden.</span></span>
+          </label>
+        </section>
+        <section class="connections-card" aria-labelledby="discover-heading">
+          <h2 id="discover-heading">Discover members</h2>
+          <p class="connections-copy">Only members who chose to be discoverable are listed.</p>
+          <form id="discover-form" class="discover-form">
+            <input id="member-search" type="search" maxlength="80" placeholder="Search by name" aria-label="Search members by name">
+            <button class="button button-primary" type="submit">Search</button>
+          </form>
+          <div id="discover-list" class="connection-list"><p class="connection-empty">Loading members…</p></div>
+        </section>
+      </div>
+      <div class="connections-column">
+        <section class="connections-card" aria-labelledby="incoming-heading">
+          <h2 id="incoming-heading">Requests for you</h2>
+          <div id="incoming-list" class="connection-list"><p class="connection-empty">Loading…</p></div>
+        </section>
+        <section class="connections-card" aria-labelledby="network-heading">
+          <h2 id="network-heading">Your connections</h2>
+          <div id="connection-list" class="connection-list"><p class="connection-empty">Loading…</p></div>
+        </section>
+        <section class="connections-card" aria-labelledby="outgoing-heading">
+          <h2 id="outgoing-heading">Requests you sent</h2>
+          <div id="outgoing-list" class="connection-list"><p class="connection-empty">Loading…</p></div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script src="theme.js" defer></script>
+  <script type="module" src="connections.js"></script>
+</body>
+</html>
