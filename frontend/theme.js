@@ -4,6 +4,23 @@
   const saved = localStorage.getItem(storageKey);
   const initial = saved === 'dark' || saved === 'light' ? saved : (media.matches ? 'dark' : 'light');
 
+  function syncNavLayout(nav) {
+    const compact = window.matchMedia('(max-width: 980px)').matches;
+    let drawer = nav.closest('.nav-drawer');
+    if (compact && !drawer) {
+      drawer = document.createElement('details');
+      drawer.className = 'nav-drawer';
+      const toggle = document.createElement('summary');
+      toggle.className = 'nav-drawer-toggle';
+      toggle.textContent = 'Menu';
+      nav.parentNode.insertBefore(drawer, nav);
+      drawer.append(toggle, nav);
+    } else if (!compact && drawer) {
+      drawer.parentNode.insertBefore(nav, drawer);
+      drawer.remove();
+    }
+  }
+
   function polishNavigation() {
     const nav = document.querySelector('.primary-nav');
     if (!nav) return;
@@ -68,6 +85,7 @@
       ordered.push(more);
     }
     nav.replaceChildren(...ordered);
+    syncNavLayout(nav);
     const themeToggle = document.getElementById('theme-toggle');
     const navShell = nav.closest('.nav-shell');
     if (themeToggle && navShell) navShell.append(themeToggle);
@@ -139,6 +157,10 @@
     polishNavigation();
     addSharedFooter();
     void addAdminNavigation().then(polishNavigation);
+    window.addEventListener('resize', () => {
+      const nav = document.querySelector('.primary-nav');
+      if (nav) syncNavLayout(nav);
+    });
   });
 
   media.addEventListener?.('change', event => {
