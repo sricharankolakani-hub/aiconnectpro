@@ -4,6 +4,10 @@ const router = express.Router();
 const supabase = require('../services/supabaseClient');
 const auth = require('../middleware/authMiddleware');
 
+function isPrivateDetailsTableMissing(error) {
+  return error?.code === '42P01' || error?.code === 'PGRST205';
+}
+
 /**
  * POST /api/profile
  * Body: { role, full_name, company_name }
@@ -103,7 +107,12 @@ router.patch('/me', auth, async (req, res) => {
       .select('date_of_birth, location, bio')
       .eq('user_id', userId)
       .maybeSingle();
-    if (readError) return res.status(500).json({ error: readError.message });
+    if (readError) {
+      if (isPrivateDetailsTableMissing(readError)) {
+        return res.status(503).json({ error: 'Private profile details are not enabled yet. Apply the profile details migration first.' });
+      }
+      return res.status(500).json({ error: readError.message });
+    }
     const details = { user_id: userId };
     if (Object.prototype.hasOwnProperty.call(body, 'date_of_birth')) details.date_of_birth = dateOfBirth;
     else if (existing) details.date_of_birth = existing.date_of_birth;
@@ -139,7 +148,9 @@ router.get('/me', auth, async (req, res) => {
       .select('date_of_birth, location, bio')
       .eq('user_id', req.user.id)
       .maybeSingle();
-    if (privateError) return res.status(500).json({ error: privateError.message });
+    if (privateError && !isPrivateDetailsTableMissing(privateError)) {
+      return res.status(500).json({ error: privateError.message });
+    }
     return res.json({ ...data, ...(privateDetails || {}), email: req.user.email, phone: req.user.phone });
   }
 
@@ -166,7 +177,9 @@ router.get('/me', auth, async (req, res) => {
     .select('date_of_birth, location, bio')
     .eq('user_id', req.user.id)
     .maybeSingle();
-  if (privateError) return res.status(500).json({ error: privateError.message });
+  if (privateError && !isPrivateDetailsTableMissing(privateError)) {
+    return res.status(500).json({ error: privateError.message });
+  }
   return res.json({ ...created, ...(privateDetails || {}), email: req.user.email, phone: req.user.phone });
 });
 
