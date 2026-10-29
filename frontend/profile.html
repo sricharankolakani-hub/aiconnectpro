@@ -301,8 +301,18 @@
         const profile = await getJson('/api/profile/me');
         const name = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.fullName;
         byId('profile-name').textContent = profile.full_name || name || 'Your account';
-        byId('profile-avatar-fallback').textContent = String(profile.full_name || name || 'A').trim().split(/\\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
-        if (user?.user_metadata?.avatar_url) { byId('profile-photo').src = user.user_metadata.avatar_url; byId('profile-photo').hidden = false; byId('profile-avatar-fallback').hidden = true; }
+        byId('profile-avatar-fallback').textContent = String(profile.full_name || name || 'A').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
+        let avatarUrl = user?.user_metadata?.avatar_url || null;
+        const avatarPath = user?.user_metadata?.avatar_path;
+        if (avatarPath) {
+          const { data: avatarData, error: avatarError } = await supabase.storage.from('profile-photos').createSignedUrl(avatarPath, 3600);
+          if (!avatarError) avatarUrl = avatarData.signedUrl;
+        }
+        if (avatarUrl) {
+          byId('profile-photo').src = avatarUrl;
+          byId('profile-photo').hidden = false;
+          byId('profile-avatar-fallback').hidden = true;
+        }
         byId('profile-greeting').textContent = 'Hi, ' + (name || 'there');
         byId('profile-email').textContent = user?.email || 'Signed in to AIConnectPro';
         const accountType = user?.user_metadata?.account_type || 'professional';
