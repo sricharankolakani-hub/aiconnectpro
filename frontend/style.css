@@ -591,3 +591,10 @@ body[data-theme="dark"] .nav-more[open] > summary { background: #141d2b; }
   .welcome-label { font-size: 12px; }
   .account-actions { gap: 8px; }
 }
+
+
+.header-greeting { margin-left: auto; }
+@media (max-width: 980px) {
+  .header-greeting { order: 2; margin-left: auto; }
+  .nav-drawer { order: 3; margin-left: 0; }
+}
