@@ -40,6 +40,10 @@
         <strong id="profile-name">Your account</strong>
         <span id="profile-email">Loading account details…</span>
         <span id="profile-type">Profile type: Professional / Employee</span>
+        <span id="profile-phone"></span>
+        <span id="profile-location" hidden></span>
+        <span id="profile-dob" hidden></span>
+        <p id="profile-bio" class="profile-bio" hidden></p>
         <span id="business-profile-details" hidden></span>
         <span id="student-profile-details" hidden></span>
       </div>
@@ -315,6 +319,19 @@
         }
         byId('profile-greeting').textContent = 'Hi, ' + (name || 'there');
         byId('profile-email').textContent = user?.email || 'Signed in to AIConnectPro';
+        byId('profile-phone').textContent = user?.phone ? 'Phone · ' + user.phone : 'Phone · Not added';
+        if (profile.location) {
+          byId('profile-location').hidden = false;
+          byId('profile-location').textContent = 'Place · ' + profile.location;
+        }
+        if (profile.date_of_birth) {
+          byId('profile-dob').hidden = false;
+          byId('profile-dob').textContent = 'Date of birth · ' + new Date(profile.date_of_birth + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+        if (profile.bio) {
+          byId('profile-bio').hidden = false;
+          byId('profile-bio').textContent = profile.bio;
+        }
         const accountType = user?.user_metadata?.account_type || 'professional';
         const typeLabels = { professional: 'Professional / Employee', student: 'Student', founder: 'Founder / Business Owner' };
         byId('profile-type').textContent = 'Profile type: ' + (typeLabels[accountType] || typeLabels.professional);
