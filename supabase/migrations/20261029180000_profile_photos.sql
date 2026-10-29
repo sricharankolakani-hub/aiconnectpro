@@ -1,5 +1,5 @@
--- Profile photos are public display assets. Upload and deletion stay scoped to
--- the authenticated user's own folder; the client never receives a secret key.
+-- Profile photos are private account assets. Access stays scoped to the
+-- authenticated user's own folder; the client never receives a secret key.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'profile-photos',
