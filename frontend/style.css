@@ -797,14 +797,16 @@ body[data-theme="dark"] .feature-card:hover { background: rgba(196,168,118,.07);
 }
 
 
-/* One continuous premium canvas from the header through the footer. */
+/* One unmistakable, continuous premium canvas from header through footer. */
+:root { --premium-canvas: #eee5d5; }
 body {
   background-color: var(--premium-canvas);
   background-image:
-    radial-gradient(ellipse at 12% 0%, rgba(168,135,85,.075), transparent 34%),
-    linear-gradient(180deg, #f8f6f1 0%, #f5f3ee 48%, #f2f0e9 100%);
+    radial-gradient(ellipse 80% 55% at 12% 0%, rgba(176,139,83,.22), transparent 100%),
+    linear-gradient(135deg, #eee5d5 0%, #f8f5ee 46%, #e7ddcd 100%);
+  background-attachment: fixed;
   background-repeat: no-repeat;
-  background-size: 100% 100%;
+  background-size: cover;
 }
 .site-header,
 .site-footer,
@@ -812,28 +814,29 @@ body {
   background: transparent;
 }
 .site-header {
-  background: color-mix(in srgb, var(--premium-canvas) 88%, transparent);
+  background: rgba(238,229,213,.78);
+  backdrop-filter: blur(16px);
 }
-.hero::before {
-  background: transparent;
-}
+.hero::before { background: transparent; }
 .feature-grid {
-  background: color-mix(in srgb, var(--premium-canvas) 58%, #fff);
+  background: rgba(255,255,255,.46);
+  border-color: rgba(128,106,73,.2);
 }
 body[data-theme="dark"] {
+  --premium-canvas: #121923;
   background-color: var(--premium-canvas);
   background-image:
-    radial-gradient(ellipse at 12% 0%, rgba(196,168,118,.09), transparent 36%),
-    linear-gradient(180deg, #171e28 0%, #151b24 52%, #181e27 100%);
+    radial-gradient(ellipse 78% 52% at 12% 0%, rgba(190,155,97,.18), transparent 100%),
+    linear-gradient(135deg, #121923 0%, #1b222c 48%, #111821 100%);
+  background-attachment: fixed;
 }
 body[data-theme="dark"] .site-header {
-  background: color-mix(in srgb, var(--premium-canvas) 88%, transparent);
+  background: rgba(18,25,35,.78);
 }
 body[data-theme="dark"] .site-footer,
-body[data-theme="dark"] .section-wrap {
-  background: transparent;
-}
+body[data-theme="dark"] .section-wrap { background: transparent; }
 body[data-theme="dark"] .hero::before { background: transparent; }
 body[data-theme="dark"] .feature-grid {
-  background: color-mix(in srgb, var(--premium-canvas) 65%, #252d38);
+  background: rgba(33,41,52,.68);
+  border-color: rgba(196,168,118,.24);
 }
