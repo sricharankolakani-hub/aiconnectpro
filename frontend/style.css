@@ -477,3 +477,88 @@ body[data-theme="dark"] .nav-more[open] > summary { background: #141d2b; }
   .primary-nav { padding: 0 0 5px; }
   .nav-more-menu { right: auto; left: 0; }
 }
+
+
+/* Compact navigation control for tablet and phone widths. */
+.nav-shell { position: relative; }
+.nav-drawer { display: contents; }
+.nav-drawer-toggle { display: none; }
+@media (max-width: 980px) {
+  .nav-shell {
+    min-height: 68px;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 12px;
+    padding-block: 8px;
+  }
+  .nav-drawer {
+    display: block;
+    order: 2;
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+  .nav-drawer-toggle {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 14px;
+    color: var(--ink);
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    list-style: none;
+    cursor: pointer;
+  }
+  .nav-drawer-toggle::-webkit-details-marker { display: none; }
+  .nav-drawer-toggle::before {
+    width: 16px;
+    height: 12px;
+    margin-right: 9px;
+    background: linear-gradient(var(--ink),var(--ink)) 0 0/16px 2px no-repeat,
+      linear-gradient(var(--ink),var(--ink)) 0 5px/16px 2px no-repeat,
+      linear-gradient(var(--ink),var(--ink)) 0 10px/16px 2px no-repeat;
+    content: "";
+  }
+  .nav-drawer[open] .primary-nav {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 16px;
+    right: 16px;
+    z-index: 40;
+    display: flex;
+    width: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    padding: 10px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: 0 16px 38px rgba(25,42,75,.18);
+  }
+  .nav-drawer[open] .primary-nav > a,
+  .nav-drawer[open] .primary-nav > .nav-more { width: 100%; }
+  .nav-drawer[open] .primary-nav > a { justify-content: flex-start; }
+  .nav-drawer[open] .nav-more > summary { width: 100%; }
+  .nav-drawer[open] .nav-more-menu {
+    position: static;
+    min-width: 0;
+    margin: 3px 0 2px 10px;
+    box-shadow: none;
+  }
+  .account-actions { order: 3; margin-left: 0; }
+  .theme-toggle { order: 4; }
+  body[data-theme="dark"] .nav-drawer-toggle,
+  body[data-theme="dark"] .nav-drawer[open] .primary-nav {
+    color: var(--ink);
+    background: #1b2535;
+    border-color: #354156;
+  }
+}
+@media (max-width: 680px) {
+  .nav-shell { padding-block: 8px; row-gap: 8px; }
+  .brand { font-size: 16px; }
+  .nav-drawer-toggle { min-height: 38px; padding-inline: 11px; }
+}
