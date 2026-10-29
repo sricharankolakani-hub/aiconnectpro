@@ -47,10 +47,10 @@
           <input id="reel-media" name="media_url" type="url" maxlength="2000" inputmode="url" placeholder="https://…">
           <label for="reel-visibility">Who can see this?</label>
           <select id="reel-visibility" name="visibility">
-            <option value="private">Signed-in members</option>
-            <option value="public">Anyone with the link</option>
+            <option value="private">Only me</option>
+            <option value="public">All signed-in members</option>
           </select>
-          <p class="reels-help">You can choose the audience for each post. Avoid sharing personal details you want to keep private.</p>
+          <p class="reels-help">Only you can see private posts. Posts shared with members are visible to every signed-in member.</p>
           <button id="post-reel" class="button button-primary" type="submit">Publish post <span aria-hidden="true">→</span></button>
           <p id="create-result" class="reels-status" role="status" aria-live="polite"></p>
         </form>
