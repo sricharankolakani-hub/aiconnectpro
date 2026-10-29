@@ -397,3 +397,83 @@ body[data-theme="dark"] .primary-nav a[aria-current="page"] {
   .profile-signout { align-items: flex-start; flex-direction: column; }
   .profile-signout .button { width: 100%; }
 }
+
+
+/* Give everyday destinations a clear hierarchy; keep account tools in More. */
+.primary-nav {
+  gap: 5px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+.primary-nav a {
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--muted);
+}
+.primary-nav a:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--primary) 7%, transparent);
+}
+.primary-nav a[aria-current="page"] {
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--white));
+  border-color: color-mix(in srgb, var(--primary) 18%, var(--line));
+  box-shadow: none;
+}
+.nav-more { position: relative; flex: 0 0 auto; }
+.nav-more > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 650;
+  list-style: none;
+  cursor: pointer;
+}
+.nav-more > summary::-webkit-details-marker { display: none; }
+.nav-more > summary::after { content: "⌄"; font-size: 12px; }
+.nav-more[open] > summary,
+.nav-more > summary:hover {
+  color: var(--ink);
+  background: var(--paper);
+  border-color: var(--line);
+}
+.nav-more-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  min-width: 205px;
+  padding: 7px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  box-shadow: 0 14px 36px rgba(25,42,75,.16);
+}
+.nav-more-menu a {
+  min-height: 40px;
+  justify-content: flex-start;
+  border-radius: 8px;
+}
+.nav-more-menu a[aria-current="page"] { border-color: transparent; }
+body[data-theme="dark"] .nav-more-menu {
+  background: #1b2535;
+  border-color: #354156;
+  box-shadow: 0 14px 36px rgba(0,0,0,.35);
+}
+body[data-theme="dark"] .nav-more > summary:hover,
+body[data-theme="dark"] .nav-more[open] > summary { background: #141d2b; }
+@media (max-width: 680px) {
+  .primary-nav { padding: 0 0 5px; }
+  .nav-more-menu { right: auto; left: 0; }
+}
