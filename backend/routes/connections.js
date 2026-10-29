@@ -69,7 +69,6 @@ router.get('/discover', async (req, res) => {
     let query = supabase.from('profiles')
       .select('id, full_name, company_name')
       .eq('discoverable', true)
-      .eq('role', 'user')
       .neq('id', userId)
       .order('full_name', { ascending: true })
       .limit(40);
@@ -109,8 +108,21 @@ router.patch('/privacy', async (req, res) => {
   if (typeof req.body?.discoverable !== 'boolean') {
     return res.status(400).json({ error: 'discoverable_must_be_boolean' });
   }
+  const { data: current, error: currentError } = await supabase.from('profiles')
+    .select('id, full_name, role, company_name')
+    .eq('id', req.user.id)
+    .maybeSingle();
+  if (currentError) return res.status(500).json({ error: 'privacy_update_failed' });
+
+  const roles = Array.isArray(req.user.roles) ? req.user.roles : [];
   const { data, error } = await supabase.from('profiles')
-    .upsert({ id: req.user.id, discoverable: req.body.discoverable }, { onConflict: 'id' })
+    .upsert({
+      id: req.user.id,
+      full_name: current?.full_name || req.user.name || null,
+      role: current?.role || (roles.includes('company') ? 'company' : 'user'),
+      company_name: current?.company_name || null,
+      discoverable: req.body.discoverable
+    }, { onConflict: 'id' })
     .select('discoverable')
     .single();
   if (error) return res.status(500).json({ error: 'privacy_update_failed' });
@@ -127,7 +139,7 @@ router.post('/requests/:userId', async (req, res) => {
     .eq('id', recipientId)
     .maybeSingle();
   if (targetError) return res.status(500).json({ error: 'profile_lookup_failed' });
-  if (!target || target.role !== 'user' || !target.discoverable) {
+  if (!target || !target.discoverable) {
     return res.status(404).json({ error: 'profile_not_discoverable' });
   }
 
