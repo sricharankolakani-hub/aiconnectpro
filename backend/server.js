@@ -14,6 +14,7 @@ const jobsRoutes = require('./routes/jobs');
 const profileRoutes = require('./routes/profile');
 const companyAccessRequestRoutes = require('./routes/companyAccessRequests');
 const adminRoutes = require('./routes/admin');
+const connectionsRoutes = require('./routes/connections');
 
 
 const app = express();
