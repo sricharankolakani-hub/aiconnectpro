@@ -33,6 +33,7 @@ app.use('/api/jobs', jobsRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/company-access-requests', companyAccessRequestRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/connections', connectionsRoutes);
 
 // other demo routes
 app.get('/health', (req, res) => res.json({ status: 'ok', message: 'AIConnect Pro backend running' }));
