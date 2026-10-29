@@ -44,6 +44,41 @@ router.post('/', auth, async (req, res) => {
 });
 
 /**
+ * PATCH /api/profile/me
+ * Update the editable name on the signed-in user's profile only.
+ */
+router.patch('/me', auth, async (req, res) => {
+  const fullName = typeof req.body?.full_name === 'string' ? req.body.full_name.trim() : '';
+  if (fullName.length < 2 || fullName.length > 100) {
+    return res.status(400).json({ error: 'Name must be between 2 and 100 characters.' });
+  }
+
+  const userId = req.user.id;
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ full_name: fullName })
+    .eq('id', userId)
+    .select()
+    .maybeSingle();
+
+  if (error) return res.status(500).json({ error: error.message });
+  if (data) return res.json({ success: true, profile: data });
+
+  // A minimal profile may not exist yet. Derive its role only from verified,
+  // server-managed claims; profile edit requests cannot grant privileges.
+  const roles = Array.isArray(req.user.roles) ? req.user.roles : [];
+  const role = roles.includes('company') ? 'company' : 'user';
+  const { data: created, error: createError } = await supabase
+    .from('profiles')
+    .insert({ id: userId, role, full_name: fullName, company_name: null })
+    .select()
+    .single();
+
+  if (createError) return res.status(500).json({ error: createError.message });
+  return res.json({ success: true, profile: created });
+});
+
+/**
  * GET /api/profile/me
  * Returns current user's profile
  */
