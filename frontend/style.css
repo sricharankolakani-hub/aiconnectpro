@@ -600,72 +600,126 @@ body[data-theme="dark"] .nav-more[open] > summary { background: #141d2b; }
 }
 
 
-/* A warmer, more memorable first impression for the career workspace. */
+/* Premium editorial finish: quieter surfaces, warmer accents, and restrained depth. */
+:root {
+  --premium-ink: #202a37;
+  --premium-brass: #a88755;
+  --premium-paper: #f5f3ee;
+}
 .hero {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  border-radius: 0 0 30px 30px;
   background:
-    radial-gradient(ellipse at 12% 8%, color-mix(in srgb, var(--primary) 9%, transparent), transparent 42%),
-    radial-gradient(ellipse at 90% 78%, color-mix(in srgb, var(--purple) 9%, transparent), transparent 38%);
+    radial-gradient(ellipse at 10% 10%, rgba(168,135,85,.10), transparent 42%),
+    linear-gradient(135deg, #faf9f6 0%, #f3f1eb 100%);
+  border-radius: 0 0 24px 24px;
 }
 .hero-copy .eyebrow {
-  width: fit-content;
-  padding: 8px 12px;
-  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--line));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--white) 80%, transparent);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--premium-brass);
+  letter-spacing: .17em;
 }
-.hero h1 {
-  max-width: 620px;
-  text-wrap: balance;
+.eyebrow-dot {
+  background: var(--premium-brass);
+  box-shadow: 0 0 0 4px rgba(168,135,85,.12);
 }
+.hero h1 { color: var(--premium-ink); }
+.hero-art .art-glow {
+  background: radial-gradient(circle at 48% 43%, rgba(216,199,166,.42), rgba(239,233,220,.25) 45%, transparent 72%);
+}
+.hero-art .art-orbit { border-color: rgba(112,99,77,.13); }
 .hero-art .tool-card-main {
-  transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s ease;
+  border-color: rgba(176,160,132,.28);
+  box-shadow: 0 22px 58px rgba(40,43,48,.11);
+  transition: transform .28s ease, box-shadow .28s ease;
 }
 .hero-art:hover .tool-card-main {
-  transform: translateY(-5px) rotate(-1deg);
-  box-shadow: 0 30px 80px rgba(43,66,119,.2);
+  transform: translateY(-3px) rotate(-1deg);
+  box-shadow: 0 27px 64px rgba(40,43,48,.15);
 }
 .floating-chip {
-  backdrop-filter: blur(12px);
-  transition: transform .25s ease, box-shadow .25s ease;
+  border-color: rgba(176,160,132,.25);
+  box-shadow: 0 8px 22px rgba(40,43,48,.08);
+  backdrop-filter: blur(10px);
 }
-.floating-chip:hover {
-  box-shadow: 0 15px 34px rgba(36,55,91,.16);
+.floating-chip:hover { box-shadow: 0 11px 26px rgba(40,43,48,.12); }
+.hero-actions .button-primary {
+  color: #fff;
+  background: #202a37;
+  box-shadow: 0 8px 20px rgba(32,42,55,.16);
+}
+.hero-actions .button-primary:hover {
+  background: #111923;
+  box-shadow: 0 11px 24px rgba(32,42,55,.2);
+}
+.section-wrap {
+  background: #fbfaf7;
+  border-color: #e9e5dc;
 }
 .feature-card {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(145deg, var(--white), color-mix(in srgb, var(--primary) 3%, var(--white)));
+  background: linear-gradient(145deg, #fff, #faf9f6);
+  border-color: #e8e4db;
+  box-shadow: 0 5px 18px rgba(37,43,53,.025);
 }
-.feature-card::after {
-  position: absolute;
-  top: -42px;
-  right: -42px;
-  width: 108px;
-  height: 108px;
-  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
-  border-radius: 50%;
-  box-shadow: 0 0 0 18px color-mix(in srgb, var(--primary) 3%, transparent);
-  content: "";
-  pointer-events: none;
-}
+.feature-card::after { display: none; }
 .feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 46px rgba(28,48,87,.12);
+  transform: translateY(-2px);
+  border-color: rgba(168,135,85,.42);
+  box-shadow: 0 15px 34px rgba(37,43,53,.08);
+}
+.feature-kicker { color: #8f7955; }
+.feature-link { color: #655234; }
+.next-step-banner {
+  background: linear-gradient(112deg, #202a37, #354253 65%, #625640);
+  box-shadow: 0 16px 34px rgba(32,42,55,.14);
+}
+body[data-theme="dark"] {
+  --premium-ink: #e9e6df;
+  --premium-brass: #c4a876;
 }
 body[data-theme="dark"] .hero {
   background:
-    radial-gradient(ellipse at 12% 8%, rgba(91,132,235,.12), transparent 42%),
-    radial-gradient(ellipse at 90% 78%, rgba(125,89,220,.12), transparent 38%);
+    radial-gradient(ellipse at 12% 10%, rgba(196,168,118,.12), transparent 44%),
+    linear-gradient(135deg, #151c26 0%, #171e28 60%, #1c222c 100%);
 }
-body[data-theme="dark"] .hero-copy .eyebrow {
-  background: rgba(27,37,53,.8);
+body[data-theme="dark"] .hero-copy .eyebrow { color: var(--premium-brass); }
+body[data-theme="dark"] .hero h1 { color: #eeeae2; }
+body[data-theme="dark"] .eyebrow-dot {
+  background: var(--premium-brass);
+  box-shadow: 0 0 0 4px rgba(196,168,118,.14);
+}
+body[data-theme="dark"] .hero-art .art-glow {
+  background: radial-gradient(circle at 48% 43%, rgba(112,91,58,.34), rgba(57,52,43,.22) 45%, transparent 72%);
+}
+body[data-theme="dark"] .hero-art .art-orbit { border-color: rgba(201,181,145,.15); }
+body[data-theme="dark"] .hero-art .tool-card-main {
+  border-color: rgba(201,181,145,.2);
+  box-shadow: 0 24px 62px rgba(0,0,0,.28);
+}
+body[data-theme="dark"] .floating-chip {
+  border-color: rgba(201,181,145,.2);
+  box-shadow: 0 8px 24px rgba(0,0,0,.2);
+}
+body[data-theme="dark"] .hero-actions .button-primary {
+  color: #191d24;
+  background: #c4a876;
+  box-shadow: 0 8px 22px rgba(0,0,0,.2);
+}
+body[data-theme="dark"] .hero-actions .button-primary:hover { background: #d1b989; }
+body[data-theme="dark"] .section-wrap {
+  background: #151b24;
+  border-color: #2b3038;
 }
 body[data-theme="dark"] .feature-card {
-  background: linear-gradient(145deg, #1b2535, #202b3c);
+  background: linear-gradient(145deg, #1b222c, #1e2631);
+  border-color: #343a43;
+}
+body[data-theme="dark"] .feature-card:hover { border-color: rgba(196,168,118,.5); }
+body[data-theme="dark"] .feature-kicker { color: #c4a876; }
+body[data-theme="dark"] .feature-link { color: #d2b986; }
+body[data-theme="dark"] .next-step-banner {
+  background: linear-gradient(112deg, #202a37, #303b49 65%, #4b4334);
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-art .tool-card-main, .floating-chip, .feature-card { transition: none; }
