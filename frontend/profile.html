@@ -29,13 +29,13 @@
         <h1>My profile</h1>
         <p>Your resumes and career activity, together in one place.</p>
       </div>
-      <a class="button button-primary" href="resume.html">Build a resume <span aria-hidden="true">↗</span></a>
+      <div class="profile-heading-actions"><a class="button button-outline" href="settings.html">Account settings</a><a class="button button-primary" href="resume.html">Build a resume <span aria-hidden="true">↗</span></a></div>
     </div>
 
     <p id="info" class="profile-status" role="status" aria-live="polite">Loading your profile…</p>
 
     <section class="profile-overview" aria-label="Account overview">
-      <div class="profile-avatar" aria-hidden="true">◎</div>
+      <div class="profile-avatar"><span id="profile-avatar-fallback" aria-hidden="true">◎</span><img id="profile-photo" alt="Your profile photo" hidden></div>
       <div class="profile-overview-copy">
         <strong id="profile-name">Your account</strong>
         <span id="profile-email">Loading account details…</span>
@@ -300,7 +300,9 @@
         await loadSecurity(user);
         const profile = await getJson('/api/profile/me');
         const name = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.fullName;
-        byId('profile-name').textContent = name || 'Your account';
+        byId('profile-name').textContent = profile.full_name || name || 'Your account';
+        byId('profile-avatar-fallback').textContent = String(profile.full_name || name || 'A').trim().split(/\\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
+        if (user?.user_metadata?.avatar_url) { byId('profile-photo').src = user.user_metadata.avatar_url; byId('profile-photo').hidden = false; byId('profile-avatar-fallback').hidden = true; }
         byId('profile-greeting').textContent = 'Hi, ' + (name || 'there');
         byId('profile-email').textContent = user?.email || 'Signed in to AIConnectPro';
         const accountType = user?.user_metadata?.account_type || 'professional';
