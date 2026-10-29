@@ -29,6 +29,7 @@
     .connection-actions{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:flex-end}
     .connection-actions button{font:inherit;font-size:.87rem;padding:.5rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--white);color:var(--ink);cursor:pointer}
     .connection-actions .accept-action{background:var(--primary);border-color:var(--primary);color:#fff}
+    .connection-message-link{font:inherit;font-size:.87rem;padding:.5rem .7rem;border:1px solid var(--primary);border-radius:999px;color:var(--primary);text-decoration:none}
     .connection-status{min-height:1.4rem;color:var(--muted);margin:.8rem 0 0}
     .connection-empty{color:var(--muted);padding:.6rem 0}
     body[data-theme="dark"] .connections-card{background:#171c2b;border-color:#2c3448}
@@ -44,6 +45,7 @@
       <nav class="primary-nav" aria-label="Main navigation">
         <a href="jobs.html">Jobs</a>
         <a href="resume.html">Resume Builder</a>
+        <a href="messages.html">Messages</a>
         <a href="profile.html">My Profile</a>
       </nav>
       <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
@@ -53,7 +55,7 @@
     <section class="connections-intro">
       <p class="eyebrow"><span class="eyebrow-dot"></span> PROFESSIONAL NETWORK</p>
       <h1>Build your connections</h1>
-      <p class="connections-copy">Choose who can find you, send connection requests, and manage your network. Messaging and calls will be added after this foundation.</p>
+      <p class="connections-copy">Choose who can find you, send connection requests, and manage your network. Message your accepted connections privately. Voice and video calls are planned for a later phase.</p>
     </section>
     <p id="connections-status" class="connection-status" role="status" aria-live="polite">Loading connections…</p>
     <div class="connections-grid">
