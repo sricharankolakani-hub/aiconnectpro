@@ -109,7 +109,7 @@ async function imageAsAvatar(file) {
   if (file.size > 5 * 1024 * 1024) throw new Error('Choose an image smaller than 5 MB.');
   const bitmap = await createImageBitmap(file);
   const size = 512;
-  const scale = Math.min(size / bitmap.width, size / bitmap.height);
+  const scale = Math.max(size / bitmap.width, size / bitmap.height);
   const width = Math.max(1, Math.round(bitmap.width * scale));
   const height = Math.max(1, Math.round(bitmap.height * scale));
   const canvas = document.createElement('canvas');
