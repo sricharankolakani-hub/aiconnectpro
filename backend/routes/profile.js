@@ -61,7 +61,7 @@ router.patch('/me', auth, async (req, res) => {
 
   const dateOfBirth = body.date_of_birth == null || body.date_of_birth === '' ? null : body.date_of_birth;
   if (Object.prototype.hasOwnProperty.call(body, 'date_of_birth') && dateOfBirth !== null) {
-    if (typeof dateOfBirth !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(dateOfBirth)) {
+    if (typeof dateOfBirth !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
       return res.status(400).json({ error: 'Enter a valid date of birth.' });
     }
     const parsedDate = new Date(dateOfBirth + 'T00:00:00Z');
