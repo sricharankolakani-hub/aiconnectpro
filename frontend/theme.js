@@ -70,7 +70,7 @@
     }
     for (const link of existing) {
       const key = new URL(link.getAttribute('href'), window.location.href).pathname.split('/').pop();
-      if (!common.some(([href]) => href === key) && !extras.includes(link)) extras.push(link);
+      if (key !== 'profile.html' && !common.some(([href]) => href === key) && !extras.includes(link)) extras.push(link);
     }
     if (extras.length) {
       const more = document.createElement('details');
@@ -99,6 +99,31 @@
       const brand = brandCluster.querySelector('.brand') || navShell.querySelector(':scope > .brand');
       if (brand) brandCluster.appendChild(brand);
       brandCluster.appendChild(themeToggle);
+    }
+  }
+
+  async function addProfileGreeting() {
+    const page = window.location.pathname.split('/').pop() || 'index.html';
+    if (page === 'login.html' || page === 'signup.html' || page === 'profile.html') return;
+    const navShell = document.querySelector('.nav-shell');
+    if (!navShell) return;
+    try {
+      const { getUser } = await import('./auth.js');
+      const user = await getUser();
+      if (!user) return;
+      let greeting = navShell.querySelector('.welcome-label');
+      if (!greeting) {
+        greeting = document.createElement('a');
+        greeting.className = 'welcome-label header-greeting';
+        greeting.href = 'profile.html';
+        greeting.setAttribute('aria-label', 'Open your profile');
+        navShell.appendChild(greeting);
+      }
+      const name = user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.fullName || 'there';
+      greeting.textContent = 'Hi, ' + name;
+      greeting.href = 'profile.html';
+    } catch {
+      // Keep the navigation usable if authentication is unavailable.
     }
   }
 
@@ -167,6 +192,7 @@
     });
     polishNavigation();
     addSharedFooter();
+    void addProfileGreeting();
     void addAdminNavigation().then(polishNavigation);
     window.addEventListener('resize', () => {
       const nav = document.querySelector('.primary-nav');
