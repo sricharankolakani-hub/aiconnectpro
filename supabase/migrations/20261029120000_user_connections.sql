@@ -5,7 +5,7 @@ ALTER TABLE public.profiles
 
 CREATE INDEX IF NOT EXISTS profiles_discoverable_name_idx
   ON public.profiles (full_name)
-  WHERE discoverable = true AND role = 'user';
+  WHERE discoverable = true;
 
 CREATE TABLE IF NOT EXISTS public.connection_requests (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
