@@ -10,8 +10,7 @@ create table if not exists public.profile_private_details (
 );
 
 alter table public.profile_private_details enable row level security;
-revoke all on public.profile_private_details from anon;
-grant select, insert, update, delete on public.profile_private_details to authenticated;
+revoke all on public.profile_private_details from anon, authenticated;
 
 create policy "Members read their own private profile details"
 on public.profile_private_details
