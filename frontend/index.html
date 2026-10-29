@@ -24,8 +24,7 @@
       </div>
       <div class="account-actions" id="user-actions" hidden>
         <span id="welcome-label" class="welcome-label"></span>
-        <a class="button button-outline button-small" href="profile.html">My profile</a>
-        <button class="nav-login" id="logout" type="button">Log out</button>
+        
       </div>
     </div>
   </header>
@@ -138,12 +137,11 @@
 
   <script src="theme.js" defer></script>
   <script type="module">
-    import { getUser, signOut } from './auth.js';
+    import { getUser } from './auth.js';
 
     const guestActions = document.getElementById('guest-actions');
     const userActions = document.getElementById('user-actions');
     const welcomeLabel = document.getElementById('welcome-label');
-    const logoutButton = document.getElementById('logout');
 
     try {
       const user = await getUser();
@@ -157,14 +155,7 @@
       // Keep the signed-out navigation visible if no valid session exists.
     }
 
-    logoutButton.addEventListener('click', async () => {
-      logoutButton.disabled = true;
-      try {
-        await signOut();
-      } finally {
-        window.location.assign('index.html');
-      }
-    });
+
   </script>
 </body>
 </html>
