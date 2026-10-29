@@ -739,3 +739,7 @@ body[data-theme="dark"] .next-step-banner {
 @media (prefers-reduced-motion: reduce) {
   .hero-art .tool-card-main, .floating-chip, .feature-card { transition: none; }
 }
+
+
+/* Keep decorative full-bleed hero art from creating sideways page scroll. */
+html { overflow-x: clip; }
