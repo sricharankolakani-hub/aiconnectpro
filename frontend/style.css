@@ -331,3 +331,69 @@ body[data-theme="dark"] .profile-subsection h3 { color: var(--ink); }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+
+/* Keep navigation readable when many account tools are available. */
+.nav-shell { gap: 14px; }
+.primary-nav {
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 5px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.primary-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.primary-nav a[aria-current="page"] {
+  color: var(--primary);
+  background: var(--white);
+  box-shadow: 0 2px 7px rgba(30,48,80,.09);
+}
+body[data-theme="dark"] .primary-nav { background: #141d2b; }
+body[data-theme="dark"] .primary-nav a[aria-current="page"] {
+  color: #bcd0ff;
+  background: #25334a;
+  box-shadow: none;
+}
+.profile-greeting {
+  margin: 0 0 5px;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 750;
+}
+.profile-signout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 24px;
+}
+.profile-signout h2 { margin: 0; color: var(--ink); font-size: 17px; }
+.profile-signout p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.profile-signout button:disabled { cursor: wait; opacity: .7; }
+@media (max-width: 980px) {
+  .nav-shell { flex-wrap: wrap; justify-content: space-between; }
+  .primary-nav { order: 4; flex: 1 0 100%; justify-content: flex-start; }
+  .account-actions { margin-left: auto; }
+}
+@media (max-width: 680px) {
+  .primary-nav {
+    order: 4;
+    flex: 1 0 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+  }
+  .primary-nav a { flex: 0 0 auto; }
+  .profile-signout { align-items: flex-start; flex-direction: column; }
+  .profile-signout .button { width: 100%; }
+}
