@@ -76,9 +76,6 @@ async function loadDiscovery(term = '') {
   try {
     const result = await api('/discover?q=' + encodeURIComponent(term));
     renderPersonList('discover-list', result.people || [], 'discover');
-    if (!discoverableEl.checked) {
-      list.replaceChildren(make('p', 'connection-empty', 'Turn on “Let members find me by name” to browse and connect with members.'));
-    }
   } catch (error) {
     list.replaceChildren(make('p', 'connection-empty', error.message || 'Could not load members.'));
   }
