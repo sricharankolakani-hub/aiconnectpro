@@ -36,6 +36,7 @@ module.exports = async function auth(req, res, next) {
     req.user = {
       id: user.id,
       email: user.email || null,
+      phone: user.phone || null,
       name: user.user_metadata?.full_name || user.user_metadata?.name || null,
       roles: user.app_metadata?.roles || []
     };
