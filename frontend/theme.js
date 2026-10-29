@@ -83,7 +83,8 @@
       ['post-job.html', 'Post an opportunity'],
       ['company-applications.html', 'Applicant inbox'],
       ['company-access.html', 'For employers'],
-      ['admin-company-requests.html', 'Admin Requests']
+      ['admin-company-requests.html', 'Admin Requests'],
+      ['settings.html', 'Settings']
     ]) {
       let link = byPath.get(href);
       if ((page === href || href === 'settings.html') && !link) {
