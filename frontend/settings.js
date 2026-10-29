@@ -75,14 +75,31 @@ async function loadSettings() {
   const profile = await response.json();
   const name = profile.full_name || currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || '';
   document.getElementById('full-name').value = name;
+  document.getElementById('date-of-birth').value = profile.date_of_birth || '';
+  document.getElementById('profile-location').value = profile.location || '';
+  document.getElementById('profile-bio').value = profile.bio || '';
+  document.getElementById('bio-count').textContent = String((profile.bio || '').length);
+  document.getElementById('account-email').value = currentUser.email || '';
+  document.getElementById('account-phone').value = currentUser.phone || '';
   showAvatar(await getAvatarUrl(currentUser), name);
 }
+
+document.getElementById('profile-bio').addEventListener('input', event => {
+  document.getElementById('bio-count').textContent = String(event.currentTarget.value.length);
+});
 
 profileForm.addEventListener('submit', async event => {
   event.preventDefault();
   const name = document.getElementById('full-name').value.trim();
+  const dateOfBirth = document.getElementById('date-of-birth').value;
+  const location = document.getElementById('profile-location').value.trim();
+  const bio = document.getElementById('profile-bio').value.trim();
   if (name.length < 2 || name.length > 100) {
     setStatus(profileStatus, 'Enter a name between 2 and 100 characters.', true);
+    return;
+  }
+  if (location.length > 120 || bio.length > 500) {
+    setStatus(profileStatus, 'Place must be 120 characters or fewer and About you 500 or fewer.', true);
     return;
   }
   saveButton.disabled = true;
@@ -96,7 +113,7 @@ profileForm.addEventListener('submit', async event => {
         Authorization: 'Bearer ' + localStorage.getItem('token'),
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ full_name: name })
+      body: JSON.stringify({ full_name: name, date_of_birth: dateOfBirth || null, location, bio })
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || 'Could not save your profile.');
