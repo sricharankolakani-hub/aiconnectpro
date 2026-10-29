@@ -124,7 +124,9 @@
       localStorage.setItem(storageKey, next);
       applyTheme(next);
     });
-    void addAdminNavigation();
+    polishNavigation();
+    addSharedFooter();
+    void addAdminNavigation().then(polishNavigation);
   });
 
   media.addEventListener?.('change', event => {
