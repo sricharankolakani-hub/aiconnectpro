@@ -62,9 +62,9 @@ async function initialize() {
     showDetail('Email', profile.email);
     showDetail('Phone', profile.phone);
     const message = document.getElementById('member-message');
-    if (profile.email || profile.phone) {
-      // Contact sharing does not imply that a messaging connection exists.
-      message.hidden = true;
+    if (profile.is_connected) {
+      message.href = 'messages.html?user=' + encodeURIComponent(profile.id);
+      message.hidden = false;
     }
     card.hidden = false;
     setStatus('');
