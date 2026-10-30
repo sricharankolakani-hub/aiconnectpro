@@ -1,5 +1,35 @@
 (() => {
   const storageKey = 'aiconnectpro-theme';
+  const appearanceKey = 'aiconnectpro-appearance';
+  const appearanceDefaults = { font: 'system', contrast: 'standard', background: 'warm' };
+  function loadAppearance() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(appearanceKey) || '{}');
+      return {
+        font: ['system', 'arial', 'serif'].includes(saved.font) ? saved.font : appearanceDefaults.font,
+        contrast: ['standard', 'high'].includes(saved.contrast) ? saved.contrast : appearanceDefaults.contrast,
+        background: ['warm', 'blue', 'sage'].includes(saved.background) ? saved.background : appearanceDefaults.background
+      };
+    } catch { return { ...appearanceDefaults }; }
+  }
+  function applyAppearance(preferences = loadAppearance()) {
+    document.body.dataset.font = preferences.font;
+    document.body.dataset.contrast = preferences.contrast;
+    document.body.dataset.background = preferences.background;
+  }
+  window.AIConnectProAppearance = {
+    load: loadAppearance,
+    save(preferences) {
+      const next = {
+        font: ['system', 'arial', 'serif'].includes(preferences.font) ? preferences.font : appearanceDefaults.font,
+        contrast: ['standard', 'high'].includes(preferences.contrast) ? preferences.contrast : appearanceDefaults.contrast,
+        background: ['warm', 'blue', 'sage'].includes(preferences.background) ? preferences.background : appearanceDefaults.background
+      };
+      localStorage.setItem(appearanceKey, JSON.stringify(next));
+      applyAppearance(next);
+      return next;
+    }
+  };
   const media = window.matchMedia('(prefers-color-scheme: dark)');
   const saved = localStorage.getItem(storageKey);
   const initial = saved === 'dark' || saved === 'light' ? saved : (media.matches ? 'dark' : 'light');
@@ -53,10 +83,11 @@
       ['post-job.html', 'Post an opportunity'],
       ['company-applications.html', 'Applicant inbox'],
       ['company-access.html', 'For employers'],
-      ['admin-company-requests.html', 'Admin Requests']
+      ['admin-company-requests.html', 'Admin Requests'],
+      ['settings.html', 'Settings']
     ]) {
       let link = byPath.get(href);
-      if (page === href && !link) {
+      if ((page === href || href === 'settings.html') && !link) {
         link = document.createElement('a');
         link.href = href;
         link.textContent = label;
@@ -183,6 +214,7 @@
   }
 
   applyTheme(initial);
+  applyAppearance();
   document.addEventListener('DOMContentLoaded', () => {
     applyTheme(document.body.dataset.theme || initial);
     document.getElementById('theme-toggle')?.addEventListener('click', () => {

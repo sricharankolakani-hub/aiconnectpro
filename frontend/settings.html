@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Personalize your AIConnectPro appearance and profile.">
+  <title>Settings – AIConnectPro</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="shell nav-shell">
+      <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+      <nav class="primary-nav" aria-label="Main navigation">
+        <a href="jobs.html">Jobs</a>
+        <a href="connections.html">Connections</a>
+        <a href="messages.html">Messages</a>
+        <a href="resume.html">Resume Builder</a>
+        <a href="profile.html">My Profile</a>
+        <a href="settings.html" aria-current="page">Settings</a>
+      </nav>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
+    </div>
+  </header>
+
+  <main class="shell settings-page">
+    <div class="settings-heading">
+      <div>
+        <p class="eyebrow"><span class="eyebrow-dot"></span> YOUR WORKSPACE</p>
+        <h1>Settings</h1>
+        <p>Make AIConnectPro feel comfortable and personal. Your appearance choices are saved on this device.</p>
+      </div>
+      <a class="button button-outline" href="profile.html">Back to profile</a>
+    </div>
+
+    <div class="settings-grid">
+      <section class="settings-card appearance-card" aria-labelledby="appearance-title">
+        <div class="settings-card-heading"><div><p class="eyebrow">APPEARANCE</p><h2 id="appearance-title">Make it yours</h2></div><span class="settings-mark" aria-hidden="true">◐</span></div>
+        <p class="settings-description">Choose the type, contrast, and page tint that work best for you. Use the sun/moon button in the header to switch light and dark mode.</p>
+        <form id="appearance-form">
+          <label for="font-choice">Site font</label>
+          <select id="font-choice" name="font">
+            <option value="system">System — clean and familiar</option>
+            <option value="arial">Arial — simple and compact</option>
+            <option value="serif">Georgia — classic and editorial</option>
+          </select>
+
+          <label for="contrast-choice">Contrast</label>
+          <select id="contrast-choice" name="contrast">
+            <option value="standard">Standard</option>
+            <option value="high">High contrast</option>
+          </select>
+
+          <label for="background-choice">Background</label>
+          <select id="background-choice" name="background">
+            <option value="warm">Warm neutral</option>
+            <option value="blue">Soft blue</option>
+            <option value="sage">Soft sage</option>
+          </select>
+          <p class="settings-hint">The background tint adapts to your light or dark theme.</p>
+          <div class="appearance-preview" aria-live="polite">
+            <span class="preview-label">LIVE PREVIEW</span>
+            <strong>A clearer space to move forward.</strong>
+            <span>Read comfortably and make the workspace your own.</span>
+          </div>
+          <button class="button button-outline" id="reset-appearance" type="button">Reset appearance</button>
+          <p id="appearance-status" class="settings-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="settings-card profile-settings-card" aria-labelledby="profile-settings-title">
+        <div class="settings-card-heading"><div><p class="eyebrow">PROFILE</p><h2 id="profile-settings-title">Your details</h2></div><span class="settings-mark" aria-hidden="true">◎</span></div>
+        <p class="settings-description">Keep your professional details current. Contact information below comes from your sign-in account.</p>
+        <div class="photo-editor">
+          <div class="settings-avatar" id="avatar-preview" aria-label="Profile photo preview">
+            <span id="avatar-initials" aria-hidden="true">A</span>
+            <img id="avatar-image" alt="Your profile photo" hidden>
+          </div>
+          <div class="photo-editor-copy">
+            <strong>Profile photo</strong>
+            <span>Square image, up to 5 MB. Your photo stays private to your account.</span>
+            <label class="button button-outline button-small upload-button" for="photo-file">Choose photo</label>
+            <input id="photo-file" class="visually-hidden" type="file" accept="image/png,image/jpeg,image/webp">
+          </div>
+        </div>
+        <p id="photo-status" class="settings-status" role="status" aria-live="polite"></p>
+        <form id="profile-form">
+          <label for="full-name">Full name</label>
+          <input id="full-name" name="full_name" type="text" maxlength="100" autocomplete="name" required placeholder="Your name">
+          <p class="settings-hint">This name appears on your profile and professional activity.</p>
+
+          <label for="date-of-birth">Date of birth</label>
+          <input id="date-of-birth" name="date_of_birth" type="date" autocomplete="bday">
+          <p class="settings-hint">Only you can see this personal detail.</p>
+
+          <label for="profile-location">Place</label>
+          <input id="profile-location" name="location" type="text" maxlength="120" autocomplete="address-level2" placeholder="City, region or country">
+
+          <label for="profile-bio">About you</label>
+          <textarea id="profile-bio" name="bio" rows="5" maxlength="500" placeholder="Share a little about your work, interests, and goals."></textarea>
+          <p class="settings-hint"><span id="bio-count">0</span>/500 characters. Your personal details are private to your account.</p>
+
+          <div class="account-contact-fields">
+            <h3>Sign-in contact</h3>
+            <label for="account-email">Email</label>
+            <input id="account-email" type="email" autocomplete="email" readonly>
+            <label for="account-phone">Phone</label>
+            <input id="account-phone" type="tel" autocomplete="tel" readonly placeholder="No phone number on your account">
+            <p class="settings-hint">These are managed by your sign-in account. Changing them requires verification.</p>
+          </div>
+
+          <button class="button button-primary" id="save-profile" type="submit">Save profile <span aria-hidden="true">→</span></button>
+          <p id="profile-status" class="settings-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </div>
+  </main>
+  <script src="theme.js" defer></script>
+  <script type="module" src="settings.js"></script>
+</body>
+</html>
