@@ -28,6 +28,14 @@ USING (
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
 
+DROP POLICY IF EXISTS "Users delete their own reel media" ON storage.objects;
+CREATE POLICY "Users delete their own reel media"
+ON storage.objects FOR DELETE TO authenticated
+USING (
+  bucket_id = 'reel-media'
+  AND (storage.foldername(name))[1] = auth.uid()::text
+);
+
 -- The API uses service_role to issue short-lived URLs after enforcing reel visibility.
 
 CREATE TABLE IF NOT EXISTS public.reel_shares (
