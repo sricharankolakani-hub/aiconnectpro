@@ -126,9 +126,10 @@ async function initialize() {
 
   try {
     await getUser();
-    const profile = await request('/api/profile/me');
-    if (profile.role !== 'company') {
-      showAccess('Company access is required', 'Applicant information is available only to administrator-approved company accounts.', 'Go to Jobs', 'jobs.html');
+    const memberships = await request('/api/organizations/mine');
+    const verifiedOrganizations = (memberships.organizations || []).filter(item => item.verification_status === 'verified');
+    if (!verifiedOrganizations.length) {
+      showAccess('A verified organization is required', 'Applicant information is available to active members of verified organizations.', 'Register an organization', 'company-access.html');
       return;
     }
 
