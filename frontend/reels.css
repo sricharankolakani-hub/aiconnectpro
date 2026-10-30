@@ -38,3 +38,6 @@ body[data-theme="dark"] #create-form input,body[data-theme="dark"] #create-form 
 body[data-theme="dark"] .reel-comment{background:#111626;color:#dce3f0}
 @media(max-width:780px){.reels-layout{grid-template-columns:1fr}.create-card{order:0}.feed-card{order:1}}
 @media(max-width:560px){.reels-main{padding-top:1.5rem}.reels-intro{align-items:flex-start;flex-direction:column}.reels-intro>.button{width:100%}.reel-meta{flex-direction:column;gap:.2rem}.reel-comment-form{flex-direction:column}}
+
+.reel-media:not(a){display:block;width:100%;max-height:560px;object-fit:contain;margin:.9rem auto 0;border-radius:14px;background:var(--paper)}
+video.reel-media{height:auto}

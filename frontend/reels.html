@@ -42,9 +42,10 @@
           <label for="reel-title">Title <span class="optional-label">Optional</span></label>
           <input id="reel-title" name="title" maxlength="120" placeholder="Give your post a clear headline">
           <label for="reel-body">Your insight</label>
-          <textarea id="reel-body" name="body" maxlength="3000" rows="5" placeholder="What would you like the community to learn?" required></textarea>
-          <label for="reel-media">Link to image or video <span class="optional-label">Optional</span></label>
-          <input id="reel-media" name="media_url" type="url" maxlength="2000" inputmode="url" placeholder="https://…">
+          <textarea id="reel-body" name="body" maxlength="3000" rows="5" placeholder="What would you like the community to learn?"></textarea>
+          <label for="reel-file">Photo or video <span class="optional-label">Optional</span></label>
+          <input id="reel-file" name="media" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm">
+          <p id="media-help" class="reels-help">Choose a JPG, PNG, WebP, MP4, or WebM file up to 25 MB.</p>
           <label for="reel-visibility">Who can see this?</label>
           <select id="reel-visibility" name="visibility">
             <option value="private">Only me</option>
@@ -68,6 +69,6 @@
     </div>
   </main>
   <script src="theme.js" defer></script>
-  <script src="reels.js" defer></script>
+  <script type="module" src="reels.js"></script>
 </body>
 </html>
