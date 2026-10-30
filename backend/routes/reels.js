@@ -101,6 +101,7 @@ router.get('/', auth, async (req, res) => {
       const shares = sharesResult.data.filter(item => item.reel_id === reel.id);
       return {
         ...await withSignedMedia(reel),
+        is_owner: reel.user_id === req.user.id,
         like_count: likes.length,
         comment_count: comments.length,
         share_count: shares.length,
@@ -175,6 +176,30 @@ router.post('/:id/comment', auth, async (req, res) => {
   const { count } = await supabase.from('reel_comments').select('id', { count: 'exact', head: true })
     .eq('reel_id', req.params.id);
   return res.status(201).json({ comment: data, comment_count: count || 0 });
+});
+
+/** Delete a Reel owned by the signed-in member and clean up its private media. */
+router.delete('/:id', auth, async (req, res) => {
+  const { data: reel, error: reelError } = await getReel(req.params.id);
+  if (reelError) return res.status(500).json({ error: 'reel_lookup_failed' });
+  if (!reel) return res.status(404).json({ error: 'reel_not_found' });
+  if (reel.user_id !== req.user.id) return res.status(403).json({ error: 'not_reel_owner' });
+
+  const { data: deleted, error: deleteError } = await supabase.from('reels')
+    .delete()
+    .eq('id', req.params.id)
+    .eq('user_id', req.user.id)
+    .select('id')
+    .maybeSingle();
+  if (deleteError) return res.status(500).json({ error: 'reel_delete_failed' });
+  if (!deleted) return res.status(404).json({ error: 'reel_not_found' });
+
+  if (reel.media_url && !/^https?:\/\//i.test(reel.media_url)) {
+    const { error: storageError } = await supabase.storage.from('reel-media').remove([reel.media_url]);
+    if (storageError) console.error('Deleted Reel media cleanup failed', storageError);
+  }
+
+  return res.json({ deleted: true });
 });
 
 /** Count a successful share action for public Reels only. */
