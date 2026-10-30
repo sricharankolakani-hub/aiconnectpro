@@ -99,7 +99,48 @@
 
           <label for="profile-bio">About you</label>
           <textarea id="profile-bio" name="bio" rows="5" maxlength="500" placeholder="Share a little about your work, interests, and goals."></textarea>
-          <p class="settings-hint"><span id="bio-count">0</span>/500 characters. Your personal details are private to your account.</p>
+          <p class="settings-hint"><span id="bio-count">0</span>/500 characters.</p>
+
+          <fieldset class="visibility-settings">
+            <legend>Who can see each detail?</legend>
+            <p>All fields start private. “Everyone” means signed-in AIConnectPro members; discovery must also be on for them to find your profile.</p>
+            <label for="visibility-date-of-birth">Date of birth</label>
+            <select id="visibility-date-of-birth" data-visibility="date_of_birth">
+              <option value="private">Only me</option>
+              <option value="connections">My connections</option>
+              <option value="everyone">All members</option>
+            </select>
+            <label for="visibility-location">Place</label>
+            <select id="visibility-location" data-visibility="location">
+              <option value="private">Only me</option>
+              <option value="connections">My connections</option>
+              <option value="everyone">All members</option>
+            </select>
+            <label for="visibility-bio">About you</label>
+            <select id="visibility-bio" data-visibility="bio">
+              <option value="private">Only me</option>
+              <option value="connections">My connections</option>
+              <option value="everyone">All members</option>
+            </select>
+            <label for="visibility-email">Email</label>
+            <select id="visibility-email" data-visibility="email">
+              <option value="private">Only me</option>
+              <option value="connections">My connections</option>
+              <option value="everyone">All members</option>
+            </select>
+            <label for="visibility-phone">Phone</label>
+            <select id="visibility-phone" data-visibility="phone">
+              <option value="private">Only me</option>
+              <option value="connections">My connections</option>
+              <option value="everyone">All members</option>
+            </select>
+            <label for="visibility-avatar">Profile photo</label>
+            <select id="visibility-avatar" data-visibility="avatar">
+              <option value="private">Only me</option>
+              <option value="connections">My connections</option>
+              <option value="everyone">All members</option>
+            </select>
+          </fieldset>
 
           <div class="account-contact-fields">
             <h3>Sign-in contact</h3>
