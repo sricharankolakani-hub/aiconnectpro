@@ -46,6 +46,11 @@ function renderPersonList(containerId, rows, kind) {
     if (person.company_name) copy.append(make('span', '', person.company_name));
     item.append(copy);
     const actions = make('div', 'connection-actions');
+    if (kind === 'discover' || kind === 'connected') {
+      const profileLink = make('a', 'connection-message-link', 'View profile');
+      profileLink.href = 'member-profile.html?user=' + encodeURIComponent(person.id);
+      actions.append(profileLink);
+    }
 
     if (kind === 'discover') {
       actions.append(actionButton('Connect', 'request', person.id, 'accept-action'));
