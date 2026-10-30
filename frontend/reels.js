@@ -41,6 +41,7 @@ function renderComment(comment) {
 
 function renderReel(reel) {
   const card = node('article', 'reel');
+  card.id = 'reel-' + reel.id;
   card.dataset.id = reel.id;
   const header = node('div', 'reel-header');
   header.append(
@@ -101,6 +102,10 @@ async function loadReels() {
     const result = await api('/reels?limit=' + limit + '&offset=' + offset);
     const reels = result.reels || [];
     reels.forEach(reel => feedEl.append(renderReel(reel)));
+    if (offset === 0) {
+      const target = window.location.hash.slice(1);
+      if (target) requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ block: 'center' }));
+    }
     offset += reels.length;
     loadMore.hidden = reels.length < limit;
     if (!reels.length && offset === 0) feedEl.textContent = 'No Reels yet. Share the first one.';
@@ -130,17 +135,18 @@ async function postReel(event) {
   event.preventDefault();
   const submit = byId('post-reel');
   const file = mediaInput.files[0];
+  let uploadedPath = null;
   submit.disabled = true;
   createResult.textContent = file ? 'Uploading media…' : 'Posting…';
   try {
-    const mediaPath = await uploadMedia(file);
+    uploadedPath = await uploadMedia(file);
     createResult.textContent = 'Publishing Reel…';
     const result = await api('/reels', {
       method: 'POST',
       body: JSON.stringify({
         title: byId('reel-title').value.trim(),
         body: byId('reel-body').value.trim(),
-        media_url: mediaPath,
+        media_url: uploadedPath,
         visibility: byId('reel-visibility').value
       })
     });
@@ -150,6 +156,10 @@ async function postReel(event) {
     byId('reel-body').value = '';
     mediaInput.value = '';
   } catch (error) {
+    if (uploadedPath) {
+      const { error: cleanupError } = await supabase.storage.from('reel-media').remove([uploadedPath]);
+      if (cleanupError) console.warn('Unable to remove incomplete Reel upload', cleanupError);
+    }
     createResult.textContent = error.message || 'We could not post your Reel.';
   } finally {
     submit.disabled = false;
@@ -160,7 +170,6 @@ async function toggleLike(button) {
   button.disabled = true;
   try {
     const result = await api('/reels/' + encodeURIComponent(button.dataset.id) + '/like', { method: 'POST' });
-    const reel = button.closest('.reel');
     button.textContent = (result.liked ? '♥ Liked' : '♡ Like') + ' · ' + result.like_count;
     button.setAttribute('aria-pressed', String(result.liked));
   } catch (error) {
@@ -181,7 +190,7 @@ async function loadAllComments(button) {
 }
 
 async function shareReel(button) {
-  const url = new URL('reels.html?reel=' + encodeURIComponent(button.dataset.id), window.location.href).toString();
+  const url = new URL('reels.html#reel-' + encodeURIComponent(button.dataset.id), window.location.href).toString();
   try {
     if (navigator.share) await navigator.share({ title: 'AIConnectPro Reel', url });
     else await navigator.clipboard.writeText(url);
