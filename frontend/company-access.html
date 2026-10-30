@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Request verified employer access on AIConnectPro.">
-  <title>Request company access – AIConnectPro</title>
+  <meta name="description" content="Register an organization and request verified employer access on AIConnectPro.">
+  <title>Register an organization – AIConnectPro</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="company-access.css">
 </head>
@@ -23,28 +23,38 @@
 
   <main class="shell access-main">
     <section class="access-intro">
-      <p class="eyebrow"><span class="eyebrow-dot"></span> VERIFIED EMPLOYERS</p>
-      <h1>Request company access</h1>
-      <p>Tell us about your organization. An AIConnectPro administrator will review the request before posting is enabled.</p>
+      <p class="eyebrow"><span class="eyebrow-dot"></span> ORGANIZATION REGISTRATION</p>
+      <h1>Register your organization</h1>
+      <p>Use your existing AIConnectPro login. Your personal profile stays separate, and employer access is linked to this organization after verification.</p>
     </section>
     <section id="access-state" class="access-state" role="status" aria-live="polite">
       <h2>Checking your account…</h2>
     </section>
     <form id="access-form" class="access-form" hidden>
-      <label for="company-name">Company or organization name <span aria-hidden="true">*</span>
+      <label for="company-name">Legal or organization name <span aria-hidden="true">*</span>
         <input id="company-name" name="company_name" type="text" maxlength="160" autocomplete="organization" required>
+      </label>
+      <label for="gstin">GSTIN <span class="optional-label">(if registered)</span>
+        <input id="gstin" name="gstin" type="text" maxlength="15" minlength="15" pattern="[0-9A-Za-z]{15}" autocapitalize="characters" autocomplete="off" aria-describedby="gstin-help">
+      </label>
+      <small id="gstin-help">Enter the 15-character GSTIN. If your organization is not GST registered, leave it blank; the request will need manual review.</small>
+      <label for="registered-address">Registered address
+        <textarea id="registered-address" name="registered_address" rows="2" maxlength="500" autocomplete="street-address"></textarea>
+      </label>
+      <label for="operating-location">Operating location <span aria-hidden="true">*</span>
+        <input id="operating-location" name="operating_location" type="text" maxlength="200" placeholder="City, State, Country" autocomplete="address-level2" required>
       </label>
       <label for="website">Organization website
         <input id="website" name="website" type="url" maxlength="320" placeholder="https://example.com" autocomplete="url">
       </label>
-      <label for="message">Anything you’d like us to know
-        <textarea id="message" name="message" rows="5" maxlength="1500" placeholder="Share your role and how you plan to use AIConnectPro."></textarea>
+      <label for="message">Your role and anything else we should know
+        <textarea id="message" name="message" rows="4" maxlength="1500" placeholder="Tell us how you are connected to this organization."></textarea>
       </label>
-      <p class="privacy-note">Your request is visible only to authorized administrators. Approval enables your account to publish opportunities.</p>
+      <p class="privacy-note">GST verification is not automated yet. Every registration stays in manual review until verification is completed; posting remains unavailable while review is pending.</p>
       <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
       <div class="form-actions">
         <a class="button button-outline" href="jobs.html">Back to Jobs</a>
-        <button id="submit-request" class="button button-primary" type="submit">Send for review <span aria-hidden="true">→</span></button>
+        <button id="submit-request" class="button button-primary" type="submit">Submit organization for review <span aria-hidden="true">→</span></button>
       </div>
     </form>
   </main>
@@ -52,7 +62,7 @@
   <footer class="site-footer">
     <div class="shell footer-inner">
       <a class="brand brand-footer" href="index.html"><span class="brand-mark">A</span> AIConnectPro</a>
-      <span>Verified access helps keep opportunity listings trustworthy.</span>
+      <span>One login for your personal profile and organization memberships.</span>
     </div>
   </footer>
   <script src="theme.js" defer></script>
