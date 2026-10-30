@@ -1,4 +1,4 @@
-import { getUser, supabase } from './auth.js';
+import { getUser, signOut, supabase } from './auth.js';
 
 const appearanceForm = document.getElementById('appearance-form');
 const profileForm = document.getElementById('profile-form');
@@ -10,6 +10,33 @@ const photoImage = document.getElementById('avatar-image');
 const initials = document.getElementById('avatar-initials');
 const saveButton = document.getElementById('save-profile');
 const appearance = window.AIConnectProAppearance;
+const settingsHeading = document.querySelector('.settings-heading');
+const backToProfile = settingsHeading?.querySelector(':scope > a.button');
+if (settingsHeading && backToProfile && localStorage.getItem('token')) {
+  const actions = document.createElement('div');
+  actions.className = 'settings-heading-actions';
+  actions.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:10px;';
+  const logoutButton = document.createElement('button');
+  logoutButton.className = 'button button-outline';
+  logoutButton.type = 'button';
+  logoutButton.id = 'settings-logout';
+  logoutButton.textContent = 'Log out';
+  logoutButton.addEventListener('click', async () => {
+    logoutButton.disabled = true;
+    logoutButton.textContent = 'Signing out…';
+    try {
+      await signOut();
+      window.location.replace('index.html');
+    } catch (error) {
+      logoutButton.disabled = false;
+      logoutButton.textContent = 'Log out';
+      setStatus(profileStatus, error.message || 'Could not sign out. Please try again.', true);
+    }
+  });
+  settingsHeading.insertBefore(actions, backToProfile);
+  actions.append(backToProfile, logoutButton);
+}
+
 
 function setStatus(element, message, error = false) {
   element.textContent = message;
