@@ -185,7 +185,7 @@ router.get('/me', auth, async (req, res) => {
   if (data) {
     const { data: privateDetails, error: privateError } = await supabase
       .from('profile_private_details')
-      .select('date_of_birth, location, bio')
+      .select('date_of_birth, location, bio, visibility')
       .eq('user_id', req.user.id)
       .maybeSingle();
     if (privateError && !isPrivateDetailsTableMissing(privateError)) {
@@ -220,7 +220,7 @@ router.get('/me', auth, async (req, res) => {
   if (createError) return res.status(500).json({ error: createError.message });
   const { data: privateDetails, error: privateError } = await supabase
     .from('profile_private_details')
-    .select('date_of_birth, location, bio')
+    .select('date_of_birth, location, bio, visibility')
     .eq('user_id', req.user.id)
     .maybeSingle();
   if (privateError && !isPrivateDetailsTableMissing(privateError)) {
@@ -279,7 +279,8 @@ router.get('/:userId', auth, async (req, res) => {
     const result = {
       id: profile.id,
       full_name: profile.full_name || 'AIConnectPro member',
-      company_name: profile.company_name || null
+      company_name: profile.company_name || null,
+      is_connected: isConnected
     };
 
     for (const field of ['date_of_birth', 'location', 'bio']) {
