@@ -81,6 +81,12 @@ async function loadSettings() {
   document.getElementById('bio-count').textContent = String((profile.bio || '').length);
   document.getElementById('account-email').value = currentUser.email || '';
   document.getElementById('account-phone').value = currentUser.phone || '';
+  const visibility = profile.visibility || {};
+  document.querySelectorAll('[data-visibility]').forEach(control => {
+    control.value = ['private', 'connections', 'everyone'].includes(visibility[control.dataset.visibility])
+      ? visibility[control.dataset.visibility]
+      : 'private';
+  });
   showAvatar(await getAvatarUrl(currentUser), name);
 }
 
@@ -94,6 +100,10 @@ profileForm.addEventListener('submit', async event => {
   const dateOfBirth = document.getElementById('date-of-birth').value;
   const location = document.getElementById('profile-location').value.trim();
   const bio = document.getElementById('profile-bio').value.trim();
+  const visibility = Object.fromEntries(
+    [...document.querySelectorAll('[data-visibility]')]
+      .map(control => [control.dataset.visibility, control.value])
+  );
   if (name.length < 2 || name.length > 100) {
     setStatus(profileStatus, 'Enter a name between 2 and 100 characters.', true);
     return;
@@ -113,13 +123,13 @@ profileForm.addEventListener('submit', async event => {
         Authorization: 'Bearer ' + localStorage.getItem('token'),
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ full_name: name, date_of_birth: dateOfBirth || null, location, bio })
+      body: JSON.stringify({ full_name: name, date_of_birth: dateOfBirth || null, location, bio, visibility })
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || 'Could not save your profile.');
     currentUser = await getUser();
     showAvatar(await getAvatarUrl(currentUser), name);
-    setStatus(profileStatus, 'Your profile name is updated.');
+    setStatus(profileStatus, 'Your profile details and visibility are saved.');
   } catch (error) {
     setStatus(profileStatus, error.message || 'Could not save your profile.', true);
   } finally {
