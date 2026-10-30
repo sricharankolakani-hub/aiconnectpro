@@ -44,7 +44,11 @@ router.post('/', auth, async (req, res) => {
     if (!titleText && !bodyText && !mediaPath) {
       return res.status(400).json({ error: 'reel_content_required' });
     }
-    if (mediaPath && !/^https?:\/\//i.test(mediaPath) && !mediaPath.startsWith(req.user.id + '/')) {
+    const mediaSegments = mediaPath ? mediaPath.split('/') : [];
+    const mediaPathBelongsToUser = mediaPath.startsWith(`${req.user.id}/`)
+      && !mediaPath.includes('\\')
+      && mediaSegments.every(segment => segment && segment !== '.' && segment !== '..');
+    if (mediaPath && !mediaPathBelongsToUser) {
       return res.status(400).json({ error: 'media_path_must_belong_to_user' });
     }
 
