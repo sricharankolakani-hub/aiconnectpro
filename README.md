@@ -28,7 +28,7 @@ Keep the service-role key on the backend. Never put it in frontend files, Vercel
 
 Personal member profiles and organizations are separate records. A user can request access to an organization and becomes able to post jobs or view applicants only through an active organization membership and after that organization is verified.
 
-Organization registrations collect business identity and location details, including a GSTIN when available. Registrations remain pending for administrator review. No automated GST verification provider is configured, so administrators must check the submitted details and any supporting evidence before approving an organization. Do not treat a submitted GSTIN or uploaded document alone as verification.
+Organization registrations collect business identity and location details, including a GSTIN when available. Registrations remain pending for administrator review. No automated GST verification provider is configured, so administrators must independently review the submitted details before approving an organization. A submitted GSTIN alone is not proof of verification.
 
 The first administrator must be configured by a trusted Supabase project owner by adding `admin` to that user's `app_metadata.roles` array. Never grant admin access through `user_metadata` or from a browser client. Administrator-only APIs enforce the server-managed admin role.
 
