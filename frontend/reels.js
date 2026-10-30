@@ -87,6 +87,13 @@ function renderReel(reel) {
     share.dataset.id = reel.id;
     actions.append(share);
   }
+  if (reel.is_owner) {
+    const remove = node('button', 'reel-action delete-btn', 'Delete post');
+    remove.type = 'button';
+    remove.dataset.id = reel.id;
+    remove.setAttribute('aria-label', title ? 'Delete post: ' + title : 'Delete your post');
+    actions.append(remove);
+  }
   card.append(actions);
 
   const commentArea = node('section', 'reel-comments');
@@ -172,7 +179,7 @@ async function postReel(event) {
   setStatus(createResult, file ? 'Uploading media…' : 'Publishing…');
   try {
     uploadedPath = await uploadMedia(file);
-    const result = await api('/reels', {
+    await api('/reels', {
       method: 'POST',
       body: JSON.stringify({
         title,
@@ -197,6 +204,23 @@ async function postReel(event) {
     setStatus(createResult, error.message || 'Could not publish this post.', true);
   } finally {
     postButton.disabled = false;
+  }
+}
+
+async function deleteReel(button) {
+  const confirmed = window.confirm('Delete this post and its attached media? This cannot be undone.');
+  if (!confirmed) return;
+  const card = byId('reel-' + button.dataset.id);
+  button.disabled = true;
+  button.textContent = 'Deleting…';
+  try {
+    await api('/reels/' + encodeURIComponent(button.dataset.id), { method: 'DELETE' });
+    card?.remove();
+    setStatus(feedStatus, 'Your post was deleted.');
+  } catch (error) {
+    setStatus(feedStatus, error.message || 'Could not delete this post.', true);
+    button.disabled = false;
+    button.textContent = 'Delete post';
   }
 }
 
@@ -256,6 +280,8 @@ if (!token) {
 }
 
 feedEl.addEventListener('click', event => {
+  const remove = event.target.closest('.delete-btn');
+  if (remove) return void deleteReel(remove);
   const like = event.target.closest('.like-btn');
   if (like) return void toggleLike(like);
   const comments = event.target.closest('.comments-toggle');
