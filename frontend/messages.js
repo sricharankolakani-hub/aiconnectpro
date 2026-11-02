@@ -75,12 +75,6 @@ function renderMessages(rows) {
     const bubble = el('article', 'message' + (message.sender_id === user.id ? ' mine' : ''), message.body);
     const date = new Date(message.created_at);
     bubble.append(el('time', '', Number.isNaN(date.getTime()) ? '' : date.toLocaleString()));
-    if (message.sender_id === user.id) {
-      const receipt = message.read_at
-        ? 'Seen ' + new Date(message.read_at).toLocaleString()
-        : 'Sent';
-      bubble.append(el('span', 'message-receipt', receipt));
-    }
     thread.append(bubble);
   }
   thread.scrollTop = thread.scrollHeight;
