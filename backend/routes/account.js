@@ -65,7 +65,7 @@ router.get('/export', auth, async (req, res) => {
     const [
       profiles, privateDetails, resumes, reels, likes, comments, shares,
       applications, jobs, accessRequests, memberships, connectionRequests,
-      conversations
+      conversations, reportsFiled
     ] = await Promise.all([
       fetchAll(() => supabase.from('profiles').select('*').eq('id', userId)),
       fetchAll(() => supabase.from('profile_private_details').select('*').eq('user_id', userId)),
@@ -81,7 +81,8 @@ router.get('/export', auth, async (req, res) => {
       fetchAll(() => supabase.from('connection_requests').select('*')
         .or('sender_id.eq.' + userId + ',recipient_id.eq.' + userId)),
       fetchAll(() => supabase.from('direct_conversations').select('*')
-        .or('member_a.eq.' + userId + ',member_b.eq.' + userId))
+        .or('member_a.eq.' + userId + ',member_b.eq.' + userId)),
+      fetchAll(() => supabase.from('content_reports').select('*').eq('reporter_id', userId))
     ]);
 
     const posts = postsRoutes.getPostsByAuthor(userId);
@@ -135,6 +136,7 @@ router.get('/export', auth, async (req, res) => {
       connection_requests: connectionRequests,
       conversations,
       messages,
+      reports_filed: reportsFiled,
       stored_files: downloads
     };
 

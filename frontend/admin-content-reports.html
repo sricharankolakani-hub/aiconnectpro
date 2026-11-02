@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Review member reports for AIConnectPro content and profiles.">
+  <title>Member reports – AIConnectPro</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin-company-requests.css">
+</head>
+<body class="admin-requests-page">
+  <header class="site-header">
+    <div class="shell nav-shell">
+      <a class="brand" href="index.html" aria-label="AIConnectPro home"><span class="brand-mark">A</span> AIConnectPro</a>
+      <nav class="primary-nav" aria-label="Administration">
+        <a href="admin-company-requests.html">Company review</a>
+        <a href="admin-content-reports.html" aria-current="page">Member reports</a>
+      </nav>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode"><span aria-hidden="true">☾</span></button>
+    </div>
+  </header>
+  <main class="shell admin-main">
+    <section class="admin-intro">
+      <p class="eyebrow"><span class="eyebrow-dot"></span> TRUST & SAFETY</p>
+      <h1>Member reports</h1>
+      <p>Review reports about Reels and member profiles. Reports do not automatically hide or remove content.</p>
+    </section>
+    <section id="access-state" class="admin-state" role="status" aria-live="polite"><h2>Checking administrator access…</h2></section>
+    <section id="admin-panel" class="admin-panel" hidden>
+      <div class="admin-toolbar">
+        <div><h2>Reports</h2><p id="report-count"></p></div>
+        <label for="status-filter">Show
+          <select id="status-filter"><option value="pending">Pending</option><option value="all">All reports</option><option value="reviewed">Reviewed</option><option value="dismissed">Dismissed</option></select>
+        </label>
+      </div>
+      <p id="queue-status" class="queue-status" role="status" aria-live="polite"></p>
+      <div id="report-list" class="request-list"></div>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="shell footer-inner"><a class="brand brand-footer" href="index.html"><span class="brand-mark">A</span> AIConnectPro</a><a href="privacy-policy.html">Privacy</a></div></footer>
+  <script src="theme.js" defer></script>
+  <script type="module" src="admin-content-reports.js"></script>
+</body>
+</html>

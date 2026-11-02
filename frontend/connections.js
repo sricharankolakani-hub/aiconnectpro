@@ -65,6 +65,7 @@ function renderPersonList(containerId, rows, kind) {
       actions.append(messageLink);
       actions.append(actionButton('Remove connection', 'disconnect', row.id));
     }
+    actions.append(actionButton('Report', 'report', person.id));
     item.append(actions);
     list.append(item);
   }
@@ -130,8 +131,15 @@ discoverableEl.addEventListener('change', async () => {
 document.addEventListener('click', async event => {
   const button = event.target.closest('button[data-action]');
   if (!button) return;
-  button.disabled = true;
   const action = button.dataset.action;
+  if (action === 'report') {
+    document.getElementById('profile-report-target').value = button.dataset.id;
+    document.getElementById('profile-report-details').value = '';
+    document.getElementById('profile-report-status').textContent = '';
+    document.getElementById('profile-report-dialog').showModal();
+    return;
+  }
+  button.disabled = true;
   try {
     if (action === 'request') {
       await api('/requests/' + encodeURIComponent(button.dataset.id), { method: 'POST' });
@@ -151,6 +159,37 @@ document.addEventListener('click', async event => {
     setStatus(error.message || 'Could not update this connection.', true);
     button.disabled = false;
   }
+});
+
+document.getElementById('profile-report-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const submit = document.getElementById('profile-report-submit');
+  submit.disabled = true;
+  try {
+    const response = await fetch('/api/reports', {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        target_type: 'member',
+        target_id: document.getElementById('profile-report-target').value,
+        reason: document.getElementById('profile-report-reason').value,
+        details: document.getElementById('profile-report-details').value.trim()
+      })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || 'Could not send this report.');
+    document.getElementById('profile-report-dialog').close();
+    setStatus('Thanks. Your report was sent to the administrators for review.');
+  } catch (error) {
+    const status = document.getElementById('profile-report-status');
+    status.textContent = error.message || 'Could not send this report.';
+    status.dataset.state = 'error';
+  } finally {
+    submit.disabled = false;
+  }
+});
+document.getElementById('cancel-profile-report').addEventListener('click', () => {
+  document.getElementById('profile-report-dialog').close();
 });
 
 async function initialize() {
