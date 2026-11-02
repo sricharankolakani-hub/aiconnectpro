@@ -83,7 +83,11 @@ function saveAppearance() {
 appearanceForm.addEventListener('change', saveAppearance);
 document.getElementById('reset-appearance').addEventListener('click', () => {
   appearance?.save?.({ font: 'system', contrast: 'standard', background: 'warm' });
-  const exportAccountButton = document.getElementById('export-account-data');
+  applyAppearanceForm();
+  setStatus(appearanceStatus, 'Appearance reset to the defaults.');
+});
+
+const exportAccountButton = document.getElementById('export-account-data');
 const accountDataStatus = document.getElementById('account-data-status');
 const deleteAccountDialog = document.getElementById('delete-account-dialog');
 const deleteAccountForm = document.getElementById('delete-account-form');
@@ -107,7 +111,7 @@ exportAccountButton.addEventListener('click', async () => {
     document.body.append(link);
     link.click();
     link.remove();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     setStatus(accountDataStatus, 'Your data export has been downloaded. Private file links in it expire after one hour.');
   } catch (error) {
     setStatus(accountDataStatus, error.message || 'Could not download your data.', true);
@@ -160,10 +164,6 @@ deleteAccountForm.addEventListener('submit', async event => {
     confirmDeleteAccountButton.disabled = false;
     confirmDeleteAccountButton.textContent = 'Delete permanently';
   }
-});
-
-applyAppearanceForm();
-  setStatus(appearanceStatus, 'Appearance reset to the defaults.');
 });
 
 let currentUser = null;
