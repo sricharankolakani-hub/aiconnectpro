@@ -87,6 +87,13 @@ function renderReel(reel) {
     share.dataset.id = reel.id;
     actions.append(share);
   }
+  if (!reel.is_owner) {
+    const report = node('button', 'reel-action report-btn', 'Report');
+    report.type = 'button';
+    report.dataset.id = reel.id;
+    report.dataset.targetType = 'reel';
+    actions.append(report);
+  }
   if (reel.is_owner) {
     const remove = node('button', 'reel-action delete-btn', 'Delete post');
     remove.type = 'button';
@@ -280,6 +287,14 @@ if (!token) {
 }
 
 feedEl.addEventListener('click', event => {
+  const report = event.target.closest('.report-btn');
+  if (report) {
+    byId('report-target-id').value = report.dataset.id;
+    byId('report-target-type').value = report.dataset.targetType;
+    byId('report-status').textContent = '';
+    byId('report-dialog').showModal();
+    return;
+  }
   const remove = event.target.closest('.delete-btn');
   if (remove) return void deleteReel(remove);
   const like = event.target.closest('.like-btn');
@@ -289,6 +304,31 @@ feedEl.addEventListener('click', event => {
   const share = event.target.closest('.share-btn');
   if (share) return void shareReel(share);
 });
+byId('report-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const submit = byId('submit-report');
+  submit.disabled = true;
+  try {
+    await api('/reports', {
+      method: 'POST',
+      body: JSON.stringify({
+        target_type: byId('report-target-type').value,
+        target_id: byId('report-target-id').value,
+        reason: byId('report-reason').value,
+        details: byId('report-details').value.trim()
+      })
+    });
+    byId('report-dialog').close();
+    event.currentTarget.reset();
+    setStatus(feedStatus, 'Thanks. Your report was sent to the administrators for review.');
+  } catch (error) {
+    setStatus(byId('report-status'), error.message || 'Could not send your report.', true);
+  } finally {
+    submit.disabled = false;
+  }
+});
+byId('cancel-report').addEventListener('click', () => byId('report-dialog').close());
+
 feedEl.addEventListener('submit', async event => {
   const form = event.target.closest('.reel-comment-form');
   if (!form) return;
