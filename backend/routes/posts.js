@@ -39,4 +39,13 @@ router.post('/', requireAuth, (req, res) => {
   res.json({ post });
 });
 
+router.getPostsByAuthor = authorId => POSTS.filter(post => post.authorId === authorId);
+router.removePostsByAuthor = authorId => {
+  const before = POSTS.length;
+  for (let index = POSTS.length - 1; index >= 0; index -= 1) {
+    if (POSTS[index].authorId === authorId) POSTS.splice(index, 1);
+  }
+  return before - POSTS.length;
+};
+
 module.exports = router;
