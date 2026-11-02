@@ -57,7 +57,35 @@ function renderRequests(requests) {
   list.replaceChildren();
   requestCount.textContent = requests.length + (requests.length === 1 ? ' request' : ' requests');
   if (!requests.length) {
-    list.append(create('p', 'empty-queue', 'No requests in this view.'));
+    const empty = create('div', 'empty-queue');
+    const selectedStatus = filter.options[filter.selectedIndex]?.textContent?.toLowerCase() || 'selected';
+    empty.append(create(
+      'p',
+      '',
+      filter.value === 'all'
+        ? 'No organization access requests have been submitted yet.'
+        : 'There are no ' + selectedStatus + ' requests to show.'
+    ));
+
+    const actions = create('div', 'request-actions');
+    const registrationUrl = new URL('company-access.html', window.location.href).href;
+    const registrationLink = create('a', 'button button-outline', 'Open registration page');
+    registrationLink.href = registrationUrl;
+    registrationLink.target = '_blank';
+    registrationLink.rel = 'noopener noreferrer';
+    const copyLink = create('button', 'button button-primary', 'Copy employer link');
+    copyLink.type = 'button';
+    copyLink.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(registrationUrl);
+        setQueueStatus('Employer registration link copied.');
+      } catch {
+        setQueueStatus('Copy this employer registration link: ' + registrationUrl);
+      }
+    });
+    actions.append(copyLink, registrationLink);
+    empty.append(actions);
+    list.append(empty);
     return;
   }
 
