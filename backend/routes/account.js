@@ -219,11 +219,11 @@ router.delete('/', auth, async (req, res) => {
       supabase.from('jobs').update({ posted_by: null }).eq('posted_by', userId).not('company_id', 'is', null)
     ];
     const results = await Promise.all(operations);
-    postsRoutes.removePostsByAuthor(userId);
     if (results.some(result => result.error)) {
       console.error('Account database cleanup failed', results.filter(result => result.error).map(result => result.error));
       return accountError(res, 'account_deletion_failed');
     }
+    postsRoutes.removePostsByAuthor(userId);
 
     if (organizations.length) {
       const { error: organizationError } = await supabase.from('organizations')
