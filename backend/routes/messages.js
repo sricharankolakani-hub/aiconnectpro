@@ -70,13 +70,26 @@ router.get('/', async (req, res) => {
     if (!conversations.length) return res.json({ conversations: [] });
 
     const ids = conversations.map(row => row.id);
-    const { data: messages, error: messagesError } = await supabase.from('direct_messages')
-      .select('id, conversation_id, sender_id, body, created_at, read_at')
-      .in('conversation_id', ids).order('created_at', { ascending: false }).limit(500);
+    const [{ data: messages, error: messagesError }, { data: unreadMessages, error: unreadError }] = await Promise.all([
+      supabase.from('direct_messages')
+        .select('id, conversation_id, sender_id, body, created_at, read_at')
+        .in('conversation_id', ids).order('created_at', { ascending: false }).limit(500),
+      supabase.from('direct_messages')
+        .select('conversation_id')
+        .in('conversation_id', ids)
+        .neq('sender_id', userId)
+        .is('read_at', null)
+        .limit(1000)
+    ]);
     if (messagesError) throw messagesError;
+    if (unreadError) throw unreadError;
 
     const latest = new Map();
     for (const message of messages || []) if (!latest.has(message.conversation_id)) latest.set(message.conversation_id, message);
+    const unreadCounts = new Map();
+    for (const message of unreadMessages || []) {
+      unreadCounts.set(message.conversation_id, (unreadCounts.get(message.conversation_id) || 0) + 1);
+    }
     const peerIds = conversations.map(row => row.member_a === userId ? row.member_b : row.member_a);
     const { data: profiles, error: profileError } = await supabase.from('profiles')
       .select('id, full_name').in('id', peerIds);
@@ -85,7 +98,8 @@ router.get('/', async (req, res) => {
     return res.json({ conversations: conversations.map(row => ({
       id: row.id,
       peer: { id: row.member_a === userId ? row.member_b : row.member_a, full_name: names.get(row.member_a === userId ? row.member_b : row.member_a) || 'AIConnectPro member' },
-      latest_message: latest.get(row.id) || null
+      latest_message: latest.get(row.id) || null,
+      unread_count: unreadCounts.get(row.id) || 0
     })) });
   } catch (error) {
     console.error('Message inbox lookup failed', error);
