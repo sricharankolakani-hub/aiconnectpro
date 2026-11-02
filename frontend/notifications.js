@@ -69,7 +69,10 @@ async function load() {
     render(data.notifications || [], data.unread_count || 0);
     status.textContent = '';
   } catch (error) {
-    status.textContent = error.message;
+    status.textContent = error.message === 'Could not load notifications.'
+      ? 'Alerts are temporarily unavailable while the messaging update is being deployed.'
+      : error.message;
+    list.replaceChildren(node('p', 'notification-empty', 'Updates will appear here once alerts are available.'));
   } finally { loading = false; }
 }
 
