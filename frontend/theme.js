@@ -133,6 +133,55 @@
     }
   }
 
+  async function updateUnreadMessageBadge() {
+    const link = [...document.querySelectorAll('.primary-nav a')].find(item => {
+      try { return new URL(item.getAttribute('href'), window.location.href).pathname.endsWith('/messages.html'); }
+      catch { return false; }
+    });
+    if (!link) return;
+    const token = localStorage.getItem('token');
+    if (!token) {
+      link.querySelector('.nav-unread-badge')?.remove();
+      link.removeAttribute('aria-label');
+      return;
+    }
+    try {
+      const response = await fetch('/api/messages', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      const unread = (data.conversations || []).reduce((sum, conversation) => sum + (Number(conversation.unread_count) || 0), 0);
+      let badge = link.querySelector('.nav-unread-badge');
+      if (!unread) {
+        badge?.remove();
+        link.removeAttribute('aria-label');
+        return;
+      }
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'nav-unread-badge';
+        badge.setAttribute('aria-hidden', 'true');
+        link.appendChild(badge);
+      }
+      badge.textContent = unread > 99 ? '99+' : String(unread);
+      link.setAttribute('aria-label', 'Messages, ' + unread + ' unread ' + (unread === 1 ? 'message' : 'messages'));
+    } catch {
+      // Leave navigation usable if unread counts cannot be refreshed.
+    }
+  }
+
+  function startUnreadMessageBadge() {
+    void updateUnreadMessageBadge();
+    window.setInterval(() => {
+      if (!document.hidden) void updateUnreadMessageBadge();
+    }, 15000);
+    window.addEventListener('focus', () => void updateUnreadMessageBadge());
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) void updateUnreadMessageBadge();
+    });
+  }
+
   async function addProfileGreeting() {
     const page = window.location.pathname.split('/').pop() || 'index.html';
     if (page === 'login.html' || page === 'signup.html' || page === 'profile.html') return;
@@ -223,9 +272,13 @@
       applyTheme(next);
     });
     polishNavigation();
+    startUnreadMessageBadge();
     addSharedFooter();
     void addProfileGreeting();
-    void addAdminNavigation().then(polishNavigation);
+    void addAdminNavigation().then(() => {
+      polishNavigation();
+      void updateUnreadMessageBadge();
+    });
     window.addEventListener('resize', () => {
       const nav = document.querySelector('.primary-nav');
       if (nav) syncNavLayout(nav);
