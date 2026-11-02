@@ -306,6 +306,7 @@ feedEl.addEventListener('click', event => {
 });
 byId('report-form').addEventListener('submit', async event => {
   event.preventDefault();
+  const form = event.currentTarget;
   const submit = byId('submit-report');
   submit.disabled = true;
   try {
@@ -319,7 +320,7 @@ byId('report-form').addEventListener('submit', async event => {
       })
     });
     byId('report-dialog').close();
-    event.currentTarget.reset();
+    form.reset();
     setStatus(feedStatus, 'Thanks. Your report was sent to the administrators for review.');
   } catch (error) {
     setStatus(byId('report-status'), error.message || 'Could not send your report.', true);
