@@ -6,6 +6,16 @@ const auth = require('../middleware/authMiddleware');
 
 router.use(auth);
 
+async function notify(userId, actorId, type, requestId) {
+  const { error } = await supabase.from('notifications').upsert({
+    user_id: userId,
+    actor_id: actorId,
+    type,
+    request_id: requestId
+  }, { onConflict: 'user_id,type,request_id', ignoreDuplicates: true });
+  if (error) console.error('Connection notification creation failed', error);
+}
+
 function cleanSearch(value) {
   return typeof value === 'string'
     ? value.trim().replace(/[%,_]/g, '').slice(0, 80)
@@ -160,6 +170,7 @@ router.post('/requests/:userId', async (req, res) => {
     console.error('Connection request create failed', error);
     return res.status(500).json({ error: 'request_create_failed' });
   }
+  await notify(recipientId, req.user.id, 'connection_request', data.id);
   return res.status(201).json({ request: data });
 });
 
@@ -191,6 +202,9 @@ router.patch('/requests/:id', async (req, res) => {
     .maybeSingle();
   if (error) return res.status(500).json({ error: 'request_update_failed' });
   if (!data) return res.status(409).json({ error: 'request_already_updated' });
+  if (action === 'accept' || action === 'decline') {
+    await notify(request.sender_id, req.user.id, action === 'accept' ? 'connection_accepted' : 'connection_declined', request.id);
+  }
   return res.json({ request: data });
 });
 

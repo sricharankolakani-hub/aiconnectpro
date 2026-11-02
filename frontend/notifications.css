@@ -1,0 +1,17 @@
+.notification-panel{margin:1rem 0 1.25rem;padding:1rem 1.15rem;border:1px solid var(--line);border-radius:16px;background:var(--white);box-shadow:var(--shadow)}
+.notification-panel-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.notification-panel-head h2{margin:0;font-size:1.05rem}
+.notification-panel-head p{margin:.2rem 0 0;color:var(--muted);font-size:.88rem}
+.notifications-list{display:grid;gap:.55rem;margin-top:.7rem}
+.notification-item{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:.7rem .8rem;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+.notification-item a{color:var(--ink);text-decoration:none;min-width:0;flex:1}
+.notification-item a:hover{text-decoration:underline}
+.notification-title{display:block;font-weight:700}
+.notification-copy{display:block;overflow-wrap:anywhere;margin-top:.15rem;color:var(--muted);font-size:.87rem}
+.notification-time{display:block;margin-top:.2rem;color:var(--muted);font-size:.75rem}
+.notification-empty,.notification-status{margin:.4rem 0;color:var(--muted);font-size:.88rem}
+.notification-status:empty{display:none}
+.notification-unread-count{flex:none;min-width:1.6rem;padding:.12rem .45rem;border-radius:999px;background:var(--primary);color:#fff;text-align:center;font-size:.75rem;font-weight:800}
+body[data-theme="dark"] .notification-panel{background:#171c2b;border-color:#2c3448}
+body[data-theme="dark"] .notification-item{background:#111626;border-color:#2c3448}
+body[data-theme="dark"] .notification-item a{color:#edf0f8}

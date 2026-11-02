@@ -6,6 +6,7 @@
   <meta name="description" content="Choose whether people can find you and manage your AIConnectPro connections.">
   <title>Connections – AIConnectPro</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="notifications.css">
   <style>
     .connections-main{max-width:1050px;padding-block:2rem 4rem}
     .connections-intro{margin-bottom:1.5rem}
@@ -69,6 +70,11 @@
       <p class="connections-copy">Choose who can find you, send connection requests, and manage your network. Message your accepted connections privately. Voice and video calls are planned for a later phase.</p>
     </section>
     <p id="connections-status" class="connection-status" role="status" aria-live="polite">Loading connections…</p>
+    <section class="notification-panel" aria-labelledby="notifications-heading">
+      <div class="notification-panel-head"><div><h2 id="notifications-heading">Updates <span id="notifications-count" class="notification-unread-count" hidden></span></h2><p>New messages and connection activity</p></div><button id="refresh-notifications" class="button" type="button">Refresh updates</button></div>
+      <p id="notifications-status" class="notification-status" role="status" aria-live="polite"></p>
+      <div id="notification-list" class="notifications-list"><p class="notification-empty">Loading updates…</p></div>
+    </section>
     <div class="connections-grid">
       <div class="connections-column">
         <section class="connections-card" aria-labelledby="privacy-heading">
@@ -123,5 +129,6 @@
   </dialog>
   <script src="theme.js" defer></script>
   <script type="module" src="connections.js"></script>
+  <script type="module" src="notifications.js"></script>
 </body>
 </html>

@@ -56,6 +56,12 @@ function renderMessages(rows) {
     const bubble = el('article', 'message' + (message.sender_id === user.id ? ' mine' : ''), message.body);
     const date = new Date(message.created_at);
     bubble.append(el('time', '', Number.isNaN(date.getTime()) ? '' : date.toLocaleString()));
+    if (message.sender_id === user.id) {
+      const receipt = message.read_at
+        ? 'Seen ' + new Date(message.read_at).toLocaleString()
+        : 'Sent';
+      bubble.append(el('span', 'message-receipt', receipt));
+    }
     thread.append(bubble);
   }
   thread.scrollTop = thread.scrollHeight;
@@ -74,6 +80,13 @@ async function openThread(peerId) {
   renderMessages(data.messages || []);
   await loadInbox();
 }
+
+field.addEventListener('keydown', event => {
+  if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+    event.preventDefault();
+    if (!form.querySelector('button').disabled) form.requestSubmit();
+  }
+});
 
 form.addEventListener('submit', async event => {
   event.preventDefault();
@@ -99,6 +112,10 @@ document.getElementById('refresh-messages').addEventListener('click', async () =
     status.textContent = 'Messages refreshed.';
   } catch (error) { status.textContent = error.message; }
 });
+
+window.setInterval(() => {
+  if (!document.hidden && activePeer) openThread(activePeer).catch(error => { status.textContent = error.message; });
+}, 15000);
 
 window.addEventListener('focus', () => {
   loadInbox().catch(error => { status.textContent = error.message; });
