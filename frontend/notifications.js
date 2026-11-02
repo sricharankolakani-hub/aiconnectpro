@@ -47,11 +47,13 @@ function render(items, unreadCount) {
     if (preview) link.append(node('span', 'notification-copy', preview));
     const time = new Date(item.created_at);
     if (!Number.isNaN(time.getTime())) link.append(node('time', 'notification-time', time.toLocaleString()));
-    link.addEventListener('click', async () => {
+    link.addEventListener('click', async event => {
+      event.preventDefault();
       if (item.type !== 'message') {
         try { await request('/' + encodeURIComponent(item.id) + '/read', { method: 'PATCH' }); }
         catch (error) { status.textContent = error.message; }
       }
+      window.location.assign(link.href);
     });
     row.append(link);
     if (item.type === 'message' && item.unread_count) row.append(node('span', 'notification-unread-count', String(item.unread_count)));
