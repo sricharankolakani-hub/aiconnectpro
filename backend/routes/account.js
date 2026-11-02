@@ -5,10 +5,10 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../services/supabaseClient');
 const auth = require('../middleware/authMiddleware');
+const postsRoutes = require('./posts');
 
 const PAGE_SIZE = 500;
 const RECENT_AUTH_SECONDS = 10 * 60;
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 async function fetchAll(queryFactory) {
   const rows = [];
@@ -84,6 +84,7 @@ router.get('/export', auth, async (req, res) => {
         .or('member_a.eq.' + userId + ',member_b.eq.' + userId))
     ]);
 
+    const posts = postsRoutes.getPostsByAuthor(userId);
     const conversationIds = conversations.map(row => row.id).filter(Boolean);
     const messages = conversationIds.length
       ? await fetchAll(() => supabase.from('direct_messages').select('*').in('conversation_id', conversationIds))
@@ -128,6 +129,7 @@ router.get('/export', auth, async (req, res) => {
       reel_shares: shares,
       applications,
       jobs_posted: jobs,
+      feed_posts: posts,
       employer_access_requests: accessRequests,
       organization_memberships: memberships,
       connection_requests: connectionRequests,
@@ -204,8 +206,8 @@ router.delete('/', auth, async (req, res) => {
     await removeStoragePaths('reel-media', [...reelMediaPaths, ...legacyReelPaths]);
     await removeStoragePaths('resumes', resumePaths);
 
-    // Delete personal rows that do not cascade from auth.users, and remove
-    // authored standalone jobs. Organization-owned postings are retained.
+    // Delete personal rows that do not cascade from auth.users, remove authored
+    // in-memory feed posts and standalone jobs. Organization-owned postings remain.
     const operations = [
       supabase.from('applications').delete().eq('user_id', userId),
       supabase.from('reel_likes').delete().eq('user_id', userId),
@@ -217,6 +219,7 @@ router.delete('/', auth, async (req, res) => {
       supabase.from('jobs').update({ posted_by: null }).eq('posted_by', userId).not('company_id', 'is', null)
     ];
     const results = await Promise.all(operations);
+    postsRoutes.removePostsByAuthor(userId);
     if (results.some(result => result.error)) {
       console.error('Account database cleanup failed', results.filter(result => result.error).map(result => result.error));
       return accountError(res, 'account_deletion_failed');
