@@ -94,6 +94,22 @@
       </div>
     </div>
   </main>
+  <dialog id="profile-report-dialog" aria-labelledby="profile-report-title">
+    <form id="profile-report-form">
+      <p class="eyebrow">HELP KEEP THE COMMUNITY SAFE</p>
+      <h2 id="profile-report-title">Report this profile</h2>
+      <p>Reports are reviewed by an administrator. Reporting does not automatically hide or remove an account.</p>
+      <input id="profile-report-target" type="hidden">
+      <label for="profile-report-reason">What is the concern?</label>
+      <select id="profile-report-reason" required>
+        <option value="spam">Spam</option><option value="harassment">Harassment</option><option value="hate_or_abuse">Hate or abuse</option><option value="misleading">Misleading content</option><option value="unsafe">Unsafe content</option><option value="other">Something else</option>
+      </select>
+      <label for="profile-report-details">Details <span class="optional-label">Optional</span></label>
+      <textarea id="profile-report-details" maxlength="1000" rows="4" placeholder="Add context for the review team."></textarea>
+      <p id="profile-report-status" class="profile-status" role="status" aria-live="polite"></p>
+      <div class="connection-actions"><button id="cancel-profile-report" class="button button-outline" type="button">Cancel</button><button id="profile-report-submit" class="button button-primary" type="submit">Send report</button></div>
+    </form>
+  </dialog>
   <script src="theme.js" defer></script>
   <script type="module" src="connections.js"></script>
 </body>
