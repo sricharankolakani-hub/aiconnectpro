@@ -202,17 +202,20 @@ router.patch('/content-reports/:id', async (req, res) => {
   if (!['reviewed', 'dismissed'].includes(decision)) {
     return res.status(400).json({ error: 'decision_must_be_reviewed_or_dismissed' });
   }
+
+  // Reports may be dismissed while pending or after review. Dismissal is terminal.
+  const allowedCurrentStatuses = decision === 'dismissed' ? ['pending', 'reviewed'] : ['pending'];
   const { data, error } = await supabase.from('content_reports').update({
     status: decision,
     reviewed_by: req.user.id,
     reviewed_at: new Date().toISOString()
-  }).eq('id', req.params.id).eq('status', 'pending')
+  }).eq('id', req.params.id).in('status', allowedCurrentStatuses)
     .select('id, status, reviewed_at').maybeSingle();
   if (error) {
     console.error('Content report review failed', error);
     return res.status(500).json({ error: 'content_report_review_failed' });
   }
-  if (!data) return res.status(404).json({ error: 'pending_report_not_found' });
+  if (!data) return res.status(404).json({ error: 'actionable_report_not_found' });
   return res.json({ report: data });
 });
 
