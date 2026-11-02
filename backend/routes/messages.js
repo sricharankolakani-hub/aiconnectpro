@@ -71,7 +71,7 @@ router.get('/', async (req, res) => {
 
     const ids = conversations.map(row => row.id);
     const { data: messages, error: messagesError } = await supabase.from('direct_messages')
-      .select('id, conversation_id, sender_id, body, created_at')
+      .select('id, conversation_id, sender_id, body, created_at, read_at')
       .in('conversation_id', ids).order('created_at', { ascending: false }).limit(500);
     if (messagesError) throw messagesError;
 
@@ -104,8 +104,15 @@ router.get('/:peerId', async (req, res) => {
       peerName(peerId)
     ]);
     if (!conversation) return res.json({ conversation: null, peer: { id: peerId, full_name: peer }, messages: [] });
+    const { error: readError } = await supabase.from('direct_messages')
+      .update({ read_at: new Date().toISOString() })
+      .eq('conversation_id', conversation.id)
+      .neq('sender_id', req.user.id)
+      .is('read_at', null);
+    if (readError) throw readError;
+
     const { data, error } = await supabase.from('direct_messages')
-      .select('id, sender_id, body, created_at')
+      .select('id, sender_id, body, created_at, read_at')
       .eq('conversation_id', conversation.id).order('created_at', { ascending: true }).limit(100);
     if (error) throw error;
     return res.json({ conversation: { id: conversation.id }, peer: { id: peerId, full_name: peer }, messages: data || [] });
@@ -126,7 +133,7 @@ router.post('/:peerId', async (req, res) => {
     const conversation = await getConversation(req.user.id, peerId, true);
     const { data, error } = await supabase.from('direct_messages')
       .insert({ conversation_id: conversation.id, sender_id: req.user.id, body })
-      .select('id, sender_id, body, created_at').single();
+      .select('id, sender_id, body, created_at, read_at').single();
     if (error) throw error;
     return res.status(201).json({ message: data });
   } catch (error) {
