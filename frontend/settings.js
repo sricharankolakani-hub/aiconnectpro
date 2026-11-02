@@ -87,6 +87,85 @@ document.getElementById('reset-appearance').addEventListener('click', () => {
   setStatus(appearanceStatus, 'Appearance reset to the defaults.');
 });
 
+const exportAccountButton = document.getElementById('export-account-data');
+const accountDataStatus = document.getElementById('account-data-status');
+const deleteAccountDialog = document.getElementById('delete-account-dialog');
+const deleteAccountForm = document.getElementById('delete-account-form');
+const deleteAccountConfirmation = document.getElementById('delete-account-confirmation');
+const deleteAccountStatus = document.getElementById('delete-account-status');
+const confirmDeleteAccountButton = document.getElementById('confirm-delete-account');
+
+exportAccountButton.addEventListener('click', async () => {
+  exportAccountButton.disabled = true;
+  exportAccountButton.textContent = 'Preparing your download…';
+  try {
+    const response = await fetch('/api/account/export', {
+      headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
+    });
+    if (!response.ok) throw new Error('Could not prepare your data export. Please try again.');
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'aiconnectpro-data-export.json';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setStatus(accountDataStatus, 'Your data export has been downloaded. Private file links in it expire after one hour.');
+  } catch (error) {
+    setStatus(accountDataStatus, error.message || 'Could not download your data.', true);
+  } finally {
+    exportAccountButton.disabled = false;
+    exportAccountButton.textContent = 'Download my data';
+  }
+});
+
+document.getElementById('open-delete-account').addEventListener('click', () => {
+  deleteAccountConfirmation.value = '';
+  deleteAccountStatus.textContent = '';
+  deleteAccountDialog.showModal();
+  deleteAccountConfirmation.focus();
+});
+document.getElementById('cancel-delete-account').addEventListener('click', () => deleteAccountDialog.close());
+
+deleteAccountForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (deleteAccountConfirmation.value !== 'DELETE') {
+    setStatus(deleteAccountStatus, 'Type DELETE exactly to confirm.', true);
+    return;
+  }
+
+  confirmDeleteAccountButton.disabled = true;
+  confirmDeleteAccountButton.textContent = 'Deleting…';
+  try {
+    const response = await fetch('/api/account', {
+      method: 'DELETE',
+      headers: {
+        Authorization: 'Bearer ' + localStorage.getItem('token'),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ confirmation: deleteAccountConfirmation.value })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (result.error === 'recent_sign_in_required') {
+        throw new Error('For your safety, sign out and sign back in, then return here and confirm again within 10 minutes.');
+      }
+      throw new Error(result.message || 'Account deletion could not be completed. Contact support if this continues.');
+    }
+
+    localStorage.removeItem('token');
+    try { await supabase.auth.signOut(); } catch {}
+    window.location.replace('index.html');
+  } catch (error) {
+    setStatus(deleteAccountStatus, error.message || 'Account deletion could not be completed.', true);
+  } finally {
+    confirmDeleteAccountButton.disabled = false;
+    confirmDeleteAccountButton.textContent = 'Delete permanently';
+  }
+});
+
 let currentUser = null;
 async function loadSettings() {
   if (!localStorage.getItem('token')) {

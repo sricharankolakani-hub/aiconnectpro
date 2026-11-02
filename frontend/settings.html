@@ -156,6 +156,33 @@
         </form>
       </section>
     </div>
+      <section class="settings-card account-data-card" aria-labelledby="account-data-title">
+        <div class="settings-card-heading">
+          <div><p class="eyebrow">YOUR DATA</p><h2 id="account-data-title">Export or delete your account</h2></div>
+          <span class="settings-mark" aria-hidden="true">↗</span>
+        </div>
+        <p class="settings-description">Download a copy of your AIConnectPro data, or permanently delete your account and its personal content.</p>
+        <div class="account-data-actions">
+          <button class="button button-outline" id="export-account-data" type="button">Download my data</button>
+          <button class="button button-outline account-delete-button" id="open-delete-account" type="button">Delete account</button>
+        </div>
+        <p id="account-data-status" class="settings-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <dialog id="delete-account-dialog" aria-labelledby="delete-account-title">
+        <form id="delete-account-form">
+          <p class="eyebrow">PERMANENT ACTION</p>
+          <h2 id="delete-account-title">Delete your account?</h2>
+          <p>This permanently removes your profile, resumes, applications, Reels, comments, and conversations. Conversations will be removed for both participants. Jobs owned by an organization may remain with that organization. Reviewed organizations must be transferred or closed first. Admins must transfer administrator access first.</p>
+          <label for="delete-account-confirmation">Type DELETE to confirm</label>
+          <input id="delete-account-confirmation" type="text" autocomplete="off" required>
+          <p id="delete-account-status" class="settings-status" role="alert" aria-live="assertive"></p>
+          <div class="account-dialog-actions">
+            <button class="button button-outline" id="cancel-delete-account" type="button">Cancel</button>
+            <button class="button account-delete-confirm" id="confirm-delete-account" type="submit">Delete permanently</button>
+          </div>
+        </form>
+      </dialog>
   </main>
   <script src="theme.js" defer></script>
   <script type="module" src="settings.js"></script>
