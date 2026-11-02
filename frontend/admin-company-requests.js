@@ -63,24 +63,24 @@ function renderRequests(requests) {
       'p',
       '',
       filter.value === 'all'
-        ? 'No organization access requests have been submitted yet.'
-        : 'There are no ' + selectedStatus + ' requests to show.'
+        ? 'No employer access requests have been submitted yet. Share the signup page with an employer to invite a request.'
+        : 'There are no ' + selectedStatus + ' employer requests to show. No request has been submitted in this status.'
     ));
 
     const actions = create('div', 'request-actions');
     const registrationUrl = new URL('company-access.html', window.location.href).href;
-    const registrationLink = create('a', 'button button-outline', 'Open registration page');
+    const registrationLink = create('a', 'button button-outline', 'Open employer signup page');
     registrationLink.href = registrationUrl;
     registrationLink.target = '_blank';
     registrationLink.rel = 'noopener noreferrer';
-    const copyLink = create('button', 'button button-primary', 'Copy employer link');
+    const copyLink = create('button', 'button button-primary', 'Copy employer signup link');
     copyLink.type = 'button';
     copyLink.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(registrationUrl);
-        setQueueStatus('Employer registration link copied.');
+        setQueueStatus('Employer signup link copied. No request has been submitted yet.');
       } catch {
-        setQueueStatus('Copy this employer registration link: ' + registrationUrl);
+        setQueueStatus('Employer signup link (no request submitted yet): ' + registrationUrl);
       }
     });
     actions.append(copyLink, registrationLink);
