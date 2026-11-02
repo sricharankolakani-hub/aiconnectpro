@@ -161,4 +161,59 @@ router.patch('/company-access-requests/:id', async (req, res) => {
   return res.json({ request: updated });
 });
 
+
+// GET /api/admin/content-reports?status=pending
+router.get('/content-reports', async (req, res) => {
+  const status = req.query.status || 'pending';
+  if (!['pending', 'reviewed', 'dismissed', 'all'].includes(status)) {
+    return res.status(400).json({ error: 'invalid_status_filter' });
+  }
+  let query = supabase.from('content_reports')
+    .select('id, reporter_id, target_type, target_user_id, target_reel_id, reason, details, status, created_at, reviewed_at, reviewed_by')
+    .order('created_at', { ascending: false }).limit(100);
+  if (status !== 'all') query = query.eq('status', status);
+  const { data: rows, error } = await query;
+  if (error) {
+    console.error('Content report queue lookup failed', error);
+    return res.status(500).json({ error: 'content_report_queue_failed' });
+  }
+
+  const reports = rows || [];
+  const userIds = [...new Set(reports.flatMap(row => [row.reporter_id, row.target_user_id]).filter(Boolean))];
+  const reelIds = [...new Set(reports.map(row => row.target_reel_id).filter(Boolean))];
+  const [profilesResult, reelsResult] = await Promise.all([
+    userIds.length ? supabase.from('profiles').select('id, full_name').in('id', userIds) : Promise.resolve({ data: [], error: null }),
+    reelIds.length ? supabase.from('reels').select('id, title').in('id', reelIds) : Promise.resolve({ data: [], error: null })
+  ]);
+  if (profilesResult.error || reelsResult.error) return res.status(500).json({ error: 'content_report_queue_failed' });
+  const names = new Map((profilesResult.data || []).map(row => [row.id, row.full_name || 'AIConnectPro member']));
+  const titles = new Map((reelsResult.data || []).map(row => [row.id, row.title || 'Untitled Reel']));
+  return res.json({ reports: reports.map(row => ({
+    ...row,
+    reporter_name: names.get(row.reporter_id) || 'AIConnectPro member',
+    target_name: names.get(row.target_user_id) || null,
+    target_title: titles.get(row.target_reel_id) || null
+  })) });
+});
+
+// PATCH /api/admin/content-reports/:id
+router.patch('/content-reports/:id', async (req, res) => {
+  const decision = req.body?.decision;
+  if (!['reviewed', 'dismissed'].includes(decision)) {
+    return res.status(400).json({ error: 'decision_must_be_reviewed_or_dismissed' });
+  }
+  const { data, error } = await supabase.from('content_reports').update({
+    status: decision,
+    reviewed_by: req.user.id,
+    reviewed_at: new Date().toISOString()
+  }).eq('id', req.params.id).eq('status', 'pending')
+    .select('id, status, reviewed_at').maybeSingle();
+  if (error) {
+    console.error('Content report review failed', error);
+    return res.status(500).json({ error: 'content_report_review_failed' });
+  }
+  if (!data) return res.status(404).json({ error: 'pending_report_not_found' });
+  return res.json({ report: data });
+});
+
 module.exports = router;
