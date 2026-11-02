@@ -6,8 +6,18 @@ const inbox = document.getElementById('inbox-list');
 const thread = document.getElementById('thread-messages');
 const form = document.getElementById('message-form');
 const field = document.getElementById('message-body');
+const receiptToggleWrap = document.getElementById('receipt-toggle-wrap');
+const receiptToggle = document.getElementById('show-receipts');
+const receiptPreferenceKey = 'aiconnectpro-show-seen-details';
 let user = null;
 let activePeer = null;
+let currentMessages = [];
+
+receiptToggle.checked = localStorage.getItem(receiptPreferenceKey) === 'true';
+receiptToggle.addEventListener('change', () => {
+  localStorage.setItem(receiptPreferenceKey, String(receiptToggle.checked));
+  renderMessages(currentMessages);
+});
 
 async function api(path, options = {}) {
   const response = await fetch('/api/messages' + path, {
@@ -66,15 +76,22 @@ function renderInbox(rows) {
 }
 
 function renderMessages(rows) {
+  currentMessages = rows || [];
   thread.replaceChildren();
-  if (!rows.length) {
+  if (!currentMessages.length) {
     thread.append(el('p', 'message-empty', 'No messages yet. Say hello.'));
     return;
   }
-  for (const message of rows) {
+  for (const message of currentMessages) {
     const bubble = el('article', 'message' + (message.sender_id === user.id ? ' mine' : ''), message.body);
     const date = new Date(message.created_at);
     bubble.append(el('time', '', Number.isNaN(date.getTime()) ? '' : date.toLocaleString()));
+    if (message.sender_id === user.id && receiptToggle.checked) {
+      const receipt = message.read_at
+        ? 'Seen ' + new Date(message.read_at).toLocaleString()
+        : 'Sent';
+      bubble.append(el('span', 'message-receipt', receipt));
+    }
     thread.append(bubble);
   }
   thread.scrollTop = thread.scrollHeight;
@@ -91,6 +108,7 @@ async function openThread(peerId) {
   document.getElementById('peer-name').textContent = data.peer.full_name;
   document.getElementById('peer-avatar').textContent = initials(data.peer.full_name);
   document.getElementById('peer-avatar').setAttribute('aria-label', data.peer.full_name);
+  receiptToggleWrap.hidden = false;
   form.hidden = false;
   renderMessages(data.messages || []);
   await loadInbox();
