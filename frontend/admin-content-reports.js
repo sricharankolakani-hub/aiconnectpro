@@ -60,14 +60,25 @@ function render(reports) {
     }
     if (report.details) card.append(create('p', 'request-message', report.details));
     card.append(create('p', 'request-date', 'Submitted ' + new Date(report.created_at).toLocaleString()));
-    if (report.status === 'pending') {
+    if (report.status === 'pending' || report.status === 'reviewed') {
       const actions = create('div', 'request-actions');
-      const review = create('button', 'button button-primary decision-button', 'Mark reviewed');
-      const dismiss = create('button', 'button button-outline decision-button', 'Dismiss');
-      review.type = dismiss.type = 'button';
-      review.addEventListener('click', () => decide(report.id, 'reviewed', review, dismiss));
-      dismiss.addEventListener('click', () => decide(report.id, 'dismissed', review, dismiss));
-      actions.append(review, dismiss);
+      const buttons = [];
+      if (report.status === 'pending') {
+        const review = create('button', 'button button-primary decision-button', 'Mark reviewed');
+        review.type = 'button';
+        review.addEventListener('click', () => decide(report.id, 'reviewed', buttons));
+        buttons.push(review);
+        actions.append(review);
+      }
+      const dismiss = create(
+        'button',
+        'button button-outline decision-button',
+        report.status === 'reviewed' ? 'Dismiss report' : 'Dismiss'
+      );
+      dismiss.type = 'button';
+      dismiss.addEventListener('click', () => decide(report.id, 'dismissed', buttons));
+      buttons.push(dismiss);
+      actions.append(dismiss);
       card.append(actions);
     }
     list.append(card);
@@ -84,8 +95,8 @@ async function loadQueue() {
     setStatus(error.status === 401 ? 'Your session expired. Sign in again.' : 'We could not load the report queue.', true);
   }
 }
-async function decide(id, decision, first, second) {
-  first.disabled = second.disabled = true;
+async function decide(id, decision, buttons) {
+  buttons.forEach(button => { button.disabled = true; });
   setStatus(decision === 'reviewed' ? 'Saving review…' : 'Dismissing report…');
   try {
     await api('/api/admin/content-reports/' + encodeURIComponent(id), {
@@ -95,7 +106,7 @@ async function decide(id, decision, first, second) {
     await loadQueue();
   } catch (error) {
     setStatus(error.message || 'Could not update this report.', true);
-    first.disabled = second.disabled = false;
+    buttons.forEach(button => { button.disabled = false; });
   }
 }
 async function initialize() {
