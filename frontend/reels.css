@@ -45,3 +45,17 @@ body[data-theme="dark"] .reel-comment{background:#111626;color:#dce3f0}
 
 .reel-media:not(a){display:block;width:100%;max-height:560px;object-fit:contain;margin:.9rem auto 0;border-radius:14px;background:var(--paper)}
 video.reel-media{height:auto}
+
+#report-dialog{width:min(520px,calc(100% - 28px));max-height:calc(100% - 28px);padding:clamp(22px,5vw,32px);color:var(--ink);background:var(--white);border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 80px rgba(15,23,42,.28)}
+#report-dialog::backdrop{background:rgba(10,17,29,.62);backdrop-filter:blur(3px)}
+#report-dialog form{display:grid;gap:12px}
+#report-dialog h2{margin:0;font-size:1.4rem}
+#report-dialog p:not(.eyebrow){margin:0;color:var(--muted);font-size:.9rem;line-height:1.6}
+#report-dialog label{margin-top:4px;color:var(--ink);font-size:.86rem;font-weight:700}
+#report-dialog select,#report-dialog textarea{width:100%;padding:12px;color:var(--ink);background:var(--white);border:1px solid var(--line);border-radius:10px;font:inherit}
+#report-dialog select{min-height:44px}
+#report-dialog textarea{resize:vertical}
+#report-dialog .reel-actions{justify-content:flex-end}
+body[data-theme=dark] #report-dialog{color:var(--ink);background:#1b2738;border-color:#46566e}
+body[data-theme=dark] #report-dialog select,body[data-theme=dark] #report-dialog textarea{color:var(--ink);background:#101a29;border-color:#46566e}
+@media(max-width:520px){#report-dialog .reel-actions{align-items:stretch;flex-direction:column-reverse}#report-dialog .reel-action{width:100%}}
