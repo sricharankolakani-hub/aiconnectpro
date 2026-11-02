@@ -6,6 +6,7 @@
   <meta name="description" content="Manage your AIConnectPro profile, resumes, and career activity.">
   <title>My Profile – AIConnectPro</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="notifications.css">
 </head>
 <body>
   <header class="site-header">
@@ -33,6 +34,11 @@
     </div>
 
     <p id="info" class="profile-status" role="status" aria-live="polite">Loading your profile…</p>
+    <section class="notification-panel" aria-labelledby="notifications-heading">
+      <div class="notification-panel-head"><div><h2 id="notifications-heading">Updates <span id="notifications-count" class="notification-unread-count" hidden></span></h2><p>New messages and connection activity</p></div><button id="refresh-notifications" class="button button-outline" type="button">Refresh updates</button></div>
+      <p id="notifications-status" class="notification-status" role="status" aria-live="polite"></p>
+      <div id="notification-list" class="notifications-list"><p class="notification-empty">Loading updates…</p></div>
+    </section>
 
     <section class="profile-overview" aria-label="Account overview">
       <div class="profile-avatar"><span id="profile-avatar-fallback" aria-hidden="true">◎</span><img id="profile-photo" alt="Your profile photo" hidden></div>
@@ -360,5 +366,6 @@
 
     loadProfile();
   </script>
+  <script type="module" src="notifications.js"></script>
 </body>
 </html>
