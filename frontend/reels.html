@@ -67,6 +67,28 @@
         <button id="load-more-btn" class="button button-outline load-more" type="button">Load more</button>
       </section>
     </div>
+    <dialog id="report-dialog" aria-labelledby="report-title">
+      <form id="report-form">
+        <p class="eyebrow">HELP KEEP THE COMMUNITY SAFE</p>
+        <h2 id="report-title">Report this post</h2>
+        <p>Reports are reviewed by an administrator. Reporting does not automatically hide the post.</p>
+        <input id="report-target-type" type="hidden">
+        <input id="report-target-id" type="hidden">
+        <label for="report-reason">What is the concern?</label>
+        <select id="report-reason" required>
+          <option value="spam">Spam</option>
+          <option value="harassment">Harassment</option>
+          <option value="hate_or_abuse">Hate or abuse</option>
+          <option value="misleading">Misleading content</option>
+          <option value="unsafe">Unsafe content</option>
+          <option value="other">Something else</option>
+        </select>
+        <label for="report-details">Details <span class="optional-label">Optional</span></label>
+        <textarea id="report-details" maxlength="1000" rows="4" placeholder="Add context for the review team."></textarea>
+        <p id="report-status" class="reels-status" role="status" aria-live="polite"></p>
+        <div class="reel-actions"><button id="cancel-report" class="reel-action" type="button">Cancel</button><button id="submit-report" class="reel-action" type="submit">Send report</button></div>
+      </form>
+    </dialog>
   </main>
   <script src="theme.js" defer></script>
   <script type="module" src="reels.js"></script>
