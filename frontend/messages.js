@@ -31,7 +31,7 @@ function el(tag, className, value) {
 }
 
 function initials(name) {
-  return String(name || 'Member').trim().split(/\\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
+  return String(name || 'Member').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
 }
 
 function renderInbox(rows) {
