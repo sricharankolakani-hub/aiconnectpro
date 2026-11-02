@@ -19,6 +19,10 @@
     .inbox-unread-badge{display:grid;place-items:center;flex:none;min-width:1.35rem;height:1.35rem;padding:0 .25rem;border-radius:999px;background:var(--primary);color:#fff;font-size:.72rem;font-weight:800}
     body[data-theme="dark"] .inbox-avatar,body[data-theme="dark"] .peer-avatar{background:#26324a;color:#dbe6ff}
     .thread{display:flex;flex-direction:column;min-width:0}.thread-head{display:flex;align-items:center;gap:.75rem;padding:1rem;border-bottom:1px solid var(--line)}.thread-head h2{margin:0;font-size:1.1rem}
+    .receipt-toggle{display:inline-flex;align-items:center;gap:.4rem;margin-left:auto;color:var(--muted);font-size:.78rem;white-space:nowrap;cursor:pointer}
+    .receipt-toggle input{accent-color:var(--primary)}
+    body[data-theme="dark"] .receipt-toggle{color:#c7d0e0}
+    .message-receipt{display:block;text-align:right;font-size:.72rem;opacity:.8;margin-top:.25rem}
     .thread-messages{flex:1;min-height:330px;max-height:60vh;overflow:auto;padding:1rem;display:flex;flex-direction:column;gap:.65rem}
     .message{max-width:min(80%,38rem);padding:.7rem .9rem;border-radius:16px;background:var(--paper);overflow-wrap:anywhere;white-space:pre-wrap}
     .message.mine{align-self:flex-end;background:var(--primary);color:#fff}.message time{display:block;font-size:.72rem;opacity:.75;margin-top:.25rem}
@@ -27,7 +31,7 @@
     body[data-theme="dark"] .messages-layout{background:#171c2b;border-color:#2c3448}body[data-theme="dark"] .inbox{border-color:#2c3448}body[data-theme="dark"] .inbox-link[aria-current="true"],body[data-theme="dark"] .message:not(.mine){background:#111626}
     body[data-theme="dark"] .thread-head,body[data-theme="dark"] .composer{border-color:#2c3448}body[data-theme="dark"] .composer textarea{background:#111626;color:#edf0f8}
     @media(max-width:700px){.messages-layout{grid-template-columns:1fr}.inbox{border-right:0;border-bottom:1px solid var(--line)}.thread-messages{min-height:260px}}
-    @media(max-width:480px){.composer{align-items:stretch}.message-input-wrap{width:100%}.composer button{align-self:flex-end}}
+    @media(max-width:480px){.thread-head{flex-wrap:wrap}.receipt-toggle{flex-basis:100%;margin-left:3.35rem}.composer{align-items:stretch}.message-input-wrap{width:100%}.composer button{align-self:flex-end}}
   </style>
 </head>
 <body>
@@ -42,7 +46,7 @@
     <section class="messages-layout" aria-label="Messages">
       <aside class="inbox"><h2>Conversations</h2><div id="inbox-list" class="inbox-list" aria-live="polite"><p class="message-empty">Loading…</p></div><a class="button" href="connections.html">Find connections</a></aside>
       <section class="thread" aria-label="Conversation">
-        <header class="thread-head"><span id="peer-avatar" class="peer-avatar" aria-hidden="true" hidden></span><h2 id="peer-name">Choose a conversation</h2></header>
+        <header class="thread-head"><span id="peer-avatar" class="peer-avatar" aria-hidden="true" hidden></span><h2 id="peer-name">Choose a conversation</h2><label id="receipt-toggle-wrap" class="receipt-toggle" hidden><input id="show-receipts" type="checkbox"><span>Show seen details</span></label></header>
         <div id="thread-messages" class="thread-messages" aria-live="polite"><p class="message-empty">Choose a connection to start messaging.</p></div>
         <form id="message-form" class="composer" hidden>
           <div class="message-input-wrap">
