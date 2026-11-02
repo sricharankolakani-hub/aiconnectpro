@@ -48,3 +48,21 @@ body[data-theme=dark] .account-contact-fields{background:rgba(16,26,41,.7);borde
 .visibility-settings label{margin:0!important;font-size:.82rem!important}
 .visibility-settings select{width:100%;min-height:40px;padding:0 10px;color:var(--ink);background:var(--white);border:1px solid var(--line);border-radius:9px;font:inherit;font-size:.84rem}
 @media(max-width:520px){.visibility-settings{grid-template-columns:1fr}.visibility-settings>p{grid-column:auto}}
+
+.account-data-card{margin-top:18px}
+.account-data-actions,.account-dialog-actions{display:flex;flex-wrap:wrap;gap:10px}
+.account-delete-button{color:#a5231f;border-color:rgba(165,35,31,.42)}
+#delete-account-dialog{width:min(520px,calc(100% - 28px));max-height:calc(100% - 28px);padding:clamp(22px,5vw,32px);color:var(--ink);background:var(--white);border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 80px rgba(15,23,42,.28)}
+#delete-account-dialog::backdrop{background:rgba(10,17,29,.62);backdrop-filter:blur(3px)}
+#delete-account-dialog form{display:grid;gap:12px}
+#delete-account-dialog .eyebrow{margin:0;color:#a5231f;font-size:.68rem;font-weight:800;letter-spacing:.13em}
+#delete-account-dialog h2{margin:0;font-size:1.4rem}
+#delete-account-dialog form>p:not(.eyebrow):not(.settings-status){margin:0;color:var(--muted);font-size:.9rem;line-height:1.6}
+#delete-account-dialog label{margin-top:4px;color:var(--ink);font-size:.86rem;font-weight:700}
+#delete-account-confirmation{width:100%;min-height:44px;padding:0 12px;color:var(--ink);background:var(--white);border:1px solid var(--line);border-radius:10px;font:inherit}
+#delete-account-confirmation:focus-visible{outline:3px solid color-mix(in srgb,var(--primary) 26%,transparent);outline-offset:2px}
+.account-dialog-actions{justify-content:flex-end;margin-top:4px}
+.account-delete-confirm{color:#fff!important;background:#a5231f!important;border-color:#a5231f!important}
+body[data-theme=dark] #delete-account-dialog{color:var(--ink);background:#1b2738;border-color:#46566e}
+body[data-theme=dark] #delete-account-confirmation{color:var(--ink);background:#101a29;border-color:#46566e}
+@media(max-width:520px){.account-data-actions{align-items:stretch;flex-direction:column}.account-data-actions .button{width:100%}.account-dialog-actions{flex-direction:column-reverse}.account-dialog-actions .button{width:100%}}
