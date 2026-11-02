@@ -30,6 +30,10 @@ function el(tag, className, value) {
   return node;
 }
 
+function initials(name) {
+  return String(name || 'Member').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
+}
+
 function renderInbox(rows) {
   inbox.replaceChildren();
   if (!rows.length) {
@@ -40,8 +44,23 @@ function renderInbox(rows) {
     const link = el('a', 'inbox-link');
     link.href = 'messages.html?user=' + encodeURIComponent(item.peer.id);
     link.setAttribute('aria-current', item.peer.id === activePeer ? 'true' : 'false');
-    link.append(el('strong', '', item.peer.full_name));
-    link.append(el('span', '', item.latest_message?.body || 'Start a conversation'));
+
+    const avatar = el('span', 'inbox-avatar', initials(item.peer.full_name));
+    avatar.setAttribute('aria-hidden', 'true');
+    const copy = el('span', 'inbox-link-copy');
+    const heading = el('span', 'inbox-link-head');
+    heading.append(el('strong', '', item.peer.full_name));
+    if (item.unread_count) {
+      const badge = el('span', 'inbox-unread-badge', item.unread_count > 99 ? '99+' : String(item.unread_count));
+      badge.setAttribute('aria-label', item.unread_count + ' unread messages');
+      heading.append(badge);
+    }
+    copy.append(heading);
+
+    const latest = item.latest_message;
+    const preview = latest?.sender_id === user.id ? 'You: ' + latest.body : (latest?.body || 'Start a conversation');
+    copy.append(el('span', 'inbox-preview', preview));
+    link.append(avatar, copy);
     inbox.append(link);
   }
 }
@@ -76,6 +95,8 @@ async function openThread(peerId) {
   const data = await api('/' + encodeURIComponent(peerId));
   activePeer = peerId;
   document.getElementById('peer-name').textContent = data.peer.full_name;
+  document.getElementById('peer-avatar').textContent = initials(data.peer.full_name);
+  document.getElementById('peer-avatar').setAttribute('aria-label', data.peer.full_name);
   form.hidden = false;
   renderMessages(data.messages || []);
   await loadInbox();
@@ -114,7 +135,9 @@ document.getElementById('refresh-messages').addEventListener('click', async () =
 });
 
 window.setInterval(() => {
-  if (!document.hidden && activePeer) openThread(activePeer).catch(error => { status.textContent = error.message; });
+  if (document.hidden) return;
+  if (activePeer) openThread(activePeer).catch(error => { status.textContent = error.message; });
+  else loadInbox().catch(error => { status.textContent = error.message; });
 }, 15000);
 
 window.addEventListener('focus', () => {
