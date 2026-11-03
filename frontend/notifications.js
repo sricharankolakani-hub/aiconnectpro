@@ -70,9 +70,9 @@ async function load() {
     status.textContent = '';
   } catch (error) {
     status.textContent = error.message === 'Could not load notifications.'
-      ? 'Alerts are temporarily unavailable while the messaging update is being deployed.'
+      ? 'Updates are temporarily unavailable. Please try again.'
       : error.message;
-    list.replaceChildren(node('p', 'notification-empty', 'Updates will appear here once alerts are available.'));
+    list.replaceChildren(node('p', 'notification-empty', 'Could not load updates. Please try refreshing.'));
   } finally { loading = false; }
 }
 
