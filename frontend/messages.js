@@ -14,7 +14,9 @@ let activePeer = null;
 let currentMessages = [];
 let threadRefreshInFlight = false;
 let inboxRefreshInFlight = false;
-let lastInboxRefreshAt = 0;\nlet knownUnreadCounts = null;\nlet toastTimer = null;
+let lastInboxRefreshAt = 0;
+let knownUnreadCounts = null;
+let toastTimer = null;
 
 async function api(path, options = {}) {
   const response = await fetch('/api/messages' + path, {
