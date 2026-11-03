@@ -6,18 +6,10 @@ const inbox = document.getElementById('inbox-list');
 const thread = document.getElementById('thread-messages');
 const form = document.getElementById('message-form');
 const field = document.getElementById('message-body');
-const receiptToggleWrap = document.getElementById('receipt-toggle-wrap');
-const receiptToggle = document.getElementById('show-receipts');
-const receiptPreferenceKey = 'aiconnectpro-show-seen-details';
+const messageInfo = document.getElementById('message-info-dialog');
 let user = null;
 let activePeer = null;
 let currentMessages = [];
-
-receiptToggle.checked = localStorage.getItem(receiptPreferenceKey) === 'true';
-receiptToggle.addEventListener('change', () => {
-  localStorage.setItem(receiptPreferenceKey, String(receiptToggle.checked));
-  renderMessages(currentMessages);
-});
 
 async function api(path, options = {}) {
   const response = await fetch('/api/messages' + path, {
@@ -42,6 +34,59 @@ function el(tag, className, value) {
 
 function initials(name) {
   return String(name || 'Member').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
+}
+
+function formatDate(value) {
+  if (!value) return 'Not yet';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 'Not yet' : date.toLocaleString();
+}
+
+function showMessageInfo(message) {
+  document.getElementById('receipt-sent').textContent = formatDate(message.created_at);
+  document.getElementById('receipt-delivered').textContent = formatDate(message.delivered_at);
+  document.getElementById('receipt-seen').textContent = formatDate(message.read_at);
+  if (!messageInfo.open) messageInfo.showModal();
+}
+
+document.getElementById('message-info-close').addEventListener('click', () => messageInfo.close());
+messageInfo.addEventListener('click', event => {
+  if (event.target === messageInfo) messageInfo.close();
+});
+
+function addReceipt(bubble, message) {
+  const footer = el('div', 'message-footer');
+  footer.append(el('time', '', formatDate(message.created_at)));
+  if (message.sender_id === user.id) {
+    const seen = Boolean(message.read_at);
+    const delivered = Boolean(message.delivered_at);
+    const state = seen ? 'seen' : delivered ? 'delivered' : 'sent';
+    const symbol = seen || delivered ? '✓✓' : '✓';
+    const button = el('button', 'message-receipt ' + state, symbol);
+    button.type = 'button';
+    button.setAttribute('aria-label', 'Message status: ' + state + '. Open sent, delivered and seen times.');
+    button.title = 'Hold this message or select to view times';
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      showMessageInfo(message);
+    });
+    footer.append(button);
+
+    let holdTimer;
+    const clearHold = () => { window.clearTimeout(holdTimer); };
+    bubble.addEventListener('pointerdown', () => {
+      clearHold();
+      holdTimer = window.setTimeout(() => showMessageInfo(message), 600);
+    });
+    bubble.addEventListener('pointerup', clearHold);
+    bubble.addEventListener('pointerleave', clearHold);
+    bubble.addEventListener('pointercancel', clearHold);
+    bubble.addEventListener('contextmenu', event => {
+      event.preventDefault();
+      showMessageInfo(message);
+    });
+  }
+  bubble.append(footer);
 }
 
 function renderInbox(rows) {
@@ -84,14 +129,7 @@ function renderMessages(rows) {
   }
   for (const message of currentMessages) {
     const bubble = el('article', 'message' + (message.sender_id === user.id ? ' mine' : ''), message.body);
-    const date = new Date(message.created_at);
-    bubble.append(el('time', '', Number.isNaN(date.getTime()) ? '' : date.toLocaleString()));
-    if (message.sender_id === user.id && receiptToggle.checked) {
-      const receipt = message.read_at
-        ? 'Seen ' + new Date(message.read_at).toLocaleString()
-        : 'Sent';
-      bubble.append(el('span', 'message-receipt', receipt));
-    }
+    addReceipt(bubble, message);
     thread.append(bubble);
   }
   thread.scrollTop = thread.scrollHeight;
@@ -108,7 +146,6 @@ async function openThread(peerId) {
   document.getElementById('peer-name').textContent = data.peer.full_name;
   document.getElementById('peer-avatar').textContent = initials(data.peer.full_name);
   document.getElementById('peer-avatar').setAttribute('aria-label', data.peer.full_name);
-  receiptToggleWrap.hidden = false;
   form.hidden = false;
   renderMessages(data.messages || []);
   await loadInbox();
