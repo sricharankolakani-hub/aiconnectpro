@@ -14,7 +14,7 @@ let activePeer = null;
 let currentMessages = [];
 let threadRefreshInFlight = false;
 let inboxRefreshInFlight = false;
-let lastInboxRefreshAt = 0;
+let lastInboxRefreshAt = 0;\nlet knownUnreadCounts = null;\nlet toastTimer = null;
 
 async function api(path, options = {}) {
   const response = await fetch('/api/messages' + path, {
@@ -40,6 +40,20 @@ function el(tag, className, value) {
 function initials(name) {
   return String(name || 'Member').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
 }
+
+function showIncomingToast(peerName, count = 1) {
+  const toast = document.getElementById('incoming-message-toast');
+  const text = document.getElementById('incoming-message-toast-text');
+  text.textContent = (count > 1 ? count + ' new messages' : 'New message') + ' from ' + peerName + '.';
+  toast.hidden = false;
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => { toast.hidden = true; }, 5000);
+}
+
+document.getElementById('dismiss-message-toast').addEventListener('click', () => {
+  window.clearTimeout(toastTimer);
+  document.getElementById('incoming-message-toast').hidden = true;
+});
 
 function formatDate(value) {
   if (!value) return 'Not yet';
@@ -146,12 +160,12 @@ function renderMessages(rows, { scrollToBottom = false } = {}) {
   else thread.scrollTop = previousScrollTop;
 }
 
-async function loadInbox() {
+async function loadInbox({ notifyIncoming = false } = {}) {
   if (inboxRefreshInFlight) return;
   inboxRefreshInFlight = true;
   try {
     const data = await api('');
-    renderInbox(data.conversations || []);
+    renderInbox(data.conversations || [], { notifyIncoming });
     lastInboxRefreshAt = Date.now();
   } finally {
     inboxRefreshInFlight = false;
@@ -168,8 +182,14 @@ async function openThread(peerId) {
     document.getElementById('peer-name').textContent = data.peer.full_name;
     document.getElementById('peer-avatar').textContent = initials(data.peer.full_name);
     document.getElementById('peer-avatar').setAttribute('aria-label', data.peer.full_name);
+    const nextMessages = data.messages || [];
+    if (!isNewConversation) {
+      const previousIds = new Set(currentMessages.map(message => message.id));
+      const incomingCount = nextMessages.filter(message => message.sender_id !== user.id && !previousIds.has(message.id)).length;
+      if (incomingCount) showIncomingToast(data.peer.full_name, incomingCount);
+    }
     form.hidden = false;
-    renderMessages(data.messages || [], { scrollToBottom: isNewConversation });
+    renderMessages(nextMessages, { scrollToBottom: isNewConversation });
   } finally {
     threadRefreshInFlight = false;
   }
@@ -179,7 +199,7 @@ function refreshVisibleConversation() {
   if (document.hidden) return;
   const tasks = [];
   if (activePeer) tasks.push(openThread(activePeer));
-  if (Date.now() - lastInboxRefreshAt >= INBOX_POLL_MS) tasks.push(loadInbox());
+  if (Date.now() - lastInboxRefreshAt >= INBOX_POLL_MS) tasks.push(loadInbox({ notifyIncoming: true }));
   Promise.all(tasks).catch(error => {
     status.textContent = error.status === 401 ? 'Your session expired. Please sign in again.' : 'Connection paused. We’ll retry automatically.';
     if (error.status === 401) window.location.replace('login.html');
