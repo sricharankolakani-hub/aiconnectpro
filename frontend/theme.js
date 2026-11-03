@@ -2,6 +2,8 @@
   const storageKey = 'aiconnectpro-theme';
   const appearanceKey = 'aiconnectpro-appearance';
   const appearanceDefaults = { font: 'system', contrast: 'standard', background: 'warm' };
+  let knownConnectionNotificationIds = null;
+  let connectionToastTimer = null;
   function loadAppearance() {
     try {
       const saved = JSON.parse(localStorage.getItem(appearanceKey) || '{}');
@@ -177,6 +179,37 @@
     }
   }
 
+  function showConnectionUpdateToast(item) {
+    let toast = document.getElementById('connection-update-toast');
+    if (!toast) {
+      toast = document.createElement('aside');
+      toast.id = 'connection-update-toast';
+      toast.className = 'connection-update-toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+
+      const link = document.createElement('a');
+      link.id = 'connection-update-toast-link';
+      link.className = 'connection-update-toast-link';
+      link.href = 'connections.html#notifications-heading';
+
+      const dismiss = document.createElement('button');
+      dismiss.type = 'button';
+      dismiss.className = 'connection-update-toast-dismiss';
+      dismiss.textContent = 'Dismiss';
+      dismiss.addEventListener('click', () => {
+        window.clearTimeout(connectionToastTimer);
+        toast.hidden = true;
+      });
+      toast.append(link, dismiss);
+      document.body.appendChild(toast);
+    }
+    document.getElementById('connection-update-toast-link').textContent = item.title || 'New connection activity';
+    toast.hidden = false;
+    window.clearTimeout(connectionToastTimer);
+    connectionToastTimer = window.setTimeout(() => { toast.hidden = true; }, 6000);
+  }
+
   async function updateConnectionUpdatesBadge() {
     const link = document.querySelector('[data-updates-nav]');
     if (!link) return;
@@ -193,7 +226,13 @@
       });
       if (!response.ok) return;
       const data = await response.json();
-      const unread = (data.notifications || []).length;
+      const updates = data.notifications || [];
+      if (knownConnectionNotificationIds) {
+        const incoming = updates.find(item => !knownConnectionNotificationIds.has(item.id));
+        if (incoming) showConnectionUpdateToast(incoming);
+      }
+      knownConnectionNotificationIds = new Set(updates.map(item => item.id));
+      const unread = updates.length;
       if (!unread) {
         badge?.remove();
         link.removeAttribute('aria-label');
