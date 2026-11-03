@@ -7,9 +7,14 @@ const thread = document.getElementById('thread-messages');
 const form = document.getElementById('message-form');
 const field = document.getElementById('message-body');
 const messageInfo = document.getElementById('message-info-dialog');
+const THREAD_POLL_MS = 10000;
+const INBOX_POLL_MS = 30000;
 let user = null;
 let activePeer = null;
 let currentMessages = [];
+let threadRefreshInFlight = false;
+let inboxRefreshInFlight = false;
+let lastInboxRefreshAt = 0;
 
 async function api(path, options = {}) {
   const response = await fetch('/api/messages' + path, {
@@ -136,19 +141,42 @@ function renderMessages(rows) {
 }
 
 async function loadInbox() {
-  const data = await api('');
-  renderInbox(data.conversations || []);
+  if (inboxRefreshInFlight) return;
+  inboxRefreshInFlight = true;
+  try {
+    const data = await api('');
+    renderInbox(data.conversations || []);
+    lastInboxRefreshAt = Date.now();
+  } finally {
+    inboxRefreshInFlight = false;
+  }
 }
 
 async function openThread(peerId) {
-  const data = await api('/' + encodeURIComponent(peerId));
-  activePeer = peerId;
-  document.getElementById('peer-name').textContent = data.peer.full_name;
-  document.getElementById('peer-avatar').textContent = initials(data.peer.full_name);
-  document.getElementById('peer-avatar').setAttribute('aria-label', data.peer.full_name);
-  form.hidden = false;
-  renderMessages(data.messages || []);
-  await loadInbox();
+  if (!peerId || threadRefreshInFlight) return;
+  threadRefreshInFlight = true;
+  try {
+    const data = await api('/' + encodeURIComponent(peerId));
+    activePeer = peerId;
+    document.getElementById('peer-name').textContent = data.peer.full_name;
+    document.getElementById('peer-avatar').textContent = initials(data.peer.full_name);
+    document.getElementById('peer-avatar').setAttribute('aria-label', data.peer.full_name);
+    form.hidden = false;
+    renderMessages(data.messages || []);
+  } finally {
+    threadRefreshInFlight = false;
+  }
+}
+
+function refreshVisibleConversation() {
+  if (document.hidden) return;
+  const tasks = [];
+  if (activePeer) tasks.push(openThread(activePeer));
+  if (Date.now() - lastInboxRefreshAt >= INBOX_POLL_MS) tasks.push(loadInbox());
+  Promise.all(tasks).catch(error => {
+    status.textContent = error.status === 401 ? 'Your session expired. Please sign in again.' : 'Connection paused. We’ll retry automatically.';
+    if (error.status === 401) window.location.replace('login.html');
+  });
 }
 
 field.addEventListener('keydown', event => {
@@ -165,33 +193,34 @@ form.addEventListener('submit', async event => {
   if (!body) return;
   const submit = form.querySelector('button');
   submit.disabled = true;
+  const peerId = activePeer;
   try {
-    await api('/' + encodeURIComponent(activePeer), { method: 'POST', body: JSON.stringify({ body }) });
+    const data = await api('/' + encodeURIComponent(peerId), { method: 'POST', body: JSON.stringify({ body }) });
     field.value = '';
-    await openThread(activePeer);
+    if (activePeer === peerId && data.message) {
+      renderMessages([...currentMessages, data.message]);
+      loadInbox().catch(() => {});
+    }
     field.focus();
   } catch (error) {
-    status.textContent = error.message;
+    status.textContent = error.status === 401 ? 'Your session expired. Please sign in again.' : error.message;
+    if (error.status === 401) window.location.replace('login.html');
   } finally { submit.disabled = false; }
 });
 
 document.getElementById('refresh-messages').addEventListener('click', async () => {
   try {
-    await loadInbox();
-    if (activePeer) await openThread(activePeer);
+    const tasks = [loadInbox()];
+    if (activePeer) tasks.push(openThread(activePeer));
+    await Promise.all(tasks);
     status.textContent = 'Messages refreshed.';
   } catch (error) { status.textContent = error.message; }
 });
 
-window.setInterval(() => {
-  if (document.hidden) return;
-  if (activePeer) openThread(activePeer).catch(error => { status.textContent = error.message; });
-  else loadInbox().catch(error => { status.textContent = error.message; });
-}, 15000);
-
-window.addEventListener('focus', () => {
-  loadInbox().catch(error => { status.textContent = error.message; });
-  if (activePeer) openThread(activePeer).catch(error => { status.textContent = error.message; });
+window.setInterval(refreshVisibleConversation, THREAD_POLL_MS);
+window.addEventListener('focus', refreshVisibleConversation);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) refreshVisibleConversation();
 });
 
 async function initialize() {
@@ -199,9 +228,10 @@ async function initialize() {
   try {
     user = await getUser();
     if (!user) return window.location.replace('login.html');
-    await loadInbox();
     const peerId = new URLSearchParams(window.location.search).get('user');
-    if (peerId) await openThread(peerId);
+    const tasks = [loadInbox()];
+    if (peerId) tasks.push(openThread(peerId));
+    await Promise.all(tasks);
   } catch (error) {
     status.textContent = error.status === 401 ? 'Your session expired. Please sign in again.' : 'Could not load messages. Please try refreshing.';
     if (error.status === 401) window.location.replace('login.html');
