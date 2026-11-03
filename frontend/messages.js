@@ -7,9 +7,14 @@ const thread = document.getElementById('thread-messages');
 const form = document.getElementById('message-form');
 const field = document.getElementById('message-body');
 const messageInfo = document.getElementById('message-info-dialog');
+const THREAD_POLL_MS = 10000;
+const INBOX_POLL_MS = 30000;
 let user = null;
 let activePeer = null;
 let currentMessages = [];
+let threadRefreshInFlight = false;
+let inboxRefreshInFlight = false;
+let lastInboxRefreshAt = 0;
 
 async function api(path, options = {}) {
   const response = await fetch('/api/messages' + path, {
@@ -60,31 +65,34 @@ function addReceipt(bubble, message) {
   if (message.sender_id === user.id) {
     const seen = Boolean(message.read_at);
     const delivered = Boolean(message.delivered_at);
-    const state = seen ? 'seen' : delivered ? 'delivered' : 'sent';
-    const symbol = seen || delivered ? '✓✓' : '✓';
+    const state = message.pending ? 'pending' : seen ? 'seen' : delivered ? 'delivered' : 'sent';
+    const symbol = message.pending ? '…' : seen || delivered ? '✓✓' : '✓';
     const button = el('button', 'message-receipt ' + state, symbol);
     button.type = 'button';
-    button.setAttribute('aria-label', 'Message status: ' + state + '. Open sent, delivered and seen times.');
-    button.title = 'Hold this message or select to view times';
+    button.disabled = Boolean(message.pending);
+    button.setAttribute('aria-label', message.pending ? 'Sending message' : 'Message status: ' + state + '. Open sent, delivered and seen times.');
+    button.title = message.pending ? 'Sending…' : 'Hold this message or select to view times';
     button.addEventListener('click', event => {
       event.stopPropagation();
-      showMessageInfo(message);
+      if (!message.pending) showMessageInfo(message);
     });
     footer.append(button);
 
-    let holdTimer;
-    const clearHold = () => { window.clearTimeout(holdTimer); };
-    bubble.addEventListener('pointerdown', () => {
-      clearHold();
-      holdTimer = window.setTimeout(() => showMessageInfo(message), 600);
-    });
-    bubble.addEventListener('pointerup', clearHold);
-    bubble.addEventListener('pointerleave', clearHold);
-    bubble.addEventListener('pointercancel', clearHold);
-    bubble.addEventListener('contextmenu', event => {
-      event.preventDefault();
-      showMessageInfo(message);
-    });
+    if (!message.pending) {
+      let holdTimer;
+      const clearHold = () => { window.clearTimeout(holdTimer); };
+      bubble.addEventListener('pointerdown', () => {
+        clearHold();
+        holdTimer = window.setTimeout(() => showMessageInfo(message), 600);
+      });
+      bubble.addEventListener('pointerup', clearHold);
+      bubble.addEventListener('pointerleave', clearHold);
+      bubble.addEventListener('pointercancel', clearHold);
+      bubble.addEventListener('contextmenu', event => {
+        event.preventDefault();
+        showMessageInfo(message);
+      });
+    }
   }
   bubble.append(footer);
 }
@@ -120,7 +128,9 @@ function renderInbox(rows) {
   }
 }
 
-function renderMessages(rows) {
+function renderMessages(rows, { scrollToBottom = false } = {}) {
+  const wasNearBottom = thread.scrollHeight - thread.scrollTop - thread.clientHeight < 60;
+  const previousScrollTop = thread.scrollTop;
   currentMessages = rows || [];
   thread.replaceChildren();
   if (!currentMessages.length) {
@@ -132,23 +142,48 @@ function renderMessages(rows) {
     addReceipt(bubble, message);
     thread.append(bubble);
   }
-  thread.scrollTop = thread.scrollHeight;
+  if (scrollToBottom || wasNearBottom) thread.scrollTop = thread.scrollHeight;
+  else thread.scrollTop = previousScrollTop;
 }
 
 async function loadInbox() {
-  const data = await api('');
-  renderInbox(data.conversations || []);
+  if (inboxRefreshInFlight) return;
+  inboxRefreshInFlight = true;
+  try {
+    const data = await api('');
+    renderInbox(data.conversations || []);
+    lastInboxRefreshAt = Date.now();
+  } finally {
+    inboxRefreshInFlight = false;
+  }
 }
 
 async function openThread(peerId) {
-  const data = await api('/' + encodeURIComponent(peerId));
-  activePeer = peerId;
-  document.getElementById('peer-name').textContent = data.peer.full_name;
-  document.getElementById('peer-avatar').textContent = initials(data.peer.full_name);
-  document.getElementById('peer-avatar').setAttribute('aria-label', data.peer.full_name);
-  form.hidden = false;
-  renderMessages(data.messages || []);
-  await loadInbox();
+  if (!peerId || threadRefreshInFlight) return;
+  threadRefreshInFlight = true;
+  const isNewConversation = activePeer !== peerId;
+  try {
+    const data = await api('/' + encodeURIComponent(peerId));
+    activePeer = peerId;
+    document.getElementById('peer-name').textContent = data.peer.full_name;
+    document.getElementById('peer-avatar').textContent = initials(data.peer.full_name);
+    document.getElementById('peer-avatar').setAttribute('aria-label', data.peer.full_name);
+    form.hidden = false;
+    renderMessages(data.messages || [], { scrollToBottom: isNewConversation });
+  } finally {
+    threadRefreshInFlight = false;
+  }
+}
+
+function refreshVisibleConversation() {
+  if (document.hidden) return;
+  const tasks = [];
+  if (activePeer) tasks.push(openThread(activePeer));
+  if (Date.now() - lastInboxRefreshAt >= INBOX_POLL_MS) tasks.push(loadInbox());
+  Promise.all(tasks).catch(error => {
+    status.textContent = error.status === 401 ? 'Your session expired. Please sign in again.' : 'Connection paused. We’ll retry automatically.';
+    if (error.status === 401) window.location.replace('login.html');
+  });
 }
 
 field.addEventListener('keydown', event => {
@@ -165,33 +200,49 @@ form.addEventListener('submit', async event => {
   if (!body) return;
   const submit = form.querySelector('button');
   submit.disabled = true;
+  const peerId = activePeer;
+  const optimistic = {
+    id: 'pending-' + Date.now(),
+    sender_id: user.id,
+    body,
+    created_at: new Date().toISOString(),
+    delivered_at: null,
+    read_at: null,
+    pending: true
+  };
+  renderMessages([...currentMessages, optimistic], { scrollToBottom: true });
+  field.value = '';
   try {
-    await api('/' + encodeURIComponent(activePeer), { method: 'POST', body: JSON.stringify({ body }) });
-    field.value = '';
-    await openThread(activePeer);
+    const data = await api('/' + encodeURIComponent(peerId), { method: 'POST', body: JSON.stringify({ body }) });
+    if (activePeer === peerId && data.message) {
+      const finalMessages = currentMessages.filter(message => message.id !== optimistic.id && message.id !== data.message.id);
+      renderMessages([...finalMessages, data.message], { scrollToBottom: true });
+      loadInbox().catch(() => {});
+    }
     field.focus();
   } catch (error) {
-    status.textContent = error.message;
+    if (activePeer === peerId) {
+      renderMessages(currentMessages.filter(message => message.id !== optimistic.id), { scrollToBottom: true });
+      status.textContent = error.status === 401 ? 'Your session expired. Please sign in again.' : error.message;
+    }
+    if (field.value === '') field.value = body;
+    if (error.status === 401) window.location.replace('login.html');
   } finally { submit.disabled = false; }
 });
 
 document.getElementById('refresh-messages').addEventListener('click', async () => {
   try {
-    await loadInbox();
-    if (activePeer) await openThread(activePeer);
+    const tasks = [loadInbox()];
+    if (activePeer) tasks.push(openThread(activePeer));
+    await Promise.all(tasks);
     status.textContent = 'Messages refreshed.';
   } catch (error) { status.textContent = error.message; }
 });
 
-window.setInterval(() => {
-  if (document.hidden) return;
-  if (activePeer) openThread(activePeer).catch(error => { status.textContent = error.message; });
-  else loadInbox().catch(error => { status.textContent = error.message; });
-}, 15000);
-
-window.addEventListener('focus', () => {
-  loadInbox().catch(error => { status.textContent = error.message; });
-  if (activePeer) openThread(activePeer).catch(error => { status.textContent = error.message; });
+window.setInterval(refreshVisibleConversation, THREAD_POLL_MS);
+window.addEventListener('focus', refreshVisibleConversation);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) refreshVisibleConversation();
 });
 
 async function initialize() {
@@ -199,9 +250,10 @@ async function initialize() {
   try {
     user = await getUser();
     if (!user) return window.location.replace('login.html');
-    await loadInbox();
     const peerId = new URLSearchParams(window.location.search).get('user');
-    if (peerId) await openThread(peerId);
+    const tasks = [loadInbox()];
+    if (peerId) tasks.push(openThread(peerId));
+    await Promise.all(tasks);
   } catch (error) {
     status.textContent = error.status === 401 ? 'Your session expired. Please sign in again.' : 'Could not load messages. Please try refreshing.';
     if (error.status === 401) window.location.replace('login.html');
