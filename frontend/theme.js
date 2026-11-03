@@ -3,7 +3,8 @@
   const appearanceKey = 'aiconnectpro-appearance';
   const appearanceDefaults = { font: 'system', contrast: 'standard', background: 'warm' };
   let knownConnectionNotificationIds = null;
-  let connectionToastTimer = null;
+  let knownMessageUnreadCounts = null;
+  let updateToastTimer = null;
   function loadAppearance() {
     try {
       const saved = JSON.parse(localStorage.getItem(appearanceKey) || '{}');
@@ -159,7 +160,20 @@
       });
       if (!response.ok) return;
       const data = await response.json();
-      const unread = (data.conversations || []).reduce((sum, conversation) => sum + (Number(conversation.unread_count) || 0), 0);
+      const conversations = data.conversations || [];
+      if (knownMessageUnreadCounts && !window.location.pathname.endsWith('/messages.html')) {
+        const incoming = conversations.find(conversation =>
+          conversation.peer?.id &&
+          (Number(conversation.unread_count) || 0) > (knownMessageUnreadCounts.get(conversation.peer.id) || 0)
+        );
+        if (incoming) {
+          const name = incoming.peer.full_name || 'a connection';
+          showUpdateToast('New message from ' + name, 'messages.html?user=' + encodeURIComponent(incoming.peer.id));
+        }
+      }
+      knownMessageUnreadCounts = new Map(conversations.filter(item => item.peer?.id)
+        .map(item => [item.peer.id, Number(item.unread_count) || 0]));
+      const unread = conversations.reduce((sum, conversation) => sum + (Number(conversation.unread_count) || 0), 0);
       let badge = link.querySelector('.nav-unread-badge');
       if (!unread) {
         badge?.remove();
@@ -179,7 +193,7 @@
     }
   }
 
-  function showConnectionUpdateToast(item) {
+  function showUpdateToast(message, href) {
     let toast = document.getElementById('connection-update-toast');
     if (!toast) {
       toast = document.createElement('aside');
@@ -191,23 +205,24 @@
       const link = document.createElement('a');
       link.id = 'connection-update-toast-link';
       link.className = 'connection-update-toast-link';
-      link.href = 'connections.html#notifications-heading';
 
       const dismiss = document.createElement('button');
       dismiss.type = 'button';
       dismiss.className = 'connection-update-toast-dismiss';
       dismiss.textContent = 'Dismiss';
       dismiss.addEventListener('click', () => {
-        window.clearTimeout(connectionToastTimer);
+        window.clearTimeout(updateToastTimer);
         toast.hidden = true;
       });
       toast.append(link, dismiss);
       document.body.appendChild(toast);
     }
-    document.getElementById('connection-update-toast-link').textContent = item.title || 'New connection activity';
+    const link = document.getElementById('connection-update-toast-link');
+    link.textContent = message;
+    link.href = href;
     toast.hidden = false;
-    window.clearTimeout(connectionToastTimer);
-    connectionToastTimer = window.setTimeout(() => { toast.hidden = true; }, 6000);
+    window.clearTimeout(updateToastTimer);
+    updateToastTimer = window.setTimeout(() => { toast.hidden = true; }, 6000);
   }
 
   async function updateConnectionUpdatesBadge() {
@@ -229,7 +244,7 @@
       const updates = data.notifications || [];
       if (knownConnectionNotificationIds) {
         const incoming = updates.find(item => !knownConnectionNotificationIds.has(item.id));
-        if (incoming) showConnectionUpdateToast(incoming);
+        if (incoming) showUpdateToast(incoming.title || 'New connection activity', 'connections.html#notifications-heading');
       }
       knownConnectionNotificationIds = new Set(updates.map(item => item.id));
       const unread = updates.length;
