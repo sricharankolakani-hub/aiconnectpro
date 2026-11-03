@@ -20,9 +20,8 @@ async function acceptedConnection(userId, peerId) {
 
 async function getConversation(userId, peerId, create = false) {
   const [member_a, member_b] = pairFor(userId, peerId);
-  let query = supabase.from('direct_conversations').select('id, member_a, member_b')
-    .eq('member_a', member_a).eq('member_b', member_b);
-  const { data, error } = await query.maybeSingle();
+  const { data, error } = await supabase.from('direct_conversations').select('id, member_a, member_b')
+    .eq('member_a', member_a).eq('member_b', member_b).maybeSingle();
   if (error) throw error;
   if (data || !create) return data;
   const created = await supabase.from('direct_conversations')
@@ -70,16 +69,19 @@ router.get('/', async (req, res) => {
     if (!conversations.length) return res.json({ conversations: [] });
 
     const ids = conversations.map(row => row.id);
+    // A message counts as delivered when the recipient's authenticated inbox fetches it.
+    const delivered = await supabase.from('direct_messages')
+      .update({ delivered_at: new Date().toISOString() })
+      .in('conversation_id', ids).neq('sender_id', userId).is('delivered_at', null);
+    if (delivered.error) throw delivered.error;
+
     const [{ data: messages, error: messagesError }, { data: unreadMessages, error: unreadError }] = await Promise.all([
       supabase.from('direct_messages')
-        .select('id, conversation_id, sender_id, body, created_at, read_at')
+        .select('id, conversation_id, sender_id, body, created_at, delivered_at, read_at')
         .in('conversation_id', ids).order('created_at', { ascending: false }).limit(500),
       supabase.from('direct_messages')
         .select('conversation_id')
-        .in('conversation_id', ids)
-        .neq('sender_id', userId)
-        .is('read_at', null)
-        .limit(1000)
+        .in('conversation_id', ids).neq('sender_id', userId).is('read_at', null).limit(1000)
     ]);
     if (messagesError) throw messagesError;
     if (unreadError) throw unreadError;
@@ -87,12 +89,10 @@ router.get('/', async (req, res) => {
     const latest = new Map();
     for (const message of messages || []) if (!latest.has(message.conversation_id)) latest.set(message.conversation_id, message);
     const unreadCounts = new Map();
-    for (const message of unreadMessages || []) {
-      unreadCounts.set(message.conversation_id, (unreadCounts.get(message.conversation_id) || 0) + 1);
-    }
+    for (const message of unreadMessages || []) unreadCounts.set(message.conversation_id, (unreadCounts.get(message.conversation_id) || 0) + 1);
+
     const peerIds = conversations.map(row => row.member_a === userId ? row.member_b : row.member_a);
-    const { data: profiles, error: profileError } = await supabase.from('profiles')
-      .select('id, full_name').in('id', peerIds);
+    const { data: profiles, error: profileError } = await supabase.from('profiles').select('id, full_name').in('id', peerIds);
     if (profileError) throw profileError;
     const names = new Map((profiles || []).map(profile => [profile.id, profile.full_name || 'AIConnectPro member']));
     return res.json({ conversations: conversations.map(row => ({
@@ -113,20 +113,22 @@ router.get('/:peerId', async (req, res) => {
   if (!peerId) return;
   try {
     if (!await acceptedConnection(req.user.id, peerId)) return res.status(403).json({ error: 'accepted_connection_required' });
-    const [conversation, peer] = await Promise.all([
-      getConversation(req.user.id, peerId),
-      peerName(peerId)
-    ]);
+    const [conversation, peer] = await Promise.all([getConversation(req.user.id, peerId), peerName(peerId)]);
     if (!conversation) return res.json({ conversation: null, peer: { id: peerId, full_name: peer }, messages: [] });
+
+    const deliveredAt = new Date().toISOString();
+    const { error: deliveryError } = await supabase.from('direct_messages')
+      .update({ delivered_at: deliveredAt })
+      .eq('conversation_id', conversation.id).neq('sender_id', req.user.id).is('delivered_at', null);
+    if (deliveryError) throw deliveryError;
+
     const { error: readError } = await supabase.from('direct_messages')
       .update({ read_at: new Date().toISOString() })
-      .eq('conversation_id', conversation.id)
-      .neq('sender_id', req.user.id)
-      .is('read_at', null);
+      .eq('conversation_id', conversation.id).neq('sender_id', req.user.id).is('read_at', null);
     if (readError) throw readError;
 
     const { data, error } = await supabase.from('direct_messages')
-      .select('id, sender_id, body, created_at, read_at')
+      .select('id, sender_id, body, created_at, delivered_at, read_at')
       .eq('conversation_id', conversation.id).order('created_at', { ascending: true }).limit(100);
     if (error) throw error;
     return res.json({ conversation: { id: conversation.id }, peer: { id: peerId, full_name: peer }, messages: data || [] });
@@ -147,7 +149,7 @@ router.post('/:peerId', async (req, res) => {
     const conversation = await getConversation(req.user.id, peerId, true);
     const { data, error } = await supabase.from('direct_messages')
       .insert({ conversation_id: conversation.id, sender_id: req.user.id, body })
-      .select('id, sender_id, body, created_at, read_at').single();
+      .select('id, sender_id, body, created_at, delivered_at, read_at').single();
     if (error) throw error;
     return res.status(201).json({ message: data });
   } catch (error) {
