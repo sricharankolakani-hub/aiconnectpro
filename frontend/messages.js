@@ -111,7 +111,16 @@ function addReceipt(bubble, message) {
   bubble.append(footer);
 }
 
-function renderInbox(rows) {
+function renderInbox(rows, { notifyIncoming = false } = {}) {
+  const previousUnreadCounts = knownUnreadCounts;
+  if (notifyIncoming && previousUnreadCounts) {
+    const update = rows.find(item =>
+      item.unread_count > (previousUnreadCounts.get(item.peer.id) || 0) &&
+      item.latest_message?.sender_id !== user.id
+    );
+    if (update) showIncomingToast(update.peer.full_name);
+  }
+  knownUnreadCounts = new Map(rows.map(item => [item.peer.id, item.unread_count || 0]));
   inbox.replaceChildren();
   if (!rows.length) {
     inbox.append(el('p', 'message-empty', 'Your inbox is empty. Connect with a member to start a conversation.'));
