@@ -184,6 +184,26 @@ async function loadSettings() {
   document.getElementById('date-of-birth').value = profile.date_of_birth || '';
   document.getElementById('profile-location').value = profile.location || '';
   document.getElementById('profile-bio').value = profile.bio || '';
+  const metadata = currentUser.user_metadata || {};
+  const accountType = ['student', 'founder'].includes(metadata.account_type) ? metadata.account_type : null;
+  const accountTypeEditor = document.getElementById('account-type-editor');
+  const founderFields = document.getElementById('founder-profile-fields');
+  const studentFields = document.getElementById('student-profile-fields');
+  accountTypeEditor.hidden = !accountType;
+  founderFields.hidden = accountType !== 'founder';
+  studentFields.hidden = accountType !== 'student';
+  if (accountType === 'founder') {
+    document.getElementById('account-type-description').textContent = 'Edit the business details shown on your profile.';
+    const business = metadata.business_profile || {};
+    document.getElementById('business-name').value = business.name || '';
+    document.getElementById('business-summary').value = business.summary || '';
+    document.getElementById('business-website').value = business.website || '';
+  } else if (accountType === 'student') {
+    document.getElementById('account-type-description').textContent = 'Edit your education details shown on your profile.';
+    const student = metadata.student_profile || {};
+    document.getElementById('student-institution').value = student.institution || '';
+    document.getElementById('student-field-of-study').value = student.field_of_study || '';
+  }
   document.getElementById('bio-count').textContent = String((profile.bio || '').length);
   document.getElementById('account-email').value = currentUser.email || '';
   document.getElementById('account-phone').value = currentUser.phone || '';
@@ -206,6 +226,17 @@ profileForm.addEventListener('submit', async event => {
   const dateOfBirth = document.getElementById('date-of-birth').value;
   const location = document.getElementById('profile-location').value.trim();
   const bio = document.getElementById('profile-bio').value.trim();
+  const metadata = currentUser?.user_metadata || {};
+  const accountType = ['student', 'founder'].includes(metadata.account_type) ? metadata.account_type : null;
+  const businessProfile = accountType === 'founder' ? {
+    name: document.getElementById('business-name').value.trim(),
+    summary: document.getElementById('business-summary').value.trim(),
+    website: document.getElementById('business-website').value.trim()
+  } : null;
+  const studentProfile = accountType === 'student' ? {
+    institution: document.getElementById('student-institution').value.trim(),
+    field_of_study: document.getElementById('student-field-of-study').value.trim()
+  } : null;
   const visibility = Object.fromEntries(
     [...document.querySelectorAll('[data-visibility]')]
       .map(control => [control.dataset.visibility, control.value])
@@ -218,10 +249,32 @@ profileForm.addEventListener('submit', async event => {
     setStatus(profileStatus, 'Place must be 120 characters or fewer and About you 500 or fewer.', true);
     return;
   }
+  if (businessProfile && (businessProfile.name.length > 160 || businessProfile.summary.length > 500 || businessProfile.website.length > 320)) {
+    setStatus(profileStatus, 'Check the business details and keep them within the stated character limits.', true);
+    return;
+  }
+  if (businessProfile?.website) {
+    try {
+      const website = new URL(businessProfile.website);
+      if (!['http:', 'https:'].includes(website.protocol)) throw new Error();
+    } catch {
+      setStatus(profileStatus, 'Enter a valid website beginning with https:// or http://.', true);
+      return;
+    }
+  }
+  if (studentProfile && (studentProfile.institution.length > 160 || studentProfile.field_of_study.length > 160)) {
+    setStatus(profileStatus, 'School and field of study must be 160 characters or fewer.', true);
+    return;
+  }
   saveButton.disabled = true;
   saveButton.textContent = 'Saving…';
   try {
-    const { error: metadataError } = await supabase.auth.updateUser({ data: { full_name: name } });
+    const metadataUpdates = { full_name: name };
+    if (businessProfile) metadataUpdates.business_profile = businessProfile;
+    if (studentProfile) metadataUpdates.student_profile = studentProfile;
+    const { error: metadataError } = await supabase.auth.updateUser({
+      data: { ...metadata, ...metadataUpdates }
+    });
     if (metadataError) throw metadataError;
     const response = await fetch('/api/profile/me', {
       method: 'PATCH',

@@ -101,6 +101,25 @@
           <textarea id="profile-bio" name="bio" rows="5" maxlength="500" placeholder="Share a little about your work, interests, and goals."></textarea>
           <p class="settings-hint"><span id="bio-count">0</span>/500 characters.</p>
 
+          <section class="account-type-editor" id="account-type-editor" hidden aria-labelledby="account-type-title">
+            <h3 id="account-type-title">Account profile</h3>
+            <p class="settings-hint" id="account-type-description"></p>
+            <div id="founder-profile-fields" hidden>
+              <label for="business-name">Business name</label>
+              <input id="business-name" type="text" maxlength="160" autocomplete="organization" placeholder="Your business or venture">
+              <label for="business-summary">Business summary</label>
+              <textarea id="business-summary" rows="3" maxlength="500" placeholder="What does your business do?"></textarea>
+              <label for="business-website">Website</label>
+              <input id="business-website" type="url" maxlength="320" inputmode="url" placeholder="https://example.com">
+            </div>
+            <div id="student-profile-fields" hidden>
+              <label for="student-institution">School or institution</label>
+              <input id="student-institution" type="text" maxlength="160" autocomplete="organization" placeholder="Your school or university">
+              <label for="student-field-of-study">Field of study</label>
+              <input id="student-field-of-study" type="text" maxlength="160" placeholder="e.g. Computer Science">
+            </div>
+          </section>
+
           <fieldset class="visibility-settings">
             <legend>Who can see each detail?</legend>
             <p>All fields start private. “Everyone” means signed-in AIConnectPro members; discovery must also be on for them to find your profile.</p>
