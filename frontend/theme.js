@@ -79,6 +79,12 @@
       ordered.push(link);
       byPath.delete(href);
     }
+    const updatesLink = document.createElement('a');
+    updatesLink.href = 'connections.html#notifications-heading';
+    updatesLink.textContent = 'Updates';
+    updatesLink.dataset.updatesNav = 'true';
+    ordered.push(updatesLink);
+
     for (const [href, label] of [
       ['post-job.html', 'Post an opportunity'],
       ['company-applications.html', 'Applicant inbox'],
@@ -169,6 +175,52 @@
     } catch {
       // Leave navigation usable if unread counts cannot be refreshed.
     }
+  }
+
+  async function updateConnectionUpdatesBadge() {
+    const link = document.querySelector('[data-updates-nav]');
+    if (!link) return;
+    const token = localStorage.getItem('token');
+    let badge = link.querySelector('.nav-unread-badge');
+    if (!token) {
+      badge?.remove();
+      link.removeAttribute('aria-label');
+      return;
+    }
+    try {
+      const response = await fetch('/api/notifications?type=connections', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      const unread = (data.notifications || []).length;
+      if (!unread) {
+        badge?.remove();
+        link.removeAttribute('aria-label');
+        return;
+      }
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'nav-unread-badge';
+        badge.setAttribute('aria-hidden', 'true');
+        link.appendChild(badge);
+      }
+      badge.textContent = unread > 99 ? '99+' : String(unread);
+      link.setAttribute('aria-label', 'Updates, ' + unread + ' unread connection ' + (unread === 1 ? 'update' : 'updates'));
+    } catch {
+      // Keep navigation usable if update counts cannot be refreshed.
+    }
+  }
+
+  function startConnectionUpdateBadge() {
+    void updateConnectionUpdatesBadge();
+    window.setInterval(() => {
+      if (!document.hidden) void updateConnectionUpdatesBadge();
+    }, 30000);
+    window.addEventListener('focus', () => void updateConnectionUpdatesBadge());
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) void updateConnectionUpdatesBadge();
+    });
   }
 
   function startUnreadMessageBadge() {
@@ -273,6 +325,7 @@
     });
     polishNavigation();
     startUnreadMessageBadge();
+    startConnectionUpdateBadge();
     addSharedFooter();
     void addProfileGreeting();
     void addAdminNavigation().then(() => {
