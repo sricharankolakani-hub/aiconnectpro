@@ -65,31 +65,34 @@ function addReceipt(bubble, message) {
   if (message.sender_id === user.id) {
     const seen = Boolean(message.read_at);
     const delivered = Boolean(message.delivered_at);
-    const state = seen ? 'seen' : delivered ? 'delivered' : 'sent';
-    const symbol = seen || delivered ? '✓✓' : '✓';
+    const state = message.pending ? 'pending' : seen ? 'seen' : delivered ? 'delivered' : 'sent';
+    const symbol = message.pending ? '…' : seen || delivered ? '✓✓' : '✓';
     const button = el('button', 'message-receipt ' + state, symbol);
     button.type = 'button';
-    button.setAttribute('aria-label', 'Message status: ' + state + '. Open sent, delivered and seen times.');
-    button.title = 'Hold this message or select to view times';
+    button.disabled = Boolean(message.pending);
+    button.setAttribute('aria-label', message.pending ? 'Sending message' : 'Message status: ' + state + '. Open sent, delivered and seen times.');
+    button.title = message.pending ? 'Sending…' : 'Hold this message or select to view times';
     button.addEventListener('click', event => {
       event.stopPropagation();
-      showMessageInfo(message);
+      if (!message.pending) showMessageInfo(message);
     });
     footer.append(button);
 
-    let holdTimer;
-    const clearHold = () => { window.clearTimeout(holdTimer); };
-    bubble.addEventListener('pointerdown', () => {
-      clearHold();
-      holdTimer = window.setTimeout(() => showMessageInfo(message), 600);
-    });
-    bubble.addEventListener('pointerup', clearHold);
-    bubble.addEventListener('pointerleave', clearHold);
-    bubble.addEventListener('pointercancel', clearHold);
-    bubble.addEventListener('contextmenu', event => {
-      event.preventDefault();
-      showMessageInfo(message);
-    });
+    if (!message.pending) {
+      let holdTimer;
+      const clearHold = () => { window.clearTimeout(holdTimer); };
+      bubble.addEventListener('pointerdown', () => {
+        clearHold();
+        holdTimer = window.setTimeout(() => showMessageInfo(message), 600);
+      });
+      bubble.addEventListener('pointerup', clearHold);
+      bubble.addEventListener('pointerleave', clearHold);
+      bubble.addEventListener('pointercancel', clearHold);
+      bubble.addEventListener('contextmenu', event => {
+        event.preventDefault();
+        showMessageInfo(message);
+      });
+    }
   }
   bubble.append(footer);
 }
@@ -125,7 +128,9 @@ function renderInbox(rows) {
   }
 }
 
-function renderMessages(rows) {
+function renderMessages(rows, { scrollToBottom = false } = {}) {
+  const wasNearBottom = thread.scrollHeight - thread.scrollTop - thread.clientHeight < 60;
+  const previousScrollTop = thread.scrollTop;
   currentMessages = rows || [];
   thread.replaceChildren();
   if (!currentMessages.length) {
@@ -137,7 +142,8 @@ function renderMessages(rows) {
     addReceipt(bubble, message);
     thread.append(bubble);
   }
-  thread.scrollTop = thread.scrollHeight;
+  if (scrollToBottom || wasNearBottom) thread.scrollTop = thread.scrollHeight;
+  else thread.scrollTop = previousScrollTop;
 }
 
 async function loadInbox() {
@@ -155,6 +161,7 @@ async function loadInbox() {
 async function openThread(peerId) {
   if (!peerId || threadRefreshInFlight) return;
   threadRefreshInFlight = true;
+  const isNewConversation = activePeer !== peerId;
   try {
     const data = await api('/' + encodeURIComponent(peerId));
     activePeer = peerId;
@@ -162,7 +169,7 @@ async function openThread(peerId) {
     document.getElementById('peer-avatar').textContent = initials(data.peer.full_name);
     document.getElementById('peer-avatar').setAttribute('aria-label', data.peer.full_name);
     form.hidden = false;
-    renderMessages(data.messages || []);
+    renderMessages(data.messages || [], { scrollToBottom: isNewConversation });
   } finally {
     threadRefreshInFlight = false;
   }
@@ -194,16 +201,31 @@ form.addEventListener('submit', async event => {
   const submit = form.querySelector('button');
   submit.disabled = true;
   const peerId = activePeer;
+  const optimistic = {
+    id: 'pending-' + Date.now(),
+    sender_id: user.id,
+    body,
+    created_at: new Date().toISOString(),
+    delivered_at: null,
+    read_at: null,
+    pending: true
+  };
+  renderMessages([...currentMessages, optimistic], { scrollToBottom: true });
+  field.value = '';
   try {
     const data = await api('/' + encodeURIComponent(peerId), { method: 'POST', body: JSON.stringify({ body }) });
-    field.value = '';
     if (activePeer === peerId && data.message) {
-      renderMessages([...currentMessages, data.message]);
+      const finalMessages = currentMessages.filter(message => message.id !== optimistic.id && message.id !== data.message.id);
+      renderMessages([...finalMessages, data.message], { scrollToBottom: true });
       loadInbox().catch(() => {});
     }
     field.focus();
   } catch (error) {
-    status.textContent = error.status === 401 ? 'Your session expired. Please sign in again.' : error.message;
+    if (activePeer === peerId) {
+      renderMessages(currentMessages.filter(message => message.id !== optimistic.id), { scrollToBottom: true });
+      status.textContent = error.status === 401 ? 'Your session expired. Please sign in again.' : error.message;
+    }
+    if (field.value === '') field.value = body;
     if (error.status === 401) window.location.replace('login.html');
   } finally { submit.disabled = false; }
 });
