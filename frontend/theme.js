@@ -161,9 +161,13 @@
       if (!response.ok) return;
       const data = await response.json();
       const conversations = data.conversations || [];
-      if (knownMessageUnreadCounts && !window.location.pathname.endsWith('/messages.html')) {
+      const activeMessagePeer = window.location.pathname.endsWith('/messages.html')
+        ? new URLSearchParams(window.location.search).get('user')
+        : null;
+      if (knownMessageUnreadCounts) {
         const incoming = conversations.find(conversation =>
           conversation.peer?.id &&
+          conversation.peer.id !== activeMessagePeer &&
           (Number(conversation.unread_count) || 0) > (knownMessageUnreadCounts.get(conversation.peer.id) || 0)
         );
         if (incoming) {
