@@ -1114,3 +1114,9 @@ html body[data-theme="dark"][data-contrast="high"] :focus-visible {
 
 .profile-bio{max-width:70ch;margin:8px 0 0;color:var(--muted);font-size:.92rem;line-height:1.65;white-space:pre-wrap}
 .profile-overview-copy>span{line-height:1.45}
+
+.connection-update-toast { position: fixed; z-index: 1100; right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 1rem; width: min(27rem, calc(100vw - 2rem)); padding: .9rem 1rem; border: 1px solid #ffffff30; border-radius: 14px; background: #202a45; color: #fff; box-shadow: 0 14px 40px #10182845; }
+.connection-update-toast[hidden] { display: none; }
+.connection-update-toast-link { flex: 1; color: inherit; font-size: .92rem; font-weight: 650; line-height: 1.4; text-decoration: none; }
+.connection-update-toast-link:hover { text-decoration: underline; }
+.connection-update-toast-dismiss { flex: none; border: 0; background: transparent; color: #dbe6ff; font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer; }
