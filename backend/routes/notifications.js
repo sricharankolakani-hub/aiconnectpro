@@ -8,6 +8,7 @@ router.use(auth);
 router.get('/', async (req, res) => {
   const userId = req.user.id;
   try {
+    const includeMessages = req.query.type !== 'connections';
     const [notificationResult, conversationResult] = await Promise.all([
       supabase.from('notifications')
         .select('id, type, actor_id, request_id, created_at')
@@ -15,10 +16,12 @@ router.get('/', async (req, res) => {
         .is('read_at', null)
         .order('created_at', { ascending: false })
         .limit(50),
-      supabase.from('direct_conversations')
-        .select('id')
-        .or('member_a.eq.' + userId + ',member_b.eq.' + userId)
-        .limit(100)
+      includeMessages
+        ? supabase.from('direct_conversations')
+          .select('id')
+          .or('member_a.eq.' + userId + ',member_b.eq.' + userId)
+          .limit(100)
+        : Promise.resolve({ data: [], error: null })
     ]);
     if (notificationResult.error || conversationResult.error) throw notificationResult.error || conversationResult.error;
 
