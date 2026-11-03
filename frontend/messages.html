@@ -12,26 +12,28 @@
     .inbox{border-right:1px solid var(--line);padding:1rem}.inbox h2{font-size:1rem}.inbox-list{display:grid;gap:.5rem}
     .inbox-link{display:flex;align-items:center;gap:.75rem;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:14px;padding:.8rem}.inbox-link[aria-current="true"]{border-color:var(--primary);background:var(--paper)}
     .inbox-avatar,.peer-avatar{display:grid;place-items:center;flex:none;width:2.6rem;height:2.6rem;border-radius:50%;background:var(--paper);color:var(--primary);font-size:.85rem;font-weight:800}
-    .inbox-link-copy{display:grid;min-width:0;flex:1;gap:.2rem}
-    .inbox-link-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem;min-width:0}
-    .inbox-link-head strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .inbox-preview{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem;color:var(--muted)}
+    .inbox-link-copy{display:grid;min-width:0;flex:1;gap:.2rem}.inbox-link-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem;min-width:0}
+    .inbox-link-head strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.inbox-preview{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem;color:var(--muted)}
     .inbox-unread-badge{display:grid;place-items:center;flex:none;min-width:1.35rem;height:1.35rem;padding:0 .25rem;border-radius:999px;background:var(--primary);color:#fff;font-size:.72rem;font-weight:800}
     body[data-theme="dark"] .inbox-avatar,body[data-theme="dark"] .peer-avatar{background:#26324a;color:#dbe6ff}
     .thread{display:flex;flex-direction:column;min-width:0}.thread-head{display:flex;align-items:center;gap:.75rem;padding:1rem;border-bottom:1px solid var(--line)}.thread-head h2{margin:0;font-size:1.1rem}
-    .receipt-toggle{display:inline-flex;align-items:center;gap:.4rem;margin-left:auto;color:var(--muted);font-size:.78rem;white-space:nowrap;cursor:pointer}
-    .receipt-toggle input{accent-color:var(--primary)}
-    body[data-theme="dark"] .receipt-toggle{color:#c7d0e0}
-    .message-receipt{display:block;text-align:right;font-size:.72rem;opacity:.8;margin-top:.25rem}
     .thread-messages{flex:1;min-height:330px;max-height:60vh;overflow:auto;padding:1rem;display:flex;flex-direction:column;gap:.65rem}
-    .message{max-width:min(80%,38rem);padding:.7rem .9rem;border-radius:16px;background:var(--paper);overflow-wrap:anywhere;white-space:pre-wrap}
-    .message.mine{align-self:flex-end;background:var(--primary);color:#fff}.message time{display:block;font-size:.72rem;opacity:.75;margin-top:.25rem}
-    .composer{display:flex;align-items:flex-end;gap:.6rem;padding:1rem;border-top:1px solid var(--line)}.message-input-wrap{flex:1;min-width:0;display:grid;gap:.25rem}.composer textarea{display:block;width:100%;min-width:0;box-sizing:border-box;resize:vertical;min-height:2.8rem;max-height:9rem;border:1px solid var(--line);border-radius:12px;padding:.7rem;font:inherit;background:var(--white);color:var(--ink)}
+    .message{max-width:min(80%,38rem);padding:.7rem .9rem;border-radius:16px;background:var(--paper);overflow-wrap:anywhere;white-space:pre-wrap;touch-action:pan-y}
+    .message.mine{align-self:flex-end;background:var(--primary);color:#fff}.message-footer{display:flex;align-items:center;justify-content:flex-end;gap:.35rem;margin-top:.25rem}
+    .message time{font-size:.72rem;opacity:.75}.message-receipt{border:0;background:transparent;color:rgba(255,255,255,.76);font:700 .9rem/1 sans-serif;letter-spacing:-.18em;padding:.2rem .1rem;cursor:pointer}
+    .message-receipt.seen{color:#65d7ff}.message-receipt:focus-visible{outline:2px solid currentColor;border-radius:4px}
+    .composer{display:flex;align-items:flex-end;gap:.6rem;padding:1rem;border-top:1px solid var(--line)}.message-input-wrap{flex:1;min-width:0;display:grid;gap:.25rem}
+    .composer textarea{display:block;width:100%;min-width:0;box-sizing:border-box;resize:vertical;min-height:2.8rem;max-height:9rem;border:1px solid var(--line);border-radius:12px;padding:.7rem;font:inherit;background:var(--white);color:var(--ink)}
     .message-note,.message-empty{color:var(--muted);font-size:.9rem;padding:1rem}.composer button{flex:none}.message-compose-hint{margin-left:.25rem;color:var(--muted);font-size:.78rem}
+    .message-info-dialog{width:min(22rem,calc(100vw - 2rem));border:1px solid var(--line);border-radius:18px;padding:1.25rem;background:var(--white);color:var(--ink);box-shadow:0 20px 60px #10182840}
+    .message-info-dialog::backdrop{background:#10182880}.message-info-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+    .message-info-head h2{margin:0;font-size:1.1rem}.message-info-close{border:0;border-radius:50%;width:2rem;height:2rem;background:var(--paper);color:inherit;font-size:1.1rem;cursor:pointer}
+    .message-info-list{display:grid;gap:.85rem;margin:1.1rem 0 0}.message-info-list div{display:flex;justify-content:space-between;gap:1rem}
+    .message-info-list dt{color:var(--muted)}.message-info-list dd{margin:0;text-align:right;font-weight:600}
     body[data-theme="dark"] .messages-layout{background:#171c2b;border-color:#2c3448}body[data-theme="dark"] .inbox{border-color:#2c3448}body[data-theme="dark"] .inbox-link[aria-current="true"],body[data-theme="dark"] .message:not(.mine){background:#111626}
-    body[data-theme="dark"] .thread-head,body[data-theme="dark"] .composer{border-color:#2c3448}body[data-theme="dark"] .composer textarea{background:#111626;color:#edf0f8}
+    body[data-theme="dark"] .thread-head,body[data-theme="dark"] .composer{border-color:#2c3448}body[data-theme="dark"] .composer textarea,body[data-theme="dark"] .message-info-dialog{background:#111626;color:#edf0f8}
     @media(max-width:700px){.messages-layout{grid-template-columns:1fr}.inbox{border-right:0;border-bottom:1px solid var(--line)}.thread-messages{min-height:260px}}
-    @media(max-width:480px){.thread-head{flex-wrap:wrap}.receipt-toggle{flex-basis:100%;margin-left:3.35rem}.composer{align-items:stretch}.message-input-wrap{width:100%}.composer button{align-self:flex-end}}
+    @media(max-width:480px){.composer{align-items:stretch}.message-input-wrap{width:100%}.composer button{align-self:flex-end}}
   </style>
 </head>
 <body>
@@ -46,7 +48,7 @@
     <section class="messages-layout" aria-label="Messages">
       <aside class="inbox"><h2>Conversations</h2><div id="inbox-list" class="inbox-list" aria-live="polite"><p class="message-empty">Loading…</p></div><a class="button" href="connections.html">Find connections</a></aside>
       <section class="thread" aria-label="Conversation">
-        <header class="thread-head"><span id="peer-avatar" class="peer-avatar" aria-hidden="true" hidden></span><h2 id="peer-name">Choose a conversation</h2><label id="receipt-toggle-wrap" class="receipt-toggle" hidden><input id="show-receipts" type="checkbox"><span>Show seen details</span></label></header>
+        <header class="thread-head"><span id="peer-avatar" class="peer-avatar" aria-hidden="true" hidden></span><h2 id="peer-name">Choose a conversation</h2></header>
         <div id="thread-messages" class="thread-messages" aria-live="polite"><p class="message-empty">Choose a connection to start messaging.</p></div>
         <form id="message-form" class="composer" hidden>
           <div class="message-input-wrap">
@@ -58,6 +60,14 @@
       </section>
     </section>
   </main>
+  <dialog id="message-info-dialog" class="message-info-dialog" aria-labelledby="message-info-title">
+    <div class="message-info-head"><h2 id="message-info-title">Message info</h2><button id="message-info-close" class="message-info-close" type="button" aria-label="Close message info">×</button></div>
+    <dl class="message-info-list">
+      <div><dt>Sent</dt><dd id="receipt-sent">—</dd></div>
+      <div><dt>Delivered</dt><dd id="receipt-delivered">—</dd></div>
+      <div><dt>Seen</dt><dd id="receipt-seen">—</dd></div>
+    </dl>
+  </dialog>
   <script src="theme.js" defer></script><script type="module" src="messages.js"></script>
 </body>
 </html>
