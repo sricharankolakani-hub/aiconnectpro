@@ -4,7 +4,7 @@ Last reviewed: 2026-11-07
 
 ## Product direction
 
-AIConnectPro is a professional opportunity and networking workspace. The longer-term plan brings together career profiles and resumes, jobs and applications, networking, business and organization accounts, professional posts and Reels, learning, and AI career help. Messaging is available; voice/video calling remains future work.
+AIConnectPro is a professional opportunity and networking workspace. The longer-term plan brings together career profiles and resumes, jobs and applications, networking, business and organization accounts, professional posts and Capsules, learning, and AI career help. Messaging is available; voice/video calling remains future work.
 
 The product name is still AIConnectPro in the live application. Do not rename the product or change branding without the owner's direction.
 
@@ -13,7 +13,7 @@ The product name is still AIConnectPro in the live application. Do not rename th
 - **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest reviewed production deployment was Ready.
 - **Backend:** Render service `aiconnectpro-backend`, on the Free plan, serves the API at https://aiconnectpro-backend.onrender.com. The Vercel rewrite points to this service.
 - **Database and authentication:** Supabase project is Active/Healthy in ap-southeast-1. The backend uses the service-role key; keep that key server-side.
-- **Database changes:** The migration history contains the current account, profile, organization, messaging, notification, Reel, and receipt schema changes. See `../supabase/migrations/`.
+- **Database changes:** The migration history contains the current account, profile, organization, messaging, notification, Capsule, and receipt schema changes. See `../supabase/migrations/`.
 
 Two older Render services also point at the same repository and backend directory. Their request metrics and request logs were empty for Nov 1–6, 2026, and their recent deploy records show update failures. They have not been removed because old URLs may still be in use.
 
@@ -28,7 +28,7 @@ These capabilities are represented in the current repository; the status review 
 - Manual organization verification. GST/address details are collected, but a submission is not treated as verified by itself.
 - Discoverable profiles, connection requests, direct messages, delivered/seen receipts, and in-app notifications.
 - Private-by-default professional updates that members can keep visible only to themselves or share with accepted connections. Owners can delete their posts; members who can view a post can add or remove reactions and comment. Comment authors can delete their comments. Account export includes authored posts, reactions, and comments; account deletion cascades both.
-- Reels with media, likes, comments, shares, and member reports, plus administrator review pages.
+- Capsules with media, likes, comments, shares, and member reports, plus administrator review pages.
 - Account export and deletion flows.
 
 The first administrator role is managed in Supabase `app_metadata.roles`; it must not be granted from browser-controlled `user_metadata`.
