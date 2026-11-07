@@ -28,7 +28,7 @@ These capabilities are represented in the current repository; the status review 
 - Manual organization verification. GST/address details are collected, but a submission is not treated as verified by itself.
 - Discoverable profiles, connection requests, direct messages, delivered/seen receipts, and in-app notifications.
 - Private-by-default professional updates that members can keep visible only to themselves or share with accepted connections. Owners can delete their posts; members who can view a post can add or remove reactions and comment. Comment authors can delete their comments. Account export includes authored posts, reactions, and comments; account deletion cascades both.
-- Capsules with media, likes, comments, shares, and member reports, plus administrator review pages.
+- Capsules with media, likes, comments, shares, and member reports, plus administrator review pages. Signed-in members can scroll through all-member posts, posts shared with their accepted connections, and their own private posts. Authors can edit post text and choose one of those audiences.
 - Account export and deletion flows.
 
 The first administrator role is managed in Supabase `app_metadata.roles`; it must not be granted from browser-controlled `user_metadata`.
@@ -39,7 +39,7 @@ The first administrator role is managed in Supabase `app_metadata.roles`; it mus
 - **Automated business verification:** No GST verification provider is configured, so organization approval stays manual.
 - **Calls:** Reliable calling needs a TURN relay. No calling service is configured.
 - **AI assistant:** Live AI requires an `OPENAI_API_KEY`; otherwise the backend returns a mock response.
-- **Professional feed:** Posts and reactions persist in Supabase. Editing and post-specific reports are not implemented yet; the feed audience remains limited to the author and accepted connections.
+- **Professional update feed:** Posts, reactions, and comments persist in Supabase. Editing and post-specific reports are not implemented yet; update posts remain private to the author or shared with accepted connections.
 - **Automated checks:** The backend package currently has start/dev scripts but no test or lint script. No comprehensive automated release check is present.
 - **Supabase advisories:** Leaked-password screening is disabled and is not included in the Free plan. The database advisor also reports unindexed foreign keys and unused indexes. Only add indexes that match actual query patterns; several flagged foreign keys are not used as query filters today.
 - **RLS notes:** The advisor reports RLS enabled without policies on backend-managed tables. The repository migration describes backend-only access. Keep browser table access revoked and never expose the service-role key. Revisit policies if browser code starts querying those tables directly.

@@ -49,10 +49,11 @@
           <p id="media-help" class="reels-help">Choose a JPG, PNG, WebP, MP4, or WebM file up to 25 MB.</p>
           <label for="reel-visibility">Who can see this?</label>
           <select id="reel-visibility" name="visibility">
-            <option value="private">Only me</option>
+            <option value="private">Only me — private</option>
+            <option value="connections">My accepted connections</option>
             <option value="public">All signed-in members</option>
           </select>
-          <p class="reels-help">Only you can see private posts. Posts shared with members are visible to every signed-in member.</p>
+          <p class="reels-help">Private posts are visible only to you. Connections posts are visible to your accepted connections; public posts are visible to all signed-in members.</p>
           <button id="post-reel" class="button button-primary" type="submit">Publish post <span aria-hidden="true">→</span></button>
           <p id="create-result" class="reels-status" role="status" aria-live="polite"></p>
         </form>
@@ -60,7 +61,7 @@
 
       <section class="reels-card feed-card" aria-labelledby="feed-heading">
         <div class="reels-card-heading">
-          <div><p class="eyebrow">DISCOVER</p><h2 id="feed-heading">Community feed</h2><p class="reels-subtitle">Short ideas and updates from members.</p></div>
+          <div><p class="eyebrow">DISCOVER</p><h2 id="feed-heading">Capsules feed</h2><p class="reels-subtitle">Browse posts shared with all members or your accepted connections, plus your own private posts.</p></div>
           <button id="refresh-feed" class="button button-outline button-small" type="button">Refresh</button>
         </div>
         <p id="feed-status" class="reels-status" role="status" aria-live="polite"></p>
@@ -88,6 +89,25 @@
         <textarea id="report-details" maxlength="1000" rows="4" placeholder="Add context for the review team."></textarea>
         <p id="report-status" class="reels-status" role="status" aria-live="polite"></p>
         <div class="reel-actions"><button id="cancel-report" class="reel-action" type="button">Cancel</button><button id="submit-report" class="reel-action" type="submit">Send report</button></div>
+      </form>
+    </dialog>
+    <dialog id="edit-dialog" aria-labelledby="edit-title">
+      <form id="edit-form">
+        <p class="eyebrow">YOUR CAPSULE</p>
+        <h2 id="edit-title">Edit post</h2>
+        <label for="edit-title-input">Title <span class="optional-label">Optional</span></label>
+        <input id="edit-title-input" name="title" maxlength="160">
+        <label for="edit-body">Your insight</label>
+        <textarea id="edit-body" name="body" maxlength="3000" rows="5"></textarea>
+        <label for="edit-visibility">Who can see this?</label>
+        <select id="edit-visibility" name="visibility">
+          <option value="private">Only me — private</option>
+          <option value="connections">My accepted connections</option>
+          <option value="public">All signed-in members</option>
+        </select>
+        <p class="reels-help">You can change this audience at any time. Private posts are visible only to you.</p>
+        <p id="edit-status" class="reels-status" role="status" aria-live="polite"></p>
+        <div class="reel-actions"><button id="cancel-edit" class="reel-action" type="button">Cancel</button><button id="save-edit" class="reel-action" type="submit">Save changes</button></div>
       </form>
     </dialog>
   </main>
