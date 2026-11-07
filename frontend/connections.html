@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="notifications.css">
   <style>
+    body[data-theme="dark"] .connection-person-avatar{background:#26324a;color:#dbe6ff}
     .connections-main{max-width:1050px;padding-block:2rem 4rem}
     .connections-intro{margin-bottom:1.5rem}
     .connections-intro h1{margin:.4rem 0}
@@ -24,9 +25,12 @@
     .discover-form input{flex:1;min-width:0;padding:.8rem;border:1px solid var(--line);border-radius:10px;background:var(--white);color:var(--ink);font:inherit}
     .connection-list{display:grid;gap:.65rem}
     .connection-row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.8rem;border:1px solid var(--line);border-radius:14px}
-    .connection-person{min-width:0}
-    .connection-person strong,.connection-person span{display:block;overflow-wrap:anywhere}
-    .connection-person span{font-size:.86rem;color:var(--muted);margin-top:.15rem}
+    .connection-person{display:flex;align-items:center;gap:.75rem;min-width:0}
+    .connection-person-copy{min-width:0}
+    .connection-person-copy strong,.connection-person-copy span{display:block;overflow-wrap:anywhere}
+    .connection-person-copy span{font-size:.86rem;color:var(--muted);margin-top:.15rem}
+    .connection-person-avatar{display:grid;place-items:center;flex:none;width:2.8rem;height:2.8rem;overflow:hidden;border-radius:50%;background:color-mix(in srgb,var(--primary) 12%,var(--paper));color:var(--primary);font-size:.82rem;font-weight:800}
+    .connection-person-avatar img{display:block;width:100%;height:100%;object-fit:cover}
     .connection-actions{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:flex-end}
     .connection-actions button{font:inherit;font-size:.87rem;padding:.5rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--white);color:var(--ink);cursor:pointer}
     .connection-actions .accept-action{background:var(--primary);border-color:var(--primary);color:#fff}
@@ -127,6 +131,7 @@
       <div class="connection-actions"><button id="cancel-profile-report" class="button button-outline" type="button">Cancel</button><button id="profile-report-submit" class="button button-primary" type="submit">Send report</button></div>
     </form>
   </dialog>
+  <script src="profile-photo-viewer.js" defer></script>
   <script src="theme.js" defer></script>
   <script type="module" src="connections.js"></script>
   <script type="module" src="notifications.js"></script>
