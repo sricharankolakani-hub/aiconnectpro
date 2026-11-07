@@ -3,21 +3,41 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../services/supabaseClient');
 
+const REQUIRED_PRIVACY_POLICY_VERSION = '2026-10-17';
+
 /**
  * POST /api/auth/signup
- * body: { name, email, password }
+ * body: { name, email, password, consent: { acceptedAt, policyVersion } }
  */
 router.post('/signup', async (req, res) => {
-  const { name, email, password } = req.body || {};
+  const { name, email, password, consent } = req.body || {};
   if (!email || !password) {
     return res.status(400).json({ error: 'email and password required' });
+  }
+
+  const acceptedAt = Date.parse(consent?.acceptedAt || '');
+  if (
+    consent?.policyVersion !== REQUIRED_PRIVACY_POLICY_VERSION
+    || !Number.isFinite(acceptedAt)
+    || acceptedAt > Date.now() + 5 * 60 * 1000
+  ) {
+    return res.status(400).json({
+      error: 'privacy_policy_consent_required',
+      message: 'Please agree to the current Privacy Policy before creating an account.'
+    });
   }
 
   try {
     const { data, error } = await supabase.auth.signUp({
       email: String(email).trim(),
       password: String(password),
-      options: { data: { name: name ? String(name).trim() : '' } }
+      options: {
+        data: {
+          name: name ? String(name).trim() : '',
+          privacy_policy_accepted_at: new Date().toISOString(),
+          privacy_policy_version: REQUIRED_PRIVACY_POLICY_VERSION
+        }
+      }
     });
     if (error) {
       return res.status(400).json({ error: 'signup_failed', details: error.message });
