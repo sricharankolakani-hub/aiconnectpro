@@ -27,7 +27,7 @@
     .message-receipt.seen{color:#65d7ff}.message-receipt:focus-visible{outline:2px solid currentColor;border-radius:4px}
     .composer{display:flex;align-items:flex-end;gap:.6rem;padding:.75rem 1rem;border-top:1px solid var(--line)}.message-input-wrap{flex:1;min-width:0;display:grid;gap:.25rem}
     .composer textarea{display:block;width:100%;min-width:0;box-sizing:border-box;resize:vertical;min-height:2.8rem;max-height:9rem;border:1px solid var(--line);border-radius:12px;padding:.7rem;font:inherit;background:var(--white);color:var(--ink)}
-    .message-note,.message-empty{color:var(--muted);font-size:.9rem;padding:.6rem 1rem;margin:.25rem 0}.composer button{flex:none}.message-compose-hint{margin-left:.25rem;color:var(--muted);font-size:.78rem}
+    .message-note,.message-empty{color:var(--muted);font-size:.9rem;padding:.6rem 1rem;margin:.25rem 0}.message-load-state{display:grid;justify-items:center;gap:.75rem;max-width:26rem;margin:auto;padding:1.5rem;text-align:center}.message-load-state .message-empty{margin:0;padding:0}.message-load-state button{min-height:2.6rem}.inbox .message-load-state{justify-items:start;margin:0;padding:.6rem 1rem;text-align:left}.thread-messages>.message-empty{margin:auto;text-align:center}.composer button{flex:none}.message-compose-hint{margin-left:.25rem;color:var(--muted);font-size:.78rem}
     .message-info-dialog{width:min(22rem,calc(100vw - 2rem));border:1px solid var(--line);border-radius:18px;padding:1.25rem;background:var(--white);color:var(--ink);box-shadow:0 20px 60px #10182840}
     .message-info-dialog::backdrop{background:#10182880}.message-info-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
     .message-info-head h2{margin:0;font-size:1.1rem}.message-info-close{border:0;border-radius:50%;width:2rem;height:2rem;background:var(--paper);color:inherit;font-size:1.1rem;cursor:pointer}
@@ -51,7 +51,7 @@
     <div class="messages-head"><div><p class="eyebrow"><span class="eyebrow-dot"></span> YOUR NETWORK</p><h1>Messages</h1></div><button id="refresh-messages" class="button" type="button">Refresh</button></div>
     <p id="messages-status" class="message-note" role="status" aria-live="polite">Messages are available only between accepted connections.</p>
     <section class="messages-layout" aria-label="Messages">
-      <aside class="inbox"><h2>Conversations</h2><div id="inbox-list" class="inbox-list" aria-live="polite"><p class="message-empty">Loading…</p></div><a class="button" href="connections.html">Find connections</a></aside>
+      <aside class="inbox"><h2>Conversations</h2><div id="inbox-list" class="inbox-list" aria-live="polite" aria-busy="true"><p class="message-empty">Loading conversations…</p></div><a class="button" href="connections.html">Find connections</a></aside>
       <section class="thread" aria-label="Conversation">
         <header class="thread-head"><span id="peer-avatar" class="peer-avatar" aria-hidden="true" hidden></span><div class="thread-head-copy"><h2 id="peer-name">Choose a conversation</h2><p class="receipt-legend" aria-label="Message status key"><span>✓ Sent</span><span>✓✓ Delivered</span><span class="receipt-legend-seen">✓✓ Seen</span></p></div></header>
         <div id="thread-messages" class="thread-messages" aria-live="polite"><p class="message-empty">Choose a connection to start messaging.</p></div>
