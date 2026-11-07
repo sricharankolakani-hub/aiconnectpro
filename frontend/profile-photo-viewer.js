@@ -1,4 +1,5 @@
-// Mark any future member avatar with data-profile-photo; the global viewer handles it automatically.\nconst PROFILE_PHOTO_SELECTOR = '#profile-photo, #avatar-image, #member-avatar img, #connection-list img, #incoming-list img, #outgoing-list img, #discover-list img, [data-profile-photo]';
+// Mark any future member avatar with data-profile-photo; the global viewer handles it automatically.
+const PROFILE_PHOTO_SELECTOR = '#profile-photo, #avatar-image, #member-avatar img, #connection-list img, #incoming-list img, #outgoing-list img, #discover-list img, [data-profile-photo]';
 
 function preparePhoto(image) {
   if (!(image instanceof HTMLImageElement) || image.dataset.previewReady) return;

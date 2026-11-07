@@ -16,7 +16,8 @@ let threadRefreshInFlight = false;
 let inboxRefreshInFlight = false;
 let lastInboxRefreshAt = 0;
 let knownUnreadCounts = null;
-let toastTimer = null;\nconst profilePhotoCache = new Map();
+let toastTimer = null;
+const profilePhotoCache = new Map();
 
 async function api(path, options = {}) {
   const response = await fetch('/api/messages' + path, {
