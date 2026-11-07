@@ -93,7 +93,18 @@ function renderPost(post, currentUserId) {
   const body = document.createElement('p');
   body.className = 'feed-post-body';
   body.textContent = post.body || '';
-  card.append(header, title, body);
+  const footer = document.createElement('div');
+  footer.className = 'feed-post-actions';
+  const reaction = document.createElement('button');
+  reaction.className = 'feed-reaction';
+  reaction.type = 'button';
+  reaction.dataset.reactionPost = post.id;
+  reaction.dataset.reacted = String(Boolean(post.viewer_reacted));
+  reaction.setAttribute('aria-pressed', String(Boolean(post.viewer_reacted)));
+  reaction.setAttribute('aria-label', (post.viewer_reacted ? 'Unlike' : 'Like') + ' this post. ' + (post.reaction_count || 0) + ' ' + (post.reaction_count === 1 ? 'reaction' : 'reactions') + '.');
+  reaction.textContent = (post.viewer_reacted ? 'Liked' : 'Like') + ' · ' + (post.reaction_count || 0);
+  footer.append(reaction);
+  card.append(header, title, body, footer);
   return card;
 }
 
@@ -157,6 +168,27 @@ form.addEventListener('submit', async event => {
   }
 });
 
+postList.addEventListener('click', async event => {
+  const reaction = event.target.closest('[data-reaction-post]');
+  if (!reaction) return;
+  const wasReacted = reaction.dataset.reacted === 'true';
+  reaction.disabled = true;
+  try {
+    const response = await api('/' + encodeURIComponent(reaction.dataset.reactionPost) + '/reaction', {
+      method: 'PUT',
+      body: JSON.stringify({ reacted: !wasReacted })
+    });
+    reaction.dataset.reacted = String(Boolean(response.viewer_reacted));
+    reaction.setAttribute('aria-pressed', String(Boolean(response.viewer_reacted)));
+    reaction.setAttribute('aria-label', (response.viewer_reacted ? 'Unlike' : 'Like') + ' this post. ' + response.reaction_count + ' ' + (response.reaction_count === 1 ? 'reaction' : 'reactions') + '.');
+    reaction.textContent = (response.viewer_reacted ? 'Liked' : 'Like') + ' · ' + response.reaction_count;
+    setStatus(response.viewer_reacted ? 'You liked this update.' : 'Your reaction was removed.');
+  } catch (error) {
+    setStatus(error.message || 'Your reaction could not be saved. Please try again.', true);
+  } finally {
+    reaction.disabled = false;
+  }
+});
 postList.addEventListener('click', async event => {
   const button = event.target.closest('[data-delete-post]');
   if (!button) return;
