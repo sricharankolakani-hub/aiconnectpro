@@ -1,4 +1,4 @@
-const PROFILE_PHOTO_SELECTOR = '#profile-photo, #avatar-image, #member-avatar img';
+const PROFILE_PHOTO_SELECTOR = '#profile-photo, #avatar-image, #member-avatar img, #connection-list img, #incoming-list img, #outgoing-list img, #discover-list img';
 
 function preparePhoto(image) {
   if (!(image instanceof HTMLImageElement) || image.dataset.previewReady) return;
