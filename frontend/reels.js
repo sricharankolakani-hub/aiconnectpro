@@ -8,9 +8,13 @@ const createForm = document.getElementById('create-form');
 const postButton = document.getElementById('post-reel');
 const loadMoreButton = document.getElementById('load-more-btn');
 const mediaInput = document.getElementById('reel-file');
+const editDialog = document.getElementById('edit-dialog');
+const editForm = document.getElementById('edit-form');
+const reelCache = new Map();
 let offset = 0;
 const limit = 8;
 let loading = false;
+let autoLoadPaused = false;
 const MAX_MEDIA_BYTES = 25 * 1024 * 1024;
 const ALLOWED_MEDIA_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm']);
 
@@ -45,6 +49,7 @@ function renderComment(comment) {
   return item;
 }
 function renderReel(reel) {
+  reelCache.set(reel.id, reel);
   const card = node('article', 'reel-post');
   card.id = 'reel-' + reel.id;
   const title = (reel.title || '').trim();
@@ -54,6 +59,8 @@ function renderReel(reel) {
   meta.append(node('span', '', 'AIConnectPro member'));
   const created = new Date(reel.created_at);
   meta.append(node('time', '', Number.isNaN(created.getTime()) ? '' : created.toLocaleString()));
+  const audienceLabel = reel.visibility === 'public' ? 'All members' : reel.visibility === 'connections' ? 'Connections' : 'Only you';
+  meta.append(node('span', 'reel-visibility-badge', audienceLabel));
   card.append(meta);
 
   if (reel.body) card.append(node('p', 'reel-body', reel.body));
@@ -86,6 +93,13 @@ function renderReel(reel) {
     share.type = 'button';
     share.dataset.id = reel.id;
     actions.append(share);
+  }
+  if (reel.is_owner) {
+    const edit = node('button', 'reel-action edit-btn', 'Edit');
+    edit.type = 'button';
+    edit.dataset.id = reel.id;
+    edit.setAttribute('aria-label', title ? 'Edit post: ' + title : 'Edit your post');
+    actions.append(edit);
   }
   if (!reel.is_owner) {
     const report = node('button', 'reel-action report-btn', 'Report');
@@ -126,6 +140,8 @@ async function loadReels({ reset = false } = {}) {
   if (loading) return;
   if (reset) {
     offset = 0;
+    autoLoadPaused = false;
+    reelCache.clear();
     feedEl.replaceChildren();
   }
   loading = true;
@@ -147,7 +163,8 @@ async function loadReels({ reset = false } = {}) {
     loadMoreButton.hidden = reels.length < limit;
     setStatus(feedStatus, reels.length ? 'Showing the latest community posts.' : 'You’ve reached the end of the feed.');
   } catch (error) {
-    setStatus(feedStatus, error.message || 'Could not load the community feed.', true);
+    autoLoadPaused = true;
+    setStatus(feedStatus, error.message || 'Could not load the Capsules feed. Try again.', true);
     if (offset === 0 && feedEl.childElementCount === 0) {
       feedEl.replaceChildren(node('p', 'reels-empty', 'The feed could not load. Try refreshing.'));
     }
@@ -205,13 +222,24 @@ async function postReel(event) {
         const { error: cleanupError } = await supabase.storage.from('reel-media').remove([uploadedPath]);
         if (cleanupError) console.warn('Unable to remove incomplete Capsule upload', cleanupError);
       } catch (cleanupError) {
-        console.warn('Unable to remove incomplete Reel upload', cleanupError);
+        console.warn('Unable to remove incomplete Capsule upload', cleanupError);
       }
     }
     setStatus(createResult, error.message || 'Could not publish this post.', true);
   } finally {
     postButton.disabled = false;
   }
+}
+
+async function editReel(button) {
+  const reel = reelCache.get(button.dataset.id);
+  if (!reel) return;
+  byId('edit-title-input').value = reel.title || '';
+  byId('edit-body').value = reel.body || '';
+  byId('edit-visibility').value = reel.visibility || 'private';
+  editForm.dataset.id = reel.id;
+  setStatus(byId('edit-status'), '');
+  editDialog.showModal();
 }
 
 async function deleteReel(button) {
@@ -295,6 +323,8 @@ feedEl.addEventListener('click', event => {
     byId('report-dialog').showModal();
     return;
   }
+  const edit = event.target.closest('.edit-btn');
+  if (edit) return void editReel(edit);
   const remove = event.target.closest('.delete-btn');
   if (remove) return void deleteReel(remove);
   const like = event.target.closest('.like-btn');
@@ -361,6 +391,14 @@ mediaInput.addEventListener('change', () => {
   if (file) setStatus(createResult, file.name + ' · ' + Math.ceil(file.size / 1024 / 1024) + ' MB selected.');
 });
 createForm.addEventListener('submit', postReel);
-loadMoreButton.addEventListener('click', () => loadReels());
+loadMoreButton.addEventListener('click', () => { autoLoadPaused = false; loadReels(); });
+if ('IntersectionObserver' in window) {
+  const feedObserver = new IntersectionObserver(entries => {
+    if (entries.some(entry => entry.isIntersecting) && !loading && !autoLoadPaused && !loadMoreButton.hidden) {
+      loadReels();
+    }
+  }, { rootMargin: '360px 0px' });
+  feedObserver.observe(loadMoreButton);
+}
 byId('refresh-feed').addEventListener('click', () => loadReels({ reset: true }));
 loadReels();
