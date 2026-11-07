@@ -123,6 +123,12 @@ router.get('/', auth, async (req, res) => {
       .in('id', authorIds);
     if (authorProfilesError) return res.status(500).json({ error: 'author_lookup_failed' });
     const authorsById = new Map((authorProfiles || []).map(profile => [profile.id, profile]));
+    const { data: authorDetails, error: authorDetailsError } = await supabase.from('profile_private_details')
+      .select('user_id, visibility')
+      .in('user_id', authorIds);
+    const privateDetailsTableMissing = authorDetailsError?.code === '42P01' || authorDetailsError?.code === 'PGRST205';
+    if (authorDetailsError && !privateDetailsTableMissing) return res.status(500).json({ error: 'author_details_lookup_failed' });
+    const detailsByUserId = new Map((authorDetails || []).map(details => [details.user_id, details]));
 
     const [likesResult, commentsResult, sharesResult] = await Promise.all([
       supabase.from('reel_likes').select('reel_id, user_id').in('reel_id', ids),
@@ -138,11 +144,31 @@ router.get('/', auth, async (req, res) => {
       const likes = likesResult.data.filter(item => item.reel_id === reel.id);
       const comments = commentsResult.data.filter(item => item.reel_id === reel.id);
       const shares = sharesResult.data.filter(item => item.reel_id === reel.id);
+      const authorId = reel.user_id;
+      const authorProfile = authorsById.get(authorId);
+      const isOwner = authorId === req.user.id;
+      const isConnected = connectionIds.includes(authorId);
+      const avatarVisibility = detailsByUserId.get(authorId)?.visibility?.avatar || 'private';
+      let authorAvatarUrl = null;
+      const canViewAvatar = isOwner || avatarVisibility === 'everyone' || (avatarVisibility === 'connections' && isConnected);
+      if (canViewAvatar && !privateDetailsTableMissing) {
+        const { data: account, error: accountError } = await supabase.auth.admin.getUserById(authorId);
+        if (!accountError && account?.user) {
+          const avatarPath = account.user.user_metadata?.avatar_path;
+          if (avatarPath) {
+            const { data: signed } = await supabase.storage.from('profile-photos').createSignedUrl(avatarPath, 3600);
+            if (signed?.signedUrl) authorAvatarUrl = signed.signedUrl;
+          } else if (account.user.user_metadata?.avatar_url) {
+            authorAvatarUrl = account.user.user_metadata.avatar_url;
+          }
+        }
+      }
       return {
         ...await withSignedMedia(reel),
-        is_owner: reel.user_id === req.user.id,
-        author_name: authorsById.get(reel.user_id)?.full_name || authorsById.get(reel.user_id)?.company_name || 'AIConnectPro member',
-        author_profile_available: reel.user_id === req.user.id || Boolean(authorsById.get(reel.user_id)?.discoverable) || connectionIds.includes(reel.user_id),
+        is_owner: isOwner,
+        author_name: authorProfile?.full_name || authorProfile?.company_name || 'AIConnectPro member',
+        author_profile_available: isOwner || Boolean(authorProfile?.discoverable) || isConnected,
+        author_avatar_url: authorAvatarUrl,
         like_count: likes.length,
         comment_count: comments.length,
         share_count: shares.length,
