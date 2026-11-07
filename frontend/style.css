@@ -296,6 +296,14 @@ body[data-theme="dark"] .auth-google:hover { background: #28364b; }
 body[data-theme="dark"] .profile-avatar { color: #b5c9ff; background: #263c60; }
 body[data-theme="dark"] .profile-role { color: #9be0c3; background: #244d43; }
 body[data-theme="dark"] .profile-entry-icon { color: #c2b5ff; background: #3b315e; }
+@media (min-width: 761px) and (max-width: 860px) {
+  .auth-layout { grid-template-columns: 1fr; width: min(560px, calc(100% - 32px)); gap: 16px; padding-block: 28px 50px; }
+  .auth-intro { min-height: auto; padding: 26px; }
+  .auth-intro-copy { margin-block: 12px; }
+  .auth-intro h1 { font-size: 36px; }
+  .auth-benefits { grid-template-columns: 1fr; margin-top: 22px; }
+  .auth-panel { padding: 28px; }
+}
 @media (max-width: 760px) {
   .auth-layout { grid-template-columns: 1fr; width: min(560px, calc(100% - 32px)); gap: 16px; padding-block: 28px 50px; }
   .auth-intro { min-height: auto; padding: 26px; }
