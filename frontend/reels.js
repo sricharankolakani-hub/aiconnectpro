@@ -52,17 +52,41 @@ function renderReel(reel) {
   reelCache.set(reel.id, reel);
   const card = node('article', 'reel-post');
   card.id = 'reel-' + reel.id;
-  const title = (reel.title || '').trim();
-  if (title) card.append(node('h3', '', title));
 
-  const meta = node('div', 'reel-meta');
-  meta.append(node('span', '', 'AIConnectPro member'));
+  const authorName = reel.is_owner ? 'You' : (reel.author_name || 'AIConnectPro member');
+  const authorHref = reel.is_owner
+    ? 'profile.html'
+    : 'member-profile.html?user=' + encodeURIComponent(reel.user_id || '');
+  const identity = node('header', 'reel-author');
+  const initials = String(authorName).trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
+  const avatar = node('span', 'reel-author-avatar', initials);
+  avatar.setAttribute('aria-hidden', 'true');
+  const authorDetails = node('div', 'reel-author-details');
+  const author = reel.author_profile_available || reel.is_owner
+    ? node('a', 'reel-author-name', authorName)
+    : node('span', 'reel-author-name', authorName);
+  if (author.tagName === 'A') {
+    author.href = authorHref;
+    author.setAttribute('aria-label', 'View ' + authorName + '’s profile');
+  } else {
+    author.title = 'This member’s profile is private or unavailable.';
+  }
   const created = new Date(reel.created_at);
-  meta.append(node('time', '', Number.isNaN(created.getTime()) ? '' : created.toLocaleString()));
-  const audienceLabel = reel.visibility === 'public' ? 'All members' : reel.visibility === 'connections' ? 'Connections' : 'Only you';
-  meta.append(node('span', 'reel-visibility-badge', audienceLabel));
-  card.append(meta);
+  const timestamp = node('time', 'reel-post-time', Number.isNaN(created.getTime())
+    ? ''
+    : created.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }));
+  if (!Number.isNaN(created.getTime())) timestamp.dateTime = created.toISOString();
+  authorDetails.append(author, timestamp);
+  identity.append(avatar, authorDetails);
 
+  const audienceLabel = reel.visibility === 'public' ? 'Everyone' : reel.visibility === 'connections' ? 'Connections' : 'Only you';
+  const audience = node('span', 'reel-visibility-badge', audienceLabel);
+  audience.setAttribute('aria-label', 'Visible to ' + audienceLabel.toLowerCase());
+  identity.append(audience);
+  card.append(identity);
+
+  const title = (reel.title || '').trim();
+  if (title) card.append(node('h3', 'reel-title', title));
   if (reel.body) card.append(node('p', 'reel-body', reel.body));
   if (reel.media_url) {
     const media = document.createElement(/\.(mp4|webm)(\?|$)/i.test(reel.media_url) ? 'video' : 'img');
@@ -135,7 +159,6 @@ function renderReel(reel) {
   card.append(commentArea);
   return card;
 }
-
 async function loadReels({ reset = false } = {}) {
   if (loading) return;
   if (reset) {
