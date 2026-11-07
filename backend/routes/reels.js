@@ -53,6 +53,9 @@ router.post('/', auth, async (req, res) => {
     if (!titleText && !bodyText && !mediaPath) {
       return res.status(400).json({ error: 'reel_content_required' });
     }
+    if (visibility !== undefined && !['private', 'connections', 'public'].includes(visibility)) {
+      return res.status(400).json({ error: 'invalid_reel_visibility' });
+    }
     const mediaSegments = mediaPath ? mediaPath.split('/') : [];
     const mediaPathBelongsToUser = mediaPath.startsWith(`${req.user.id}/`)
       && !mediaPath.includes('\\')
