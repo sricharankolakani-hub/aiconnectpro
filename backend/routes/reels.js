@@ -164,7 +164,7 @@ router.get('/:id/comments', auth, async (req, res) => {
 router.post('/:id/like', auth, async (req, res) => {
   const { data: reel, error: reelError } = await getReel(req.params.id);
   if (reelError) return res.status(500).json({ error: 'reel_lookup_failed' });
-  if (!canView(reel, req.user.id)) return res.status(404).json({ error: 'reel_not_found' });
+  if (!(await canView(reel, req.user.id))) return res.status(404).json({ error: 'reel_not_found' });
 
   const { error: insertError } = await supabase.from('reel_likes').insert({
     reel_id: req.params.id,
@@ -190,7 +190,7 @@ router.post('/:id/like', auth, async (req, res) => {
 router.post('/:id/comment', auth, async (req, res) => {
   const { data: reel, error: reelError } = await getReel(req.params.id);
   if (reelError) return res.status(500).json({ error: 'reel_lookup_failed' });
-  if (!canView(reel, req.user.id)) return res.status(404).json({ error: 'reel_not_found' });
+  if (!(await canView(reel, req.user.id))) return res.status(404).json({ error: 'reel_not_found' });
 
   const comment = req.body?.comment;
   if (typeof comment !== 'string' || comment.trim().length === 0 || comment.trim().length > 1500) {
