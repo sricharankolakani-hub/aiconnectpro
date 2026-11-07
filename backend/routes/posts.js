@@ -86,6 +86,33 @@ router.get('/', async (req, res) => {
       current.viewers.add(reaction.user_id);
       reactionsByPost.set(reaction.post_id, current);
     }
+
+    const { data: commentRows, error: commentsError } = postIds.length
+      ? await supabase.from('post_comments').select('id, post_id, user_id, body, created_at')
+        .in('post_id', postIds).order('created_at', { ascending: false }).limit(300)
+      : { data: [], error: null };
+    if (commentsError) {
+      console.error('Professional feed comments lookup failed', commentsError);
+      return res.status(500).json({ error: 'feed_lookup_failed' });
+    }
+    const commentAuthorIds = [...new Set((commentRows || []).map(comment => comment.user_id))];
+    const commentProfiles = commentAuthorIds.length
+      ? await supabase.from('profiles').select('id, full_name').in('id', commentAuthorIds)
+      : { data: [], error: null };
+    if (commentProfiles.error) {
+      console.error('Professional feed comment authors lookup failed', commentProfiles.error);
+      return res.status(500).json({ error: 'feed_lookup_failed' });
+    }
+    const commentNames = new Map((commentProfiles.data || []).map(profile => [profile.id, profile.full_name]));
+    const commentsByPost = new Map();
+    for (const comment of commentRows || []) {
+      const current = commentsByPost.get(comment.post_id) || [];
+      if (current.length < 10) current.push({
+        ...comment,
+        author_name: commentNames.get(comment.user_id) || 'AIConnectPro member'
+      });
+      commentsByPost.set(comment.post_id, current);
+    }
     return res.json({
       posts: posts.map(post => {
         const reaction = reactionsByPost.get(post.id);
@@ -93,7 +120,8 @@ router.get('/', async (req, res) => {
           ...post,
           author_name: names.get(post.author_id) || 'AIConnectPro member',
           reaction_count: reaction?.count || 0,
-          viewer_reacted: Boolean(reaction?.viewers.has(userId))
+          viewer_reacted: Boolean(reaction?.viewers.has(userId)),
+          comments: commentsByPost.get(post.id) || []
         };
       })
     });
@@ -168,6 +196,52 @@ router.put('/:id([0-9a-fA-F-]{36})/reaction', async (req, res) => {
   } catch (error) {
     console.error('Post reaction update failed', error);
     return res.status(500).json({ error: 'reaction_update_failed' });
+  }
+});
+
+router.post('/:id([0-9a-fA-F-]{36})/comments', async (req, res) => {
+  const body = typeof req.body?.body === 'string' ? req.body.body.trim() : '';
+  if (!body || body.length > 1500) return res.status(400).json({ error: 'invalid_comment', message: 'Comments must be between 1 and 1,500 characters.' });
+  try {
+    const { data: post, error: postError } = await supabase.from('posts')
+      .select('id, author_id, visibility').eq('id', req.params.id).maybeSingle();
+    if (postError) {
+      console.error('Post comment lookup failed', postError);
+      return res.status(500).json({ error: 'comment_create_failed' });
+    }
+    if (!post || !(await canViewPost(post, req.user.id))) return res.status(404).json({ error: 'post_not_found' });
+
+    const { data, error } = await supabase.from('post_comments')
+      .insert({ post_id: post.id, user_id: req.user.id, body })
+      .select('id, post_id, user_id, body, created_at').single();
+    if (error) {
+      console.error('Post comment creation failed', error);
+      return res.status(500).json({ error: 'comment_create_failed' });
+    }
+    const { data: profile } = await supabase.from('profiles')
+      .select('full_name').eq('id', req.user.id).maybeSingle();
+    return res.status(201).json({
+      comment: { ...data, author_name: profile?.full_name || 'AIConnectPro member' }
+    });
+  } catch (error) {
+    console.error('Post comment creation failed', error);
+    return res.status(500).json({ error: 'comment_create_failed' });
+  }
+});
+
+router.delete('/comments/:commentId([0-9a-fA-F-]{36})', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('post_comments').delete()
+      .eq('id', req.params.commentId).eq('user_id', req.user.id).select('id').maybeSingle();
+    if (error) {
+      console.error('Post comment deletion failed', error);
+      return res.status(500).json({ error: 'comment_delete_failed' });
+    }
+    if (!data) return res.status(404).json({ error: 'comment_not_found' });
+    return res.json({ deleted: true });
+  } catch (error) {
+    console.error('Post comment deletion failed', error);
+    return res.status(500).json({ error: 'comment_delete_failed' });
   }
 });
 
