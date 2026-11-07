@@ -161,7 +161,7 @@ async function loadReels({ reset = false } = {}) {
     }
     offset += reels.length;
     loadMoreButton.hidden = reels.length < limit;
-    setStatus(feedStatus, reels.length ? 'Showing the latest community posts.' : 'You’ve reached the end of the feed.');
+    setStatus(feedStatus, reels.length ? 'Showing the latest Capsules.' : 'You’ve reached the end of the Capsules feed.');
   } catch (error) {
     autoLoadPaused = true;
     setStatus(feedStatus, error.message || 'Could not load the Capsules feed. Try again.', true);
@@ -307,12 +307,38 @@ const token = localStorage.getItem('token');
 if (!token) {
   createForm.hidden = true;
   const prompt = node('div', 'reels-auth-prompt');
-  prompt.append(node('p', '', 'Sign in to publish a post. Your account is required to like or comment too.'));
+  prompt.append(node('p', '', 'Sign in to browse Capsules, publish, like, and comment. You’ll see posts shared with all members or your accepted connections, plus your own private posts.'));
   const link = node('a', 'button button-primary', 'Log in');
   link.href = 'login.html';
   prompt.append(link);
   document.getElementById('create-panel').append(prompt);
 }
+
+editForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  const save = byId('save-edit');
+  save.disabled = true;
+  save.textContent = 'Saving…';
+  try {
+    await api('/reels/' + encodeURIComponent(editForm.dataset.id), {
+      method: 'PATCH',
+      body: JSON.stringify({
+        title: byId('edit-title-input').value.trim(),
+        body: byId('edit-body').value.trim(),
+        visibility: byId('edit-visibility').value
+      })
+    });
+    editDialog.close();
+    await loadReels({ reset: true });
+    setStatus(feedStatus, 'Capsule updated.');
+  } catch (error) {
+    setStatus(byId('edit-status'), error.message || 'Could not save your Capsule.', true);
+  } finally {
+    save.disabled = false;
+    save.textContent = 'Save changes';
+  }
+});
+byId('cancel-edit').addEventListener('click', () => editDialog.close());
 
 feedEl.addEventListener('click', event => {
   const report = event.target.closest('.report-btn');
