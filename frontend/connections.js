@@ -47,17 +47,25 @@ async function loadConnectionPhoto(avatar, retry = 0) {
     image.loading = 'lazy';
     image.decoding = 'async';
     image.dataset.profilePhoto = 'true';
+    const fallbackToInitials = () => {
+      avatar.replaceChildren(document.createTextNode(initials(avatar.dataset.userName)));
+    };
     image.addEventListener('error', () => {
       if (retry < 1) {
         delete avatar.dataset.photoRequested;
         loadConnectionPhoto(avatar, retry + 1);
+      } else {
+        fallbackToInitials();
       }
     }, { once: true });
     image.src = profile.avatar_url;
     avatar.replaceChildren(image);
-    if (image.complete && image.naturalWidth === 0 && retry < 1) {
-      delete avatar.dataset.photoRequested;
-      return loadConnectionPhoto(avatar, retry + 1);
+    if (image.complete && image.naturalWidth === 0) {
+      if (retry < 1) {
+        delete avatar.dataset.photoRequested;
+        return loadConnectionPhoto(avatar, retry + 1);
+      }
+      fallbackToInitials();
     }
   } catch {
     // Keep the monogram when a profile photo is unavailable.
