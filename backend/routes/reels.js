@@ -5,8 +5,17 @@ const supabase = require('../services/supabaseClient');
 const auth = require('../middleware/authMiddleware');
 const { normalizeReelRow } = require('../services/reelService');
 
-function canView(reel, userId) {
-  return reel && (reel.visibility === 'public' || reel.user_id === userId);
+async function canView(reel, userId) {
+  if (!reel) return false;
+  if (reel.visibility === 'public' || reel.user_id === userId) return true;
+  if (reel.visibility !== 'connections') return false;
+  const { data, error } = await supabase.from('connection_requests')
+    .select('id')
+    .eq('status', 'accepted')
+    .or(`and(sender_id.eq.${userId},recipient_id.eq.${reel.user_id}),and(sender_id.eq.${reel.user_id},recipient_id.eq.${userId})`)
+    .limit(1)
+    .maybeSingle();
+  return !error && Boolean(data);
 }
 
 async function withSignedMedia(reel) {
@@ -57,7 +66,7 @@ router.post('/', auth, async (req, res) => {
       title: titleText || null,
       body: bodyText || null,
       media_url: mediaPath || null,
-      visibility: visibility === 'public' ? 'public' : 'private'
+      visibility: ['private', 'connections', 'public'].includes(visibility) ? visibility : 'private'
     };
     const { data, error } = await supabase.from('reels').insert([rec]).select().single();
     if (error) return res.status(500).json({ error: 'db_error', details: error.message });
@@ -79,9 +88,24 @@ router.get('/', auth, async (req, res) => {
     let query = supabase.from('reels').select('*')
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
-    query = req.query.mine === 'true'
-      ? query.eq('user_id', req.user.id)
-      : query.or(`visibility.eq.public,user_id.eq.${req.user.id}`);
+    if (req.query.mine === 'true') {
+      query = query.eq('user_id', req.user.id);
+    } else {
+      const { data: connectionRows, error: connectionsError } = await supabase.from('connection_requests')
+        .select('sender_id, recipient_id')
+        .eq('status', 'accepted')
+        .or(`sender_id.eq.${req.user.id},recipient_id.eq.${req.user.id}`)
+        .limit(5000);
+      if (connectionsError) return res.status(500).json({ error: 'connections_lookup_failed' });
+      const connectionIds = [...new Set((connectionRows || []).map(row =>
+        row.sender_id === req.user.id ? row.recipient_id : row.sender_id
+      ).filter(Boolean))];
+      const visibleFilters = [`visibility.eq.public`, `user_id.eq.${req.user.id}`];
+      if (connectionIds.length) {
+        visibleFilters.push(`and(visibility.eq.connections,user_id.in.(${connectionIds.join(',')}))`);
+      }
+      query = query.or(visibleFilters.join(','));
+    }
 
     const { data: rows, error } = await query;
     if (error) return res.status(500).json({ error: 'db_error', details: error.message });
@@ -124,7 +148,7 @@ router.get('/', auth, async (req, res) => {
 router.get('/:id/comments', auth, async (req, res) => {
   const { data: reel, error: reelError } = await getReel(req.params.id);
   if (reelError) return res.status(500).json({ error: 'reel_lookup_failed' });
-  if (!canView(reel, req.user.id)) return res.status(404).json({ error: 'reel_not_found' });
+  if (!(await canView(reel, req.user.id))) return res.status(404).json({ error: 'reel_not_found' });
 
   const limit = Math.min(50, Math.max(1, Number.parseInt(req.query.limit || '30', 10) || 30));
   const { data, error } = await supabase.from('reel_comments')
@@ -204,6 +228,37 @@ router.delete('/:id', auth, async (req, res) => {
   }
 
   return res.json({ deleted: true });
+});
+
+/** Update content and audience for a Reel owned by the signed-in member. */
+router.patch('/:id', auth, async (req, res) => {
+  const { data: current, error: lookupError } = await getReel(req.params.id);
+  if (lookupError) return res.status(500).json({ error: 'reel_lookup_failed' });
+  if (!current) return res.status(404).json({ error: 'reel_not_found' });
+  if (current.user_id !== req.user.id) return res.status(403).json({ error: 'not_reel_owner' });
+
+  const titleText = typeof req.body?.title === 'string' ? req.body.title.trim() : current.title || '';
+  const bodyText = typeof req.body?.body === 'string' ? req.body.body.trim() : current.body || '';
+  const visibility = req.body?.visibility;
+  if (titleText.length > 160 || bodyText.length > 3000) {
+    return res.status(400).json({ error: 'reel_content_too_long' });
+  }
+  if (!['private', 'connections', 'public'].includes(visibility)) {
+    return res.status(400).json({ error: 'invalid_reel_visibility' });
+  }
+  if (!titleText && !bodyText && !current.media_url) {
+    return res.status(400).json({ error: 'reel_content_required' });
+  }
+
+  const { data, error } = await supabase.from('reels')
+    .update({ title: titleText || null, body: bodyText || null, visibility })
+    .eq('id', req.params.id)
+    .eq('user_id', req.user.id)
+    .select('id, user_id, title, body, media_url, visibility, created_at')
+    .maybeSingle();
+  if (error) return res.status(500).json({ error: 'reel_update_failed' });
+  if (!data) return res.status(404).json({ error: 'reel_not_found' });
+  return res.json({ reel: await withSignedMedia(data) });
 });
 
 /** Count a successful share action for public Reels only. */
