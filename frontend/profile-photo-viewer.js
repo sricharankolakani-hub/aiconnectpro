@@ -55,17 +55,21 @@ function preview(image) {
   if (typeof dialog.showModal === 'function') dialog.showModal();
 }
 
+// Capture photo interactions before a containing conversation link can navigate.
 document.addEventListener('click', event => {
   const image = event.target.closest?.(PROFILE_PHOTO_SELECTOR);
-  if (image) preview(image);
-});
+  if (!image) return;
+  event.preventDefault();
+  event.stopPropagation();
+  preview(image);
+}, true);
 document.addEventListener('keydown', event => {
   const image = event.target.closest?.(PROFILE_PHOTO_SELECTOR);
-  if (image && (event.key === 'Enter' || event.key === ' ')) {
-    event.preventDefault();
-    preview(image);
-  }
-});
+  if (!image || (event.key !== 'Enter' && event.key !== ' ')) return;
+  event.preventDefault();
+  event.stopPropagation();
+  preview(image);
+}, true);
 preparePhotos();
 new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => {
   if (node instanceof Element) preparePhotos(node);
