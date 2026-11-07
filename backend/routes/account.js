@@ -5,7 +5,6 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../services/supabaseClient');
 const auth = require('../middleware/authMiddleware');
-const postsRoutes = require('./posts');
 
 const PAGE_SIZE = 500;
 const RECENT_AUTH_SECONDS = 10 * 60;
@@ -65,7 +64,7 @@ router.get('/export', auth, async (req, res) => {
     const [
       profiles, privateDetails, resumes, reels, likes, comments, shares,
       applications, jobs, accessRequests, memberships, connectionRequests,
-      conversations, reportsFiled
+      conversations, reportsFiled, posts
     ] = await Promise.all([
       fetchAll(() => supabase.from('profiles').select('*').eq('id', userId)),
       fetchAll(() => supabase.from('profile_private_details').select('*').eq('user_id', userId)),
@@ -82,10 +81,10 @@ router.get('/export', auth, async (req, res) => {
         .or('sender_id.eq.' + userId + ',recipient_id.eq.' + userId)),
       fetchAll(() => supabase.from('direct_conversations').select('*')
         .or('member_a.eq.' + userId + ',member_b.eq.' + userId)),
-      fetchAll(() => supabase.from('content_reports').select('*').eq('reporter_id', userId))
+      fetchAll(() => supabase.from('content_reports').select('*').eq('reporter_id', userId)),
+      fetchAll(() => supabase.from('posts').select('*').eq('author_id', userId))
     ]);
 
-    const posts = postsRoutes.getPostsByAuthor(userId);
     const conversationIds = conversations.map(row => row.id).filter(Boolean);
     const messages = conversationIds.length
       ? await fetchAll(() => supabase.from('direct_messages').select('*').in('conversation_id', conversationIds))
@@ -208,8 +207,8 @@ router.delete('/', auth, async (req, res) => {
     await removeStoragePaths('reel-media', [...reelMediaPaths, ...legacyReelPaths]);
     await removeStoragePaths('resumes', resumePaths);
 
-    // Delete personal rows that do not cascade from auth.users, remove authored
-    // in-memory feed posts and standalone jobs. Organization-owned postings remain.
+    // Delete personal rows that do not cascade from auth.users and standalone jobs.
+    // Auth deletion cascades authored posts. Organization-owned postings remain.
     const operations = [
       supabase.from('applications').delete().eq('user_id', userId),
       supabase.from('reel_likes').delete().eq('user_id', userId),
@@ -225,8 +224,6 @@ router.delete('/', auth, async (req, res) => {
       console.error('Account database cleanup failed', results.filter(result => result.error).map(result => result.error));
       return accountError(res, 'account_deletion_failed');
     }
-    postsRoutes.removePostsByAuthor(userId);
-
     if (organizations.length) {
       const { error: organizationError } = await supabase.from('organizations')
         .delete().eq('created_by', userId).eq('verification_status', 'pending');
