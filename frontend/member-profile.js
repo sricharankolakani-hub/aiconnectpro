@@ -41,9 +41,16 @@ async function initialize() {
     avatar.textContent = initials;
     if (profile.avatar_url) {
       const image = document.createElement('img');
+      image.alt = profile.full_name ? profile.full_name + ' profile photo' : 'Member profile photo';
+      image.dataset.profilePhoto = 'true';
+      image.addEventListener('error', () => {
+        avatar.replaceChildren(document.createTextNode(initials));
+      }, { once: true });
       image.src = profile.avatar_url;
-      image.alt = '';
       avatar.replaceChildren(image);
+      if (image.complete && image.naturalWidth === 0) {
+        avatar.replaceChildren(document.createTextNode(initials));
+      }
     }
     if (profile.company_name) {
       const company = document.getElementById('member-company');

@@ -35,7 +35,7 @@ function initials(name) {
   return String(name || 'AIConnectPro member').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
 }
 
-async function loadConnectionPhoto(avatar) {
+async function loadConnectionPhoto(avatar, retry = 0) {
   if (avatar.dataset.photoRequested) return;
   avatar.dataset.photoRequested = 'true';
   try {
@@ -43,11 +43,30 @@ async function loadConnectionPhoto(avatar) {
     const profile = await response.json().catch(() => ({}));
     if (!response.ok || !profile.avatar_url) return;
     const image = document.createElement('img');
-    image.alt = '';
+    image.alt = (avatar.dataset.userName || 'Member') + ' profile photo';
     image.loading = 'lazy';
     image.decoding = 'async';
-    image.addEventListener('load', () => avatar.replaceChildren(image), { once: true });
+    image.dataset.profilePhoto = 'true';
+    const fallbackToInitials = () => {
+      avatar.replaceChildren(document.createTextNode(initials(avatar.dataset.userName)));
+    };
+    image.addEventListener('error', () => {
+      if (retry < 1) {
+        delete avatar.dataset.photoRequested;
+        loadConnectionPhoto(avatar, retry + 1);
+      } else {
+        fallbackToInitials();
+      }
+    }, { once: true });
     image.src = profile.avatar_url;
+    avatar.replaceChildren(image);
+    if (image.complete && image.naturalWidth === 0) {
+      if (retry < 1) {
+        delete avatar.dataset.photoRequested;
+        return loadConnectionPhoto(avatar, retry + 1);
+      }
+      fallbackToInitials();
+    }
   } catch {
     // Keep the monogram when a profile photo is unavailable.
   }
@@ -76,6 +95,7 @@ function renderPersonList(containerId, rows, kind) {
     const copy = make('div', 'connection-person');
     const avatar = make('span', 'connection-person-avatar', initials(displayName));
     avatar.dataset.userId = person.id;
+    avatar.dataset.userName = displayName;
     const personCopy = make('div', 'connection-person-copy');
     personCopy.append(make('strong', '', displayName));
     if (person.company_name) personCopy.append(make('span', '', person.company_name));
