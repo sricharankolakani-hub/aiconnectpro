@@ -75,8 +75,10 @@ const inboxPhotoObserver = 'IntersectionObserver' in window
 function loadPeerPhoto(container, peerId, name, retry = 0) {
   if (!peerId || container.dataset.photoLoadedFor === peerId || container.dataset.photoRequestedFor === peerId) return;
   container.dataset.photoRequestedFor = peerId;
+  let photoAttemptSettled = false;
   const restoreInitials = () => {
-    if (!container.isConnected || container.dataset.peerId !== peerId) return;
+    if (photoAttemptSettled || !container.isConnected || container.dataset.peerId !== peerId) return;
+    photoAttemptSettled = true;
     if (retry < 1) {
       profilePhotoCache.delete(peerId);
       delete container.dataset.photoRequestedFor;
@@ -96,7 +98,8 @@ function loadPeerPhoto(container, peerId, name, retry = 0) {
     image.decoding = 'async';
     image.dataset.profilePhoto = 'true';
     image.addEventListener('load', () => {
-      if (!container.isConnected || container.dataset.peerId !== peerId) return;
+      if (photoAttemptSettled || !container.isConnected || container.dataset.peerId !== peerId) return;
+      photoAttemptSettled = true;
       container.dataset.photoLoadedFor = peerId;
       container.removeAttribute('aria-hidden');
       container.removeAttribute('aria-label');
