@@ -219,6 +219,16 @@ body[data-theme="dark"] .chip-check { color: #91e0c1; background: #244d43; }
 .auth-form input { width: 100%; min-height: 48px; padding: 0 14px; color: var(--ink); background: var(--white); border: 1px solid var(--line); border-radius: 10px; }
 .auth-form input::placeholder { color: #9aa6b8; }
 .auth-form input:focus { border-color: var(--primary); outline: 3px solid rgba(37,99,235,.12); }
+.auth-form select,
+.auth-form textarea { width: 100%; box-sizing: border-box; color: var(--ink); background: var(--white); border: 1px solid var(--line); border-radius: 10px; }
+.auth-form select { min-height: 48px; padding: 0 14px; }
+.auth-form textarea { display: block; min-height: 96px; padding: 11px 14px; resize: vertical; line-height: 1.55; }
+.auth-form select:focus,
+.auth-form textarea:focus { border-color: var(--primary); outline: 3px solid rgba(37,99,235,.12); }
+.auth-profile-fields { display: grid; gap: 9px; margin: 8px 0; padding: 16px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; }
+.auth-profile-fields[hidden] { display: none; }
+.auth-profile-fields > .auth-subtitle { margin: 0 0 4px; }
+body[data-theme="dark"] .auth-profile-fields { background: #172437; border-color: #35445a; }
 .auth-consent { display: flex; align-items: flex-start; gap: 10px; margin-top: 5px; }
 .auth-form .auth-consent input[type="checkbox"] { flex: 0 0 auto; width: 18px; min-height: 18px; height: 18px; margin: 2px 0 0; padding: 0; }
 .auth-form .auth-consent label { margin: 0; font-size: 13px; font-weight: 500; line-height: 1.5; }
@@ -286,6 +296,14 @@ body[data-theme="dark"] .auth-google:hover { background: #28364b; }
 body[data-theme="dark"] .profile-avatar { color: #b5c9ff; background: #263c60; }
 body[data-theme="dark"] .profile-role { color: #9be0c3; background: #244d43; }
 body[data-theme="dark"] .profile-entry-icon { color: #c2b5ff; background: #3b315e; }
+@media (min-width: 761px) and (max-width: 860px) {
+  .auth-layout { grid-template-columns: 1fr; width: min(560px, calc(100% - 32px)); gap: 16px; padding-block: 28px 50px; }
+  .auth-intro { min-height: auto; padding: 26px; }
+  .auth-intro-copy { margin-block: 12px; }
+  .auth-intro h1 { font-size: 36px; }
+  .auth-benefits { grid-template-columns: 1fr; margin-top: 22px; }
+  .auth-panel { padding: 28px; }
+}
 @media (max-width: 760px) {
   .auth-layout { grid-template-columns: 1fr; width: min(560px, calc(100% - 32px)); gap: 16px; padding-block: 28px 50px; }
   .auth-intro { min-height: auto; padding: 26px; }
