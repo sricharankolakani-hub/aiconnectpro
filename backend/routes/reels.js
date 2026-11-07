@@ -88,6 +88,7 @@ router.get('/', auth, async (req, res) => {
     const limit = Number.isFinite(limitValue) ? Math.min(50, Math.max(1, limitValue)) : 20;
     const offset = Number.isFinite(offsetValue) ? Math.max(0, offsetValue) : 0;
 
+    let connectionIds = [];
     let query = supabase.from('reels').select('*')
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
@@ -100,7 +101,7 @@ router.get('/', auth, async (req, res) => {
         .or(`sender_id.eq.${req.user.id},recipient_id.eq.${req.user.id}`)
         .limit(5000);
       if (connectionsError) return res.status(500).json({ error: 'connections_lookup_failed' });
-      const connectionIds = [...new Set((connectionRows || []).map(row =>
+      connectionIds = [...new Set((connectionRows || []).map(row =>
         row.sender_id === req.user.id ? row.recipient_id : row.sender_id
       ).filter(Boolean))];
       const visibleFilters = [`visibility.eq.public`, `user_id.eq.${req.user.id}`];
@@ -115,6 +116,13 @@ router.get('/', auth, async (req, res) => {
     const reels = rows || [];
     const ids = reels.map(row => row.id);
     if (!ids.length) return res.json({ reels: [] });
+
+    const authorIds = [...new Set(reels.map(row => row.user_id).filter(Boolean))];
+    const { data: authorProfiles, error: authorProfilesError } = await supabase.from('profiles')
+      .select('id, full_name, company_name, discoverable')
+      .in('id', authorIds);
+    if (authorProfilesError) return res.status(500).json({ error: 'author_lookup_failed' });
+    const authorsById = new Map((authorProfiles || []).map(profile => [profile.id, profile]));
 
     const [likesResult, commentsResult, sharesResult] = await Promise.all([
       supabase.from('reel_likes').select('reel_id, user_id').in('reel_id', ids),
@@ -133,6 +141,8 @@ router.get('/', auth, async (req, res) => {
       return {
         ...await withSignedMedia(reel),
         is_owner: reel.user_id === req.user.id,
+        author_name: authorsById.get(reel.user_id)?.full_name || authorsById.get(reel.user_id)?.company_name || 'AIConnectPro member',
+        author_profile_available: reel.user_id === req.user.id || Boolean(authorsById.get(reel.user_id)?.discoverable) || connectionIds.includes(reel.user_id),
         like_count: likes.length,
         comment_count: comments.length,
         share_count: shares.length,
