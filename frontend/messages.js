@@ -15,15 +15,28 @@ let currentMessages = [];
 let threadRefreshInFlight = false;
 let inboxRefreshInFlight = false;
 let lastInboxRefreshAt = 0;
+let inboxHasLoaded = false;
+let threadHasLoaded = false;
 let knownUnreadCounts = null;
 let toastTimer = null;
 const profilePhotoCache = new Map();
 
 async function api(path, options = {}) {
-  const response = await fetch('/api/messages' + path, {
-    ...options,
-    headers: { Authorization: 'Bearer ' + token, ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...options.headers }
-  });
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+  let response;
+  try {
+    response = await fetch('/api/messages' + path, {
+      ...options,
+      signal: controller.signal,
+      headers: { Authorization: 'Bearer ' + token, ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...options.headers }
+    });
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error('This is taking longer than expected. Check your connection and try again.');
+    throw new Error('Could not reach the messaging service. Check your connection and try again.');
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     const error = new Error(data.error || 'Could not complete this request.');
@@ -38,6 +51,17 @@ function el(tag, className, value) {
   if (className) node.className = className;
   if (value !== undefined) node.textContent = value;
   return node;
+}
+
+function renderRetryState(container, message, onRetry) {
+  const state = el('div', 'message-load-state');
+  state.setAttribute('role', 'status');
+  state.append(el('p', 'message-empty', message));
+  const retry = el('button', 'button', 'Try again');
+  retry.type = 'button';
+  retry.addEventListener('click', onRetry);
+  state.append(retry);
+  container.replaceChildren(state);
 }
 
 function initials(name) {
@@ -257,7 +281,12 @@ async function loadInbox({ notifyIncoming = false } = {}) {
   try {
     const data = await api('');
     renderInbox(data.conversations || [], { notifyIncoming });
+    inboxHasLoaded = true;
     lastInboxRefreshAt = Date.now();
+  } catch (error) {
+    status.textContent = 'Could not refresh conversations. ' + error.message;
+    if (!inboxHasLoaded) renderRetryState(inbox, 'Could not load your conversations. ' + error.message, () => loadInbox().catch(() => {}));
+    throw error;
   } finally {
     inboxRefreshInFlight = false;
   }
@@ -288,7 +317,21 @@ async function openThread(peerId) {
       if (incomingCount) showIncomingToast(data.peer.full_name, incomingCount);
     }
     form.hidden = false;
+    threadHasLoaded = true;
     renderMessages(nextMessages, { scrollToBottom: isNewConversation });
+  } catch (error) {
+    status.textContent = 'Could not open this conversation. ' + error.message;
+    if (activePeer !== peerId || !threadHasLoaded) {
+      activePeer = null;
+      currentMessages = [];
+      threadHasLoaded = false;
+      form.hidden = true;
+      const peerAvatar = document.getElementById('peer-avatar');
+      peerAvatar.hidden = true;
+      document.getElementById('peer-name').textContent = 'Conversation unavailable';
+      renderRetryState(thread, error.message + ' You can try again.', () => openThread(peerId).catch(() => {}));
+    }
+    throw error;
   } finally {
     threadRefreshInFlight = false;
   }
@@ -370,11 +413,16 @@ async function initialize() {
     user = await getUser();
     if (!user) return window.location.replace('login.html');
     const peerId = new URLSearchParams(window.location.search).get('user');
+    if (peerId) {
+      document.getElementById('peer-name').textContent = 'Loading conversation…';
+      thread.replaceChildren(el('p', 'message-empty', 'Loading your conversation…'));
+    }
     const tasks = [loadInbox()];
     if (peerId) tasks.push(openThread(peerId));
     await Promise.all(tasks);
   } catch (error) {
-    status.textContent = error.status === 401 ? 'Your session expired. Please sign in again.' : 'Could not load messages. Please try refreshing.';
+    status.textContent = error.status === 401 ? 'Your session expired. Please sign in again.' : 'Could not load messages. Please try again.';
+    if (!inboxHasLoaded) renderRetryState(inbox, 'Could not load your conversations. Check your connection and try again.', () => window.location.reload());
     if (error.status === 401) window.location.replace('login.html');
   }
 }
