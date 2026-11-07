@@ -59,3 +59,10 @@ video.reel-media{height:auto}
 body[data-theme=dark] #report-dialog{color:var(--ink);background:#1b2738;border-color:#46566e}
 body[data-theme=dark] #report-dialog select,body[data-theme=dark] #report-dialog textarea{color:var(--ink);background:#101a29;border-color:#46566e}
 @media(max-width:520px){#report-dialog .reel-actions{align-items:stretch;flex-direction:column-reverse}#report-dialog .reel-action{width:100%}}
+
+
+/* Capsules title and subtitle */
+.capsules-subtitle { margin: -2px 0 10px; color: var(--primary); font-size: 1rem; font-weight: 750; letter-spacing: .01em; }
+.capsule-subtitle { margin: -3px 0 8px !important; color: var(--primary); font-size: 12px !important; font-weight: 750; letter-spacing: .03em; }
+body[data-theme="dark"] .capsules-subtitle,
+body[data-theme="dark"] .capsule-subtitle { color: #c4a876; }
