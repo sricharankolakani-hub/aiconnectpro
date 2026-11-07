@@ -1181,3 +1181,14 @@ body[data-theme="dark"] .feed-delete { color: #b9c4d5; border-color: #3a465a; }
   .feed-composer-footer { align-items: stretch; flex-direction: column; }
   .feed-composer-footer > div { width: 100%; }
 }
+
+
+/* Reactions on professional feed posts */
+.feed-post-actions { display: flex; justify-content: flex-start; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+.feed-reaction { min-height: 36px; padding: 6px 11px; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.feed-reaction:hover { color: var(--primary); background: rgba(37,99,235,.06); }
+.feed-reaction[aria-pressed="true"] { color: var(--primary); background: rgba(37,99,235,.09); }
+.feed-reaction:disabled { opacity: .6; cursor: wait; }
+body[data-theme="dark"] .feed-post-actions { border-top-color: #354156; }
+body[data-theme="dark"] .feed-reaction:hover,
+body[data-theme="dark"] .feed-reaction[aria-pressed="true"] { color: #b9ceff; background: rgba(125,166,255,.12); }

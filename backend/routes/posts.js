@@ -8,6 +8,16 @@ const POST_TYPES = new Set(['update', 'milestone', 'business', 'learning']);
 const POST_VISIBILITY = new Set(['private', 'connections']);
 const MAX_POSTS = 30;
 
+async function canViewPost(post, userId) {
+  if (post.author_id === userId) return true;
+  if (post.visibility !== 'connections') return false;
+  const { data, error } = await supabase.from('connection_requests')
+    .select('id').eq('status', 'accepted')
+    .or(`and(sender_id.eq.${userId},recipient_id.eq.${post.author_id}),and(sender_id.eq.${post.author_id},recipient_id.eq.${userId})`)
+    .limit(1).maybeSingle();
+  return !error && Boolean(data);
+}
+
 router.use(auth);
 
 router.get('/', async (req, res) => {
@@ -61,11 +71,31 @@ router.get('/', async (req, res) => {
       return res.status(500).json({ error: 'feed_lookup_failed' });
     }
     const names = new Map((profileResult.data || []).map(profile => [profile.id, profile.full_name]));
+    const postIds = posts.map(post => post.id);
+    const { data: reactions, error: reactionError } = postIds.length
+      ? await supabase.from('post_reactions').select('post_id, user_id').in('post_id', postIds)
+      : { data: [], error: null };
+    if (reactionError) {
+      console.error('Professional feed reactions lookup failed', reactionError);
+      return res.status(500).json({ error: 'feed_lookup_failed' });
+    }
+    const reactionsByPost = new Map();
+    for (const reaction of reactions || []) {
+      const current = reactionsByPost.get(reaction.post_id) || { count: 0, viewers: new Set() };
+      current.count += 1;
+      current.viewers.add(reaction.user_id);
+      reactionsByPost.set(reaction.post_id, current);
+    }
     return res.json({
-      posts: posts.map(post => ({
-        ...post,
-        author_name: names.get(post.author_id) || 'AIConnectPro member'
-      }))
+      posts: posts.map(post => {
+        const reaction = reactionsByPost.get(post.id);
+        return {
+          ...post,
+          author_name: names.get(post.author_id) || 'AIConnectPro member',
+          reaction_count: reaction?.count || 0,
+          viewer_reacted: Boolean(reaction?.viewers.has(userId))
+        };
+      })
     });
   } catch (error) {
     console.error('Professional feed lookup failed', error);
@@ -104,6 +134,40 @@ router.post('/', async (req, res) => {
   } catch (error) {
     console.error('Professional post creation failed', error);
     return res.status(500).json({ error: 'post_create_failed' });
+  }
+});
+
+router.put('/:id([0-9a-fA-F-]{36})/reaction', async (req, res) => {
+  const reacted = req.body?.reacted;
+  if (typeof reacted !== 'boolean') return res.status(400).json({ error: 'invalid_reaction_state' });
+  try {
+    const { data: post, error: postError } = await supabase.from('posts')
+      .select('id, author_id, visibility').eq('id', req.params.id).maybeSingle();
+    if (postError) {
+      console.error('Post reaction lookup failed', postError);
+      return res.status(500).json({ error: 'reaction_update_failed' });
+    }
+    if (!post || !(await canViewPost(post, req.user.id))) return res.status(404).json({ error: 'post_not_found' });
+
+    const change = reacted
+      ? await supabase.from('post_reactions').upsert({ post_id: post.id, user_id: req.user.id }, { onConflict: 'post_id,user_id', ignoreDuplicates: true })
+      : await supabase.from('post_reactions').delete().eq('post_id', post.id).eq('user_id', req.user.id);
+    if (change.error) {
+      console.error('Post reaction update failed', change.error);
+      return res.status(500).json({ error: 'reaction_update_failed' });
+    }
+    const [{ count, error: countError }, { data: viewer, error: viewerError }] = await Promise.all([
+      supabase.from('post_reactions').select('post_id', { count: 'exact', head: true }).eq('post_id', post.id),
+      supabase.from('post_reactions').select('post_id').eq('post_id', post.id).eq('user_id', req.user.id).maybeSingle()
+    ]);
+    if (countError || viewerError) {
+      console.error('Post reaction count lookup failed', countError || viewerError);
+      return res.status(500).json({ error: 'reaction_update_failed' });
+    }
+    return res.json({ reaction_count: count || 0, viewer_reacted: Boolean(viewer) });
+  } catch (error) {
+    console.error('Post reaction update failed', error);
+    return res.status(500).json({ error: 'reaction_update_failed' });
   }
 });
 
