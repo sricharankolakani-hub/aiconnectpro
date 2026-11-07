@@ -62,8 +62,17 @@ async function profilePhotoUrl(peerId) {
   return cacheEntry.promise;
 }
 
+const inboxPhotoObserver = 'IntersectionObserver' in window
+  ? new IntersectionObserver(entries => entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        inboxPhotoObserver.unobserve(entry.target);
+        loadPeerPhoto(entry.target, entry.target.dataset.peerId, entry.target.dataset.peerName || 'Member');
+      }
+    }), { rootMargin: '180px' })
+  : null;
+
 function loadPeerPhoto(container, peerId, name) {
-  if (container.dataset.photoLoadedFor === peerId) return;
+  if (!peerId || container.dataset.photoLoadedFor === peerId) return;
   profilePhotoUrl(peerId).then(url => {
     if (!container.isConnected || container.dataset.peerId !== peerId) return;
     if (!url) {
@@ -192,9 +201,11 @@ function renderInbox(rows, { notifyIncoming = false } = {}) {
     const latest = item.latest_message;
     const preview = latest?.sender_id === user.id ? 'You: ' + latest.body : (latest?.body || 'Start a conversation');
     copy.append(el('span', 'inbox-preview', preview));
+    avatar.dataset.peerName = item.peer.full_name;
     link.append(avatar, copy);
     inbox.append(link);
-    loadPeerPhoto(avatar, item.peer.id, item.peer.full_name);
+    if (inboxPhotoObserver) inboxPhotoObserver.observe(avatar);
+    else loadPeerPhoto(avatar, item.peer.id, item.peer.full_name);
   }
 }
 
