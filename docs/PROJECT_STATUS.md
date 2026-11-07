@@ -27,6 +27,7 @@ These capabilities are represented in the current repository; the status review 
 - Jobs, applications, and employer access through separate organization records and memberships.
 - Manual organization verification. GST/address details are collected, but a submission is not treated as verified by itself.
 - Discoverable profiles, connection requests, direct messages, delivered/seen receipts, and in-app notifications.
+- Private-by-default professional updates that members can keep visible only to themselves or share with accepted connections. Owners can delete their posts; account export and account deletion include posts.
 - Reels with media, likes, comments, shares, and member reports, plus administrator review pages.
 - Account export and deletion flows.
 
@@ -54,7 +55,7 @@ Current items intentionally deferred until a funded option is available: paid SM
 
 1. Keep the Vercel production rewrite pointed at `aiconnectpro-backend.onrender.com`.
 2. Confirm whether anyone still uses the two older Render service URLs before changing or deleting those services.
-3. Fix or clearly retire the legacy in-memory posts endpoint so it cannot be mistaken for persistent publishing.
+3. Add post editing, reactions, comments, and post-specific reports before expanding the audience beyond the author and accepted connections.
 4. Monitor database use and add only indexes justified by query patterns and growth.
 5. Revisit the deferred paid integrations only when a budget and provider are approved.
 

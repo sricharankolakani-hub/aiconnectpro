@@ -59,6 +59,40 @@
       </div>
     </section>
 
+    <section class="section-wrap home-feed" id="professional-feed" hidden aria-labelledby="professional-feed-title">
+      <div class="shell home-feed-inner">
+        <div class="section-heading">
+          <div><p class="eyebrow">YOUR NETWORK</p><h2 id="professional-feed-title">Professional updates</h2></div>
+          <p>Share a useful update with your connections. Posts start private, and you choose the audience each time.</p>
+        </div>
+        <form class="feed-composer" id="post-composer">
+          <label for="post-type">Update type</label>
+          <select id="post-type" name="type">
+            <option value="update">Professional update</option>
+            <option value="milestone">Career milestone</option>
+            <option value="business">Business update</option>
+            <option value="learning">Learning insight</option>
+          </select>
+          <label for="post-title">Headline <span class="feed-optional">(optional)</span></label>
+          <input id="post-title" name="title" type="text" maxlength="160" placeholder="Add a short headline">
+          <label for="post-body">Your update</label>
+          <textarea id="post-body" name="body" rows="4" maxlength="3000" required placeholder="Share something useful with your professional network."></textarea>
+          <div class="feed-composer-footer">
+            <div>
+              <label for="post-visibility">Who can see this?</label>
+              <select id="post-visibility" name="visibility">
+                <option value="private">Only me</option>
+                <option value="connections">My connections</option>
+              </select>
+            </div>
+            <button class="button button-primary" id="publish-post" type="submit">Share update <span aria-hidden="true">→</span></button>
+          </div>
+          <p id="professional-feed-status" class="feed-status" role="status" aria-live="polite"></p>
+        </form>
+        <div class="feed-post-list" id="feed-post-list" aria-live="polite"></div>
+      </div>
+    </section>
+
     <section class="section-wrap">
       <div class="shell">
         <div class="section-heading">
@@ -157,5 +191,6 @@
 
 
   </script>
+  <script type="module" src="home-feed.js"></script>
 </body>
 </html>
