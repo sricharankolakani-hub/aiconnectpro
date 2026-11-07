@@ -27,7 +27,7 @@ These capabilities are represented in the current repository; the status review 
 - Jobs, applications, and employer access through separate organization records and memberships.
 - Manual organization verification. GST/address details are collected, but a submission is not treated as verified by itself.
 - Discoverable profiles, connection requests, direct messages, delivered/seen receipts, and in-app notifications.
-- Private-by-default professional updates that members can keep visible only to themselves or share with accepted connections. Owners can delete their posts; members who can view a post can add or remove a reaction. Account export includes authored posts and reactions; account deletion cascades both.
+- Private-by-default professional updates that members can keep visible only to themselves or share with accepted connections. Owners can delete their posts; members who can view a post can add or remove reactions and comment. Comment authors can delete their comments. Account export includes authored posts, reactions, and comments; account deletion cascades both.
 - Reels with media, likes, comments, shares, and member reports, plus administrator review pages.
 - Account export and deletion flows.
 
@@ -39,7 +39,7 @@ The first administrator role is managed in Supabase `app_metadata.roles`; it mus
 - **Automated business verification:** No GST verification provider is configured, so organization approval stays manual.
 - **Calls:** Reliable calling needs a TURN relay. No calling service is configured.
 - **AI assistant:** Live AI requires an `OPENAI_API_KEY`; otherwise the backend returns a mock response.
-- **Professional feed:** Posts and reactions persist in Supabase. Editing, comments, and post-specific reports are not implemented yet; the feed audience remains limited to the author and accepted connections.
+- **Professional feed:** Posts and reactions persist in Supabase. Editing and post-specific reports are not implemented yet; the feed audience remains limited to the author and accepted connections.
 - **Automated checks:** The backend package currently has start/dev scripts but no test or lint script. No comprehensive automated release check is present.
 - **Supabase advisories:** Leaked-password screening is disabled and is not included in the Free plan. The database advisor also reports unindexed foreign keys and unused indexes. Only add indexes that match actual query patterns; several flagged foreign keys are not used as query filters today.
 - **RLS notes:** The advisor reports RLS enabled without policies on backend-managed tables. The repository migration describes backend-only access. Keep browser table access revoked and never expose the service-role key. Revisit policies if browser code starts querying those tables directly.
@@ -55,7 +55,7 @@ Current items intentionally deferred until a funded option is available: paid SM
 
 1. Keep the Vercel production rewrite pointed at `aiconnectpro-backend.onrender.com`.
 2. Confirm whether anyone still uses the two older Render service URLs before changing or deleting those services.
-3. Add post editing, comments, and post-specific reports before expanding the audience beyond the author and accepted connections.
+3. Add post editing and post-specific reports before expanding the audience beyond the author and accepted connections.
 4. Monitor database use and add only indexes justified by query patterns and growth.
 5. Revisit the deferred paid integrations only when a budget and provider are approved.
 
