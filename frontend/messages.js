@@ -72,14 +72,24 @@ const inboxPhotoObserver = 'IntersectionObserver' in window
     }), { rootMargin: '180px' })
   : null;
 
-function loadPeerPhoto(container, peerId, name) {
-  if (!peerId || container.dataset.photoLoadedFor === peerId) return;
-  profilePhotoUrl(peerId).then(url => {
+function loadPeerPhoto(container, peerId, name, retry = 0) {
+  if (!peerId || container.dataset.photoLoadedFor === peerId || container.dataset.photoRequestedFor === peerId) return;
+  container.dataset.photoRequestedFor = peerId;
+  const restoreInitials = () => {
     if (!container.isConnected || container.dataset.peerId !== peerId) return;
-    if (!url) {
-      container.dataset.photoLoadedFor = peerId;
+    if (retry < 1) {
+      profilePhotoCache.delete(peerId);
+      delete container.dataset.photoRequestedFor;
+      loadPeerPhoto(container, peerId, name, retry + 1);
       return;
     }
+    container.replaceChildren(document.createTextNode(initials(name)));
+    container.dataset.photoLoadedFor = peerId;
+    container.setAttribute('aria-hidden', 'true');
+  };
+  profilePhotoUrl(peerId).then(url => {
+    if (!container.isConnected || container.dataset.peerId !== peerId) return;
+    if (!url) return restoreInitials();
     const image = document.createElement('img');
     image.alt = name + ' profile photo';
     image.loading = 'lazy';
@@ -87,13 +97,23 @@ function loadPeerPhoto(container, peerId, name) {
     image.dataset.profilePhoto = 'true';
     image.addEventListener('load', () => {
       if (!container.isConnected || container.dataset.peerId !== peerId) return;
-      container.replaceChildren(image);
       container.dataset.photoLoadedFor = peerId;
       container.removeAttribute('aria-hidden');
       container.removeAttribute('aria-label');
     }, { once: true });
+    image.addEventListener('error', restoreInitials, { once: true });
     image.src = url;
-  });
+    container.replaceChildren(image);
+    if (image.complete) {
+      if (image.naturalWidth > 0) {
+        container.dataset.photoLoadedFor = peerId;
+        container.removeAttribute('aria-hidden');
+        container.removeAttribute('aria-label');
+      } else {
+        restoreInitials();
+      }
+    }
+  }).catch(restoreInitials);
 }
 
 function showIncomingToast(peerName, count = 1) {
@@ -255,6 +275,7 @@ async function openThread(peerId) {
       peerAvatar.hidden = false;
       peerAvatar.setAttribute('aria-hidden', 'true');
       delete peerAvatar.dataset.photoLoadedFor;
+      delete peerAvatar.dataset.photoRequestedFor;
       loadPeerPhoto(peerAvatar, peerId, data.peer.full_name);
     }
     const nextMessages = data.messages || [];
