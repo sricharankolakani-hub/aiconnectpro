@@ -83,3 +83,24 @@ body[data-theme="dark"] #edit-dialog { color: var(--ink); background: #1b2738; b
 body[data-theme="dark"] #edit-form input, body[data-theme="dark"] #edit-form textarea, body[data-theme="dark"] #edit-form select { color: var(--ink); background: #101a29; border-color: #46566e; }
 body[data-theme="dark"] .reel-visibility-badge { border-color: #46566e; }
 @media(max-width:520px) { #edit-form .reel-actions { align-items: stretch; flex-direction: column-reverse; } #edit-form .reel-action { width: 100%; } }
+
+
+/* Capsule author first feed cards */
+.reel-post{padding:clamp(1rem,2.4vw,1.35rem);border-radius:20px;box-shadow:0 8px 24px rgba(15,23,42,.055);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.reel-post:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(15,23,42,.09);border-color:color-mix(in srgb,var(--primary) 28%,var(--line))}
+.reel-author{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;min-width:0}
+.reel-author-avatar{display:grid;place-items:center;width:2.8rem;height:2.8rem;flex:none;border-radius:50%;background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 18%,var(--white)),color-mix(in srgb,var(--primary) 7%,var(--paper)));color:var(--primary);font-size:.88rem;font-weight:800;letter-spacing:.02em}
+.reel-author-details{display:grid;gap:.15rem;min-width:0;flex:1}
+.reel-author-name{width:fit-content;max-width:100%;overflow:hidden;color:var(--ink);font-size:.94rem;font-weight:750;text-decoration:none;text-overflow:ellipsis;white-space:nowrap}
+a.reel-author-name:hover{color:var(--primary);text-decoration:underline;text-underline-offset:3px}
+.reel-author-name:focus-visible{outline:3px solid color-mix(in srgb,var(--primary) 35%,transparent);outline-offset:3px;border-radius:4px}
+.reel-post-time{color:var(--muted);font-size:.74rem}
+.reel-title{margin:0 0 .55rem;font-size:1.15rem;line-height:1.35;letter-spacing:-.025em}
+.reel-author .reel-visibility-badge{margin-left:auto;align-self:center}
+.reel-actions{gap:.45rem}
+.feed-card .reel-list{gap:1rem}
+body[data-theme="dark"] .reel-post{box-shadow:0 10px 28px rgba(0,0,0,.16)}
+body[data-theme="dark"] .reel-post:hover{border-color:#53627f;box-shadow:0 16px 34px rgba(0,0,0,.25)}
+body[data-theme="dark"] .reel-author-avatar{background:linear-gradient(135deg,#29344b,#20293b);color:#d7c397}
+@media(max-width:560px){.reel-author{gap:.6rem}.reel-author-avatar{width:2.5rem;height:2.5rem}.reel-author .reel-visibility-badge{font-size:.65rem;padding:.22rem .45rem}}
+@media(prefers-reduced-motion:reduce){.reel-post{transition:none}.reel-post:hover{transform:none}}
