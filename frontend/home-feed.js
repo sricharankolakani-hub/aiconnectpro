@@ -103,7 +103,18 @@ async function loadFeed(currentUserId) {
   loading.className = 'feed-empty';
   loading.textContent = 'Loading your updates…';
   postList.append(loading);
-  const { posts = [] } = await api('/');
+  let posts = [];
+  try {
+    const response = await api('/');
+    posts = response.posts || [];
+  } catch (error) {
+    postList.replaceChildren();
+    const failed = document.createElement('p');
+    failed.className = 'feed-empty';
+    failed.textContent = error.message || 'Your updates could not be loaded.';
+    postList.append(failed);
+    throw error;
+  }
   postList.replaceChildren();
   if (!posts.length) {
     const empty = document.createElement('p');
@@ -136,7 +147,7 @@ form.addEventListener('submit', async event => {
       body: JSON.stringify({ type, title, body, visibility })
     });
     form.reset();
-    setStatus(visibility === 'private' ? 'Saved privately to your profile.' : 'Shared with your connections.');
+    setStatus(visibility === 'private' ? 'Saved privately. Only you can see this update.' : 'Shared with your connections.');
     await loadFeed(currentUser.id);
   } catch (error) {
     setStatus(error.message || 'Your update could not be shared. Please try again.', true);
