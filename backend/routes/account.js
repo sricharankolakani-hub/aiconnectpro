@@ -64,7 +64,7 @@ router.get('/export', auth, async (req, res) => {
     const [
       profiles, privateDetails, resumes, reels, likes, comments, shares,
       applications, jobs, accessRequests, memberships, connectionRequests,
-      conversations, reportsFiled, posts, postReactions
+      conversations, reportsFiled, posts, postReactions, postComments
     ] = await Promise.all([
       fetchAll(() => supabase.from('profiles').select('*').eq('id', userId)),
       fetchAll(() => supabase.from('profile_private_details').select('*').eq('user_id', userId)),
@@ -83,7 +83,8 @@ router.get('/export', auth, async (req, res) => {
         .or('member_a.eq.' + userId + ',member_b.eq.' + userId)),
       fetchAll(() => supabase.from('content_reports').select('*').eq('reporter_id', userId)),
       fetchAll(() => supabase.from('posts').select('*').eq('author_id', userId)),
-      fetchAll(() => supabase.from('post_reactions').select('*').eq('user_id', userId))
+      fetchAll(() => supabase.from('post_reactions').select('*').eq('user_id', userId)),
+      fetchAll(() => supabase.from('post_comments').select('*').eq('user_id', userId))
     ]);
 
     const conversationIds = conversations.map(row => row.id).filter(Boolean);
@@ -132,6 +133,7 @@ router.get('/export', auth, async (req, res) => {
       jobs_posted: jobs,
       feed_posts: posts,
       feed_post_reactions: postReactions,
+      feed_post_comments: postComments,
       employer_access_requests: accessRequests,
       organization_memberships: memberships,
       connection_requests: connectionRequests,
