@@ -1215,3 +1215,15 @@ body[data-theme="dark"] .feed-reaction[aria-pressed="true"] { color: #b9ceff; ba
   .feed-comment-form { align-items: stretch; flex-direction: column; }
   .feed-comment-form .button { align-self: flex-end; }
 }
+
+
+/* Tap-to-preview for profile photos wherever they appear */
+.profile-photo-previewable{cursor:zoom-in}
+.profile-photo-previewable:focus-visible{outline:3px solid var(--primary);outline-offset:4px;border-radius:50%}
+.profile-photo-viewer{width:min(620px,calc(100% - 28px));max-width:620px;max-height:calc(100% - 28px);padding:2.8rem 1.25rem 1.1rem;border:1px solid var(--line);border-radius:22px;background:var(--white);color:var(--ink);box-shadow:0 24px 80px rgba(15,23,42,.35)}
+.profile-photo-viewer::backdrop{background:rgba(10,17,29,.72);backdrop-filter:blur(4px)}
+.profile-photo-viewer img{display:block;max-width:100%;max-height:min(72vh,680px);margin:auto;border-radius:16px;object-fit:contain}
+.profile-photo-viewer p{margin:.9rem 0 0;text-align:center;font-weight:750}
+.profile-photo-viewer-close{position:absolute;top:.55rem;right:.65rem;width:2.2rem;height:2.2rem;border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--ink);font-size:1.4rem;line-height:1;cursor:pointer}
+body[data-theme="dark"] .profile-photo-viewer{background:#171c2b;border-color:#39435c;color:#edf0f8}
+body[data-theme="dark"] .profile-photo-viewer-close{background:#111626;color:#edf0f8;border-color:#39435c}
