@@ -372,8 +372,18 @@
     }
   }
 
+  function loadGlobalProfilePhotoViewer() {
+    if (document.querySelector('script[src$="profile-photo-viewer.js"]')) return;
+    const viewerScript = document.createElement('script');
+    viewerScript.src = 'profile-photo-viewer.js';
+    viewerScript.dataset.globalProfilePhotoViewer = 'true';
+    viewerScript.async = false;
+    document.head.append(viewerScript);
+  }
+
   applyTheme(initial);
   applyAppearance();
+  loadGlobalProfilePhotoViewer();
   document.addEventListener('DOMContentLoaded', () => {
     applyTheme(document.body.dataset.theme || initial);
     document.getElementById('theme-toggle')?.addEventListener('click', () => {

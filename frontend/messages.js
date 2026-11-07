@@ -16,7 +16,7 @@ let threadRefreshInFlight = false;
 let inboxRefreshInFlight = false;
 let lastInboxRefreshAt = 0;
 let knownUnreadCounts = null;
-let toastTimer = null;
+let toastTimer = null;\nconst profilePhotoCache = new Map();
 
 async function api(path, options = {}) {
   const response = await fetch('/api/messages' + path, {
@@ -41,6 +41,58 @@ function el(tag, className, value) {
 
 function initials(name) {
   return String(name || 'Member').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
+}
+
+async function profilePhotoUrl(peerId) {
+  const cached = profilePhotoCache.get(peerId);
+  if (cached && cached.expiresAt > Date.now()) return cached.promise;
+  const cacheEntry = { promise: null, expiresAt: Date.now() + 8 * 60 * 1000 };
+  cacheEntry.promise = fetch('/api/profile/' + encodeURIComponent(peerId), {
+    headers: { Authorization: 'Bearer ' + token }
+  }).then(async response => {
+    const profile = await response.json().catch(() => ({}));
+    const url = response.ok && typeof profile.avatar_url === 'string' ? profile.avatar_url : null;
+    cacheEntry.expiresAt = Date.now() + (url ? 8 * 60 * 1000 : 60 * 1000);
+    return url;
+  }).catch(() => {
+    cacheEntry.expiresAt = Date.now() + 60 * 1000;
+    return null;
+  });
+  profilePhotoCache.set(peerId, cacheEntry);
+  return cacheEntry.promise;
+}
+
+const inboxPhotoObserver = 'IntersectionObserver' in window
+  ? new IntersectionObserver(entries => entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        inboxPhotoObserver.unobserve(entry.target);
+        loadPeerPhoto(entry.target, entry.target.dataset.peerId, entry.target.dataset.peerName || 'Member');
+      }
+    }), { rootMargin: '180px' })
+  : null;
+
+function loadPeerPhoto(container, peerId, name) {
+  if (!peerId || container.dataset.photoLoadedFor === peerId) return;
+  profilePhotoUrl(peerId).then(url => {
+    if (!container.isConnected || container.dataset.peerId !== peerId) return;
+    if (!url) {
+      container.dataset.photoLoadedFor = peerId;
+      return;
+    }
+    const image = document.createElement('img');
+    image.alt = name + ' profile photo';
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    image.dataset.profilePhoto = 'true';
+    image.addEventListener('load', () => {
+      if (!container.isConnected || container.dataset.peerId !== peerId) return;
+      container.replaceChildren(image);
+      container.dataset.photoLoadedFor = peerId;
+      container.removeAttribute('aria-hidden');
+      container.removeAttribute('aria-label');
+    }, { once: true });
+    image.src = url;
+  });
 }
 
 function showIncomingToast(peerName, count = 1) {
@@ -134,6 +186,7 @@ function renderInbox(rows, { notifyIncoming = false } = {}) {
     link.setAttribute('aria-current', item.peer.id === activePeer ? 'true' : 'false');
 
     const avatar = el('span', 'inbox-avatar', initials(item.peer.full_name));
+    avatar.dataset.peerId = item.peer.id;
     avatar.setAttribute('aria-hidden', 'true');
     const copy = el('span', 'inbox-link-copy');
     const heading = el('span', 'inbox-link-head');
@@ -148,8 +201,11 @@ function renderInbox(rows, { notifyIncoming = false } = {}) {
     const latest = item.latest_message;
     const preview = latest?.sender_id === user.id ? 'You: ' + latest.body : (latest?.body || 'Start a conversation');
     copy.append(el('span', 'inbox-preview', preview));
+    avatar.dataset.peerName = item.peer.full_name;
     link.append(avatar, copy);
     inbox.append(link);
+    if (inboxPhotoObserver) inboxPhotoObserver.observe(avatar);
+    else loadPeerPhoto(avatar, item.peer.id, item.peer.full_name);
   }
 }
 
@@ -191,8 +247,15 @@ async function openThread(peerId) {
     const data = await api('/' + encodeURIComponent(peerId));
     activePeer = peerId;
     document.getElementById('peer-name').textContent = data.peer.full_name;
-    document.getElementById('peer-avatar').textContent = initials(data.peer.full_name);
-    document.getElementById('peer-avatar').setAttribute('aria-label', data.peer.full_name);
+    const peerAvatar = document.getElementById('peer-avatar');
+    if (isNewConversation) {
+      peerAvatar.replaceChildren(document.createTextNode(initials(data.peer.full_name)));
+      peerAvatar.dataset.peerId = peerId;
+      peerAvatar.hidden = false;
+      peerAvatar.setAttribute('aria-hidden', 'true');
+      delete peerAvatar.dataset.photoLoadedFor;
+      loadPeerPhoto(peerAvatar, peerId, data.peer.full_name);
+    }
     const nextMessages = data.messages || [];
     if (!isNewConversation) {
       const previousIds = new Set(currentMessages.map(message => message.id));

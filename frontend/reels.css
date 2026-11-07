@@ -107,10 +107,9 @@ body[data-theme="dark"] .reel-author-avatar{background:linear-gradient(135deg,#2
 
 
 /* Shared profile photo viewer */
-.reel-author-avatar{position:relative;padding:0;border:0;overflow:hidden;cursor:pointer}
-.reel-author-avatar:disabled{cursor:default}
+.reel-author-avatar{position:relative;padding:0;border:0;overflow:hidden}
 .reel-author-avatar img{display:block;width:100%;height:100%;object-fit:cover}
-.reel-author-avatar:not(:disabled):hover{box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 30%,transparent)}
+.reel-author-avatar img.profile-photo-previewable:hover{box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 30%,transparent)}
 .reel-author-avatar:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
 .profile-photo-dialog{position:relative;width:min(540px,calc(100% - 28px));max-width:540px;padding:2.75rem 1.25rem 1.1rem;border:1px solid var(--line);border-radius:22px;background:var(--white);color:var(--ink);box-shadow:0 24px 80px rgba(15,23,42,.35)}
 .profile-photo-dialog::backdrop{background:rgba(10,17,29,.72);backdrop-filter:blur(4px)}
