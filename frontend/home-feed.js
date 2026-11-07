@@ -104,7 +104,62 @@ function renderPost(post, currentUserId) {
   reaction.setAttribute('aria-label', (post.viewer_reacted ? 'Unlike' : 'Like') + ' this post. ' + (post.reaction_count || 0) + ' ' + (post.reaction_count === 1 ? 'reaction' : 'reactions') + '.');
   reaction.textContent = (post.viewer_reacted ? 'Liked' : 'Like') + ' · ' + (post.reaction_count || 0);
   footer.append(reaction);
-  card.append(header, title, body, footer);
+
+  const discussion = document.createElement('section');
+  discussion.className = 'feed-comments';
+  const discussionTitle = document.createElement('h4');
+  discussionTitle.textContent = 'Comments';
+  discussion.append(discussionTitle);
+  const commentList = document.createElement('div');
+  commentList.className = 'feed-comment-list';
+  for (const comment of post.comments || []) {
+    const item = document.createElement('article');
+    item.className = 'feed-comment';
+    const commentHeader = document.createElement('div');
+    commentHeader.className = 'feed-comment-header';
+    const commentAuthor = document.createElement('strong');
+    commentAuthor.textContent = comment.user_id === currentUserId ? 'You' : (comment.author_name || 'AIConnectPro member');
+    const commentTime = document.createElement('time');
+    commentTime.dateTime = comment.created_at;
+    commentTime.textContent = formatDate(comment.created_at);
+    commentHeader.append(commentAuthor, commentTime);
+    const commentBody = document.createElement('p');
+    commentBody.textContent = comment.body || '';
+    item.append(commentHeader, commentBody);
+    if (comment.user_id === currentUserId) {
+      const removeComment = document.createElement('button');
+      removeComment.className = 'feed-comment-delete';
+      removeComment.type = 'button';
+      removeComment.dataset.deleteComment = comment.id;
+      removeComment.textContent = 'Delete';
+      removeComment.setAttribute('aria-label', 'Delete your comment');
+      item.append(removeComment);
+    }
+    commentList.append(item);
+  }
+  if (!(post.comments || []).length) {
+    const noComments = document.createElement('p');
+    noComments.className = 'feed-comment-empty';
+    noComments.textContent = 'No comments yet.';
+    commentList.append(noComments);
+  }
+  const commentForm = document.createElement('form');
+  commentForm.className = 'feed-comment-form';
+  commentForm.dataset.commentForm = post.id;
+  const commentInput = document.createElement('textarea');
+  commentInput.name = 'body';
+  commentInput.rows = 2;
+  commentInput.maxLength = 1500;
+  commentInput.required = true;
+  commentInput.placeholder = 'Write a comment…';
+  commentInput.setAttribute('aria-label', 'Write a comment');
+  const commentSubmit = document.createElement('button');
+  commentSubmit.className = 'button button-outline';
+  commentSubmit.type = 'submit';
+  commentSubmit.textContent = 'Comment';
+  commentForm.append(commentInput, commentSubmit);
+  discussion.append(commentList, commentForm);
+  card.append(header, title, body, footer, discussion);
   return card;
 }
 
@@ -165,6 +220,46 @@ form.addEventListener('submit', async event => {
   } finally {
     publishButton.disabled = false;
     publishButton.innerHTML = 'Share update <span aria-hidden="true">→</span>';
+  }
+});
+
+postList.addEventListener('submit', async event => {
+  const form = event.target.closest('[data-comment-form]');
+  if (!form) return;
+  event.preventDefault();
+  const input = form.elements.body;
+  const body = input.value.trim();
+  if (!body) return;
+  const button = form.querySelector('button[type="submit"]');
+  button.disabled = true;
+  button.textContent = 'Sending…';
+  try {
+    await api('/' + encodeURIComponent(form.dataset.commentForm) + '/comments', {
+      method: 'POST',
+      body: JSON.stringify({ body })
+    });
+    setStatus('Your comment was added.');
+    await loadFeed(currentUser.id);
+  } catch (error) {
+    setStatus(error.message || 'Your comment could not be added. Please try again.', true);
+    button.disabled = false;
+    button.textContent = 'Comment';
+  }
+});
+
+postList.addEventListener('click', async event => {
+  const removeComment = event.target.closest('[data-delete-comment]');
+  if (!removeComment) return;
+  removeComment.disabled = true;
+  removeComment.textContent = 'Deleting…';
+  try {
+    await api('/comments/' + encodeURIComponent(removeComment.dataset.deleteComment), { method: 'DELETE' });
+    setStatus('Your comment was deleted.');
+    await loadFeed(currentUser.id);
+  } catch (error) {
+    setStatus(error.message || 'Your comment could not be deleted. Please try again.', true);
+    removeComment.disabled = false;
+    removeComment.textContent = 'Delete';
   }
 });
 
