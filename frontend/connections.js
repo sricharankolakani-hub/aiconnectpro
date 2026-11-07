@@ -31,6 +31,37 @@ function setStatus(message, error = false) {
   statusEl.dataset.state = error ? 'error' : '';
 }
 
+function initials(name) {
+  return String(name || 'AIConnectPro member').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
+}
+
+async function loadConnectionPhoto(avatar) {
+  if (avatar.dataset.photoRequested) return;
+  avatar.dataset.photoRequested = 'true';
+  try {
+    const response = await fetch('/api/profile/' + encodeURIComponent(avatar.dataset.userId), { headers });
+    const profile = await response.json().catch(() => ({}));
+    if (!response.ok || !profile.avatar_url) return;
+    const image = document.createElement('img');
+    image.alt = '';
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    image.addEventListener('load', () => avatar.replaceChildren(image), { once: true });
+    image.src = profile.avatar_url;
+  } catch {
+    // Keep the monogram when a profile photo is unavailable.
+  }
+}
+
+const avatarObserver = 'IntersectionObserver' in window
+  ? new IntersectionObserver(entries => entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        avatarObserver.unobserve(entry.target);
+        loadConnectionPhoto(entry.target);
+      }
+    }), { rootMargin: '180px' })
+  : null;
+
 function renderPersonList(containerId, rows, kind) {
   const list = document.getElementById(containerId);
   list.replaceChildren();
@@ -41,10 +72,16 @@ function renderPersonList(containerId, rows, kind) {
   for (const row of rows) {
     const person = row.user || row;
     const item = make('article', 'connection-row');
+    const displayName = person.full_name || 'AIConnectPro member';
     const copy = make('div', 'connection-person');
-    copy.append(make('strong', '', person.full_name || 'AIConnectPro member'));
-    if (person.company_name) copy.append(make('span', '', person.company_name));
+    const avatar = make('span', 'connection-person-avatar', initials(displayName));
+    avatar.dataset.userId = person.id;
+    const personCopy = make('div', 'connection-person-copy');
+    personCopy.append(make('strong', '', displayName));
+    if (person.company_name) personCopy.append(make('span', '', person.company_name));
+    copy.append(avatar, personCopy);
     item.append(copy);
+    if (avatarObserver) avatarObserver.observe(avatar);
     const actions = make('div', 'connection-actions');
     if (kind === 'discover' || kind === 'connected') {
       const profileLink = make('a', 'connection-message-link', 'View profile');
