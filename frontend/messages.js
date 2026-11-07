@@ -278,6 +278,7 @@ function renderMessages(rows, { scrollToBottom = false } = {}) {
 async function loadInbox({ notifyIncoming = false } = {}) {
   if (inboxRefreshInFlight) return;
   inboxRefreshInFlight = true;
+  inbox.setAttribute('aria-busy', 'true');
   try {
     const data = await api('');
     renderInbox(data.conversations || [], { notifyIncoming });
@@ -289,12 +290,14 @@ async function loadInbox({ notifyIncoming = false } = {}) {
     throw error;
   } finally {
     inboxRefreshInFlight = false;
+    inbox.setAttribute('aria-busy', 'false');
   }
 }
 
 async function openThread(peerId) {
   if (!peerId || threadRefreshInFlight) return;
   threadRefreshInFlight = true;
+  thread.setAttribute('aria-busy', 'true');
   const isNewConversation = activePeer !== peerId;
   try {
     const data = await api('/' + encodeURIComponent(peerId));
@@ -334,6 +337,7 @@ async function openThread(peerId) {
     throw error;
   } finally {
     threadRefreshInFlight = false;
+    thread.setAttribute('aria-busy', 'false');
   }
 }
 
