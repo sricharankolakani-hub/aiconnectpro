@@ -85,9 +85,9 @@
           <h3 id="jobsTitle">Job applications</h3>
           <div id="jobs" class="profile-list"><p class="profile-loading">Loading job activity…</p></div>
         </section>
-        <section class="profile-subsection" aria-labelledby="reels-title">
-          <h3 id="reels-title">My reels</h3>
-          <div id="reels" class="profile-list"><p class="profile-loading">Loading reels…</p></div>
+        <section class="profile-subsection" aria-labelledby="capsules-title">
+          <h3 id="capsules-title">My Capsules</h3>
+          <div id="reels" class="profile-list"><p class="profile-loading">Loading Capsules…</p></div>
         </section>
       </div>
     </section>
@@ -223,7 +223,7 @@
         const result = await getJson('/api/reels?mine=true');
         const rows = Array.isArray(result.reels) ? result.reels : [];
         if (!rows.length) {
-          showEmpty(container, 'No reels yet. Your shared career updates will appear here.');
+          showEmpty(container, 'No Capsules yet. Your shared career updates will appear here.');
           return;
         }
         container.replaceChildren();

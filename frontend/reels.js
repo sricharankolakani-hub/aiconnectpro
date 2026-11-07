@@ -66,7 +66,7 @@ function renderReel(reel) {
       media.playsInline = true;
       media.preload = 'metadata';
     } else {
-      media.alt = title || 'Reel attachment';
+      media.alt = title || 'Capsule attachment';
       media.loading = 'lazy';
     }
     card.append(media);
@@ -203,7 +203,7 @@ async function postReel(event) {
     if (uploadedPath) {
       try {
         const { error: cleanupError } = await supabase.storage.from('reel-media').remove([uploadedPath]);
-        if (cleanupError) console.warn('Unable to remove incomplete Reel upload', cleanupError);
+        if (cleanupError) console.warn('Unable to remove incomplete Capsule upload', cleanupError);
       } catch (cleanupError) {
         console.warn('Unable to remove incomplete Reel upload', cleanupError);
       }
@@ -265,13 +265,13 @@ async function loadAllComments(button) {
 async function shareReel(button) {
   const url = new URL('reels.html#reel-' + encodeURIComponent(button.dataset.id), window.location.href).toString();
   try {
-    if (navigator.share) await navigator.share({ title: 'AIConnectPro Reel', url });
+    if (navigator.share) await navigator.share({ title: 'AIConnectPro Capsule', url });
     else await navigator.clipboard.writeText(url);
     const result = await api('/reels/' + encodeURIComponent(button.dataset.id) + '/share', { method: 'POST' });
     button.textContent = 'Share · ' + result.share_count;
-    setStatus(feedStatus, navigator.share ? 'Reel shared.' : 'Reel link copied.');
+    setStatus(feedStatus, navigator.share ? 'Capsule shared.' : 'Capsule link copied.');
   } catch (error) {
-    if (error.name !== 'AbortError') setStatus(feedStatus, 'Could not share this Reel. ' + error.message, true);
+    if (error.name !== 'AbortError') setStatus(feedStatus, 'Could not share this Capsule. ' + error.message, true);
   }
 }
 
