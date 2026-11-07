@@ -59,8 +59,19 @@ function renderReel(reel) {
     : 'member-profile.html?user=' + encodeURIComponent(reel.user_id || '');
   const identity = node('header', 'reel-author');
   const initials = String(authorName).trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
-  const avatar = node('span', 'reel-author-avatar', initials);
-  avatar.setAttribute('aria-hidden', 'true');
+  const avatar = node('button', 'reel-author-avatar', initials);
+  avatar.type = 'button';
+  avatar.setAttribute('aria-label', 'View ' + authorName + '’s profile photo');
+  avatar.disabled = !reel.author_avatar_url;
+  if (reel.author_avatar_url) {
+    avatar.dataset.photoUrl = reel.author_avatar_url;
+    avatar.dataset.photoName = authorName;
+    const image = document.createElement('img');
+    image.src = reel.author_avatar_url;
+    image.alt = '';
+    image.loading = 'lazy';
+    avatar.replaceChildren(image);
+  }
   const authorDetails = node('div', 'reel-author-details');
   const author = reel.author_profile_available || reel.is_owner
     ? node('a', 'reel-author-name', authorName)
@@ -364,6 +375,15 @@ editForm.addEventListener('submit', async event => {
 byId('cancel-edit').addEventListener('click', () => editDialog.close());
 
 feedEl.addEventListener('click', event => {
+  const photo = event.target.closest('.reel-author-avatar[data-photo-url]');
+  if (photo) {
+    const dialog = byId('profile-photo-dialog');
+    byId('profile-photo-image').src = photo.dataset.photoUrl;
+    byId('profile-photo-image').alt = photo.dataset.photoName + ' profile photo';
+    byId('profile-photo-caption').textContent = photo.dataset.photoName;
+    dialog.showModal();
+    return;
+  }
   const report = event.target.closest('.report-btn');
   if (report) {
     byId('report-target-id').value = report.dataset.id;
@@ -408,6 +428,7 @@ byId('report-form').addEventListener('submit', async event => {
   }
 });
 byId('cancel-report').addEventListener('click', () => byId('report-dialog').close());
+byId('close-profile-photo').addEventListener('click', () => byId('profile-photo-dialog').close());
 
 feedEl.addEventListener('submit', async event => {
   const form = event.target.closest('.reel-comment-form');
