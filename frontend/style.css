@@ -1192,3 +1192,26 @@ body[data-theme="dark"] .feed-delete { color: #b9c4d5; border-color: #3a465a; }
 body[data-theme="dark"] .feed-post-actions { border-top-color: #354156; }
 body[data-theme="dark"] .feed-reaction:hover,
 body[data-theme="dark"] .feed-reaction[aria-pressed="true"] { color: #b9ceff; background: rgba(125,166,255,.12); }
+
+
+/* Comments on professional feed posts */
+.feed-comments { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.feed-comments h4 { margin: 0 0 10px; font-size: 13px; }
+.feed-comment-list { display: grid; gap: 9px; }
+.feed-comment { position: relative; padding: 10px 12px; background: rgba(100,116,139,.055); border: 1px solid var(--line); border-radius: 11px; }
+.feed-comment-header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 9px; }
+.feed-comment-header strong { font-size: 12px; }
+.feed-comment-header time { color: var(--muted); font-size: 11px; }
+.feed-comment p { margin: 5px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; line-height: 1.55; }
+.feed-comment-delete { margin-top: 6px; padding: 2px 0; color: var(--muted); background: transparent; border: 0; font-size: 11px; cursor: pointer; }
+.feed-comment-delete:hover { color: #b4232d; text-decoration: underline; }
+.feed-comment-empty { margin: 0; color: var(--muted); font-size: 12px; }
+.feed-comment-form { display: flex; align-items: end; gap: 9px; margin-top: 10px; }
+.feed-comment-form textarea { flex: 1; min-width: 0; min-height: 42px; padding: 9px 11px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 10px; resize: vertical; font: inherit; font-size: 13px; line-height: 1.4; }
+.feed-comment-form .button { min-height: 40px; padding-inline: 13px; }
+.feed-comment-form button:disabled,
+.feed-comment-delete:disabled { opacity: .6; cursor: wait; }
+@media (max-width: 420px) {
+  .feed-comment-form { align-items: stretch; flex-direction: column; }
+  .feed-comment-form .button { align-self: flex-end; }
+}
