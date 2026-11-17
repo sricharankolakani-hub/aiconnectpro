@@ -192,7 +192,7 @@ async function initialize() {
     await api('/api/admin/company-access-requests?status=pending');
     state.hidden = true;
     panel.hidden = false;
-    await loadQueue();
+    await Promise.all([loadQueue(), checkDatabaseReadiness()]);
   } catch (error) {
     showAccess(
       error.status === 401 ? 'Your session has expired' : 'Administrator access required',
