@@ -14,7 +14,7 @@ The live product name remains AIConnectPro. Do not rename the product or change 
 - **Backend:** Render service `aiconnectpro-backend`, Free plan, at https://aiconnectpro-backend.onrender.com. Its latest application deployment is live.
 - **Database and authentication:** Supabase project `yrjkkmvrmiieqozuvbqp` is Active/Healthy in ap-southeast-1.
 - **Health:** Production `/api/health` and `/api/ready` returned HTTP 200; readiness included the database dependency.
-- **Automated checks:** GitHub Actions Project checks passed for the latest account-export changes, including readiness and account-export tests.
+- **Automated checks:** GitHub Actions passed all 11 backend Node tests, including five new account-deletion safeguard cases, plus the project syntax check. The deletion tests cover policy guards; they do not execute a destructive deletion against production data.
 - **Release evidence:** See [MVP release readiness snapshot](MVP-RELEASE-READINESS-2026-11-17.md) for deployment, route sweep, production data counts, and EOD checks.
 
 Two older Render services (`aiconnectpro` and `aiconnectpro-1`) remain in the same workspace. Their recent deploy records show update failures and recent request-log checks found no traffic. They were left untouched because someone may still use their URLs. Confirm URL usage before suspending or deleting them.
