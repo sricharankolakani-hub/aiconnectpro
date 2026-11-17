@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/ready",
+      "destination": "https://aiconnectpro-backend.onrender.com/ready"
+    },
+    {
       "source": "/api/health",
       "destination": "https://aiconnectpro-backend.onrender.com/health"
     },
