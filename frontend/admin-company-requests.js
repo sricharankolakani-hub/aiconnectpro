@@ -6,6 +6,9 @@ const list = document.getElementById('request-list');
 const queueStatus = document.getElementById('queue-status');
 const requestCount = document.getElementById('request-count');
 const filter = document.getElementById('status-filter');
+const readinessPanel = document.getElementById('database-readiness');
+const readinessText = document.getElementById('database-readiness-text');
+const refreshReadinessButton = document.getElementById('refresh-readiness');
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -44,6 +47,24 @@ function showAccess(title, message, linkText, href) {
 function setQueueStatus(message, error = false) {
   queueStatus.textContent = message;
   queueStatus.classList.toggle('error', error);
+}
+
+async function checkDatabaseReadiness() {
+  refreshReadinessButton.disabled = true;
+  readinessPanel.dataset.state = 'checking';
+  readinessText.textContent = 'Checking connection…';
+  try {
+    const response = await fetch('/api/ready', { cache: 'no-store' });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || result.status !== 'ready') throw new Error('database_unavailable');
+    readinessPanel.dataset.state = 'ready';
+    readinessText.textContent = 'Database connected — request queue is available.';
+  } catch {
+    readinessPanel.dataset.state = 'unavailable';
+    readinessText.textContent = 'Database unavailable — request updates may fail. Try again shortly.';
+  } finally {
+    refreshReadinessButton.disabled = false;
+  }
 }
 
 function create(tag, className, text) {
@@ -153,7 +174,7 @@ async function decide(id, decision, approve, reject) {
     setQueueStatus(decision === 'approved'
       ? 'Organization approved. The employer can now publish using this organization.'
       : 'Request declined.');
-    await loadQueue();
+    await Promise.all([loadQueue(), checkDatabaseReadiness()]);
   } catch (error) {
     setQueueStatus(error.message || 'We could not update this request.', true);
     approve.disabled = reject.disabled = false;
@@ -171,7 +192,7 @@ async function initialize() {
     await api('/api/admin/company-access-requests?status=pending');
     state.hidden = true;
     panel.hidden = false;
-    await loadQueue();
+    await Promise.all([loadQueue(), checkDatabaseReadiness()]);
   } catch (error) {
     showAccess(
       error.status === 401 ? 'Your session has expired' : 'Administrator access required',
@@ -183,4 +204,5 @@ async function initialize() {
 }
 
 filter.addEventListener('change', loadQueue);
+refreshReadinessButton.addEventListener('click', checkDatabaseReadiness);
 initialize();
