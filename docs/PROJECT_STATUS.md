@@ -45,7 +45,7 @@ This is enough to confirm that the product has real accounts and some member act
 
 ## Known limits and owner checks
 
-- **Email delivery:** The owner previously received a verification email, but production delivery to a new, unrelated signup address is not yet confirmed. Supabase's default relay is limited and best-effort. A dependable public signup needs custom SMTP configured in Supabase and a fresh signup tested by the owner.
+- **Email delivery:** On 2026-11-17 the owner reported saving temporary Gmail SMTP settings in Supabase. Auth logs checked after that report showed no signup, OTP, or verification request, so delivery to an address outside the project team remains unverified. A fresh signup test is still required. Supabase's default relay is limited and best-effort.
 - **Phone OTP:** Not configured because no SMS provider is connected and no paid subscription is authorized.
 - **Automated company verification:** No GST verification provider is configured; review remains manual.
 - **Calls:** No reliable calling service or TURN relay is configured.
