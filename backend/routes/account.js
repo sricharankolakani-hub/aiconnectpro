@@ -63,8 +63,8 @@ router.get('/export', auth, async (req, res) => {
 
     const [
       profiles, privateDetails, resumes, reels, likes, comments, shares,
-      applications, jobs, accessRequests, memberships, connectionRequests,
-      conversations, reportsFiled, posts, postReactions, postComments
+      applications, jobs, accessRequests, organizations, memberships, connectionRequests,
+      conversations, notifications, reportsFiled, posts, postReactions, postComments
     ] = await Promise.all([
       fetchAll(() => supabase.from('profiles').select('*').eq('id', userId)),
       fetchAll(() => supabase.from('profile_private_details').select('*').eq('user_id', userId)),
@@ -76,11 +76,13 @@ router.get('/export', auth, async (req, res) => {
       fetchAll(() => supabase.from('applications').select('*').eq('user_id', userId)),
       fetchAll(() => supabase.from('jobs').select('*').eq('posted_by', userId)),
       fetchAll(() => supabase.from('company_access_requests').select('*').eq('requester_id', userId)),
+      fetchAll(() => supabase.from('organizations').select('*').eq('created_by', userId)),
       fetchAll(() => supabase.from('organization_memberships').select('*, organization:organizations(*)').eq('user_id', userId)),
       fetchAll(() => supabase.from('connection_requests').select('*')
         .or('sender_id.eq.' + userId + ',recipient_id.eq.' + userId)),
       fetchAll(() => supabase.from('direct_conversations').select('*')
         .or('member_a.eq.' + userId + ',member_b.eq.' + userId)),
+      fetchAll(() => supabase.from('notifications').select('*').eq('user_id', userId)),
       fetchAll(() => supabase.from('content_reports').select('*').eq('reporter_id', userId)),
       fetchAll(() => supabase.from('posts').select('*').eq('author_id', userId)),
       fetchAll(() => supabase.from('post_reactions').select('*').eq('user_id', userId)),
@@ -135,10 +137,12 @@ router.get('/export', auth, async (req, res) => {
       feed_post_reactions: postReactions,
       feed_post_comments: postComments,
       employer_access_requests: accessRequests,
+      organizations_created: organizations,
       organization_memberships: memberships,
       connection_requests: connectionRequests,
       conversations,
       messages,
+      notifications,
       reports_filed: reportsFiled,
       stored_files: downloads
     };
