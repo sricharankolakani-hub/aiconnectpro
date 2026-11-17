@@ -48,7 +48,7 @@ The product has no employer or job inventory yet. Do not create synthetic public
 
 ## Remaining launch gates
 
-1. **Email delivery:** Confirm production email uses a configured custom SMTP provider and verify a fresh signup end to end. Supabase’s default mail service is best-effort and is not a reliable production delivery plan. Configure SMTP in Supabase without sharing credentials in chat.
+1. **Email delivery:** The owner reported saving temporary Gmail SMTP settings on 2026-11-17. Supabase Auth logs checked after that report showed no signup, OTP, or verification request, so delivery to an address outside the project team remains unverified. Complete a fresh signup and confirm the code arrives. The Gmail sender is a temporary pilot setup.
 2. **Mobile OTP:** Not enabled because no SMS provider is configured and the owner has no budget for paid services. Signup copy explains the limitation. Revisit only when a no-cost provider or budget is available.
 3. **Real employer supply:** No company requests, organizations, or jobs exist in production. Invite a genuine employer, review the company documents, approve the organization, then publish a real listing.
 4. **Privacy and account operations:** The policy page is deployed. Before broad public launch, verify the published retention/deletion process and provide users a working account deletion/contact route.
