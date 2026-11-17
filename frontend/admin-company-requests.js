@@ -58,10 +58,10 @@ async function checkDatabaseReadiness() {
     const result = await response.json().catch(() => ({}));
     if (!response.ok || result.status !== 'ready') throw new Error('database_unavailable');
     readinessPanel.dataset.state = 'ready';
-    readinessText.textContent = 'Database connected — request queue is available.';
+    readinessText.textContent = 'Database connection is healthy. Request access is checked separately.';
   } catch {
     readinessPanel.dataset.state = 'unavailable';
-    readinessText.textContent = 'Database unavailable — request updates may fail. Try again shortly.';
+    readinessText.textContent = 'Database connection failed. Request reviews may be temporarily unavailable.';
   } finally {
     refreshReadinessButton.disabled = false;
   }
