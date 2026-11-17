@@ -1,67 +1,83 @@
 # AIConnectPro project status and no-cost roadmap
 
-Last reviewed: 2026-11-07
+Last reviewed: 2026-11-17 (Asia/Kolkata)
 
 ## Product direction
 
-AIConnectPro is a professional opportunity and networking workspace. The longer-term plan brings together career profiles and resumes, jobs and applications, networking, business and organization accounts, professional posts and Capsules, learning, and AI career help. Messaging is available; voice/video calling remains future work.
+AIConnectPro is a professional opportunity and networking workspace. The longer-term plan combines career profiles and resumes, jobs and applications, networking, organization accounts, professional updates and Capsules, learning, and AI career help. Messaging is available. Voice and video calling remain future work.
 
-The product name is still AIConnectPro in the live application. Do not rename the product or change branding without the owner's direction.
+The live product name remains AIConnectPro. Do not rename the product or change its branding without the owner's direction.
 
-## Current deployment
+## Production status
 
-- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest reviewed production deployment was Ready.
-- **Backend:** Render service `aiconnectpro-backend`, on the Free plan, serves the API at https://aiconnectpro-backend.onrender.com. The Vercel rewrite points to this service.
-- **Database and authentication:** Supabase project is Active/Healthy in ap-southeast-1. The backend uses the service-role key; keep that key server-side.
-- **Database changes:** The migration history contains the current account, profile, organization, messaging, notification, Capsule, and receipt schema changes. See `../supabase/migrations/`.
+- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest deployment is Ready.
+- **Backend:** Render service `aiconnectpro-backend`, Free plan, at https://aiconnectpro-backend.onrender.com. Its latest application deployment is live.
+- **Database and authentication:** Supabase project `yrjkkmvrmiieqozuvbqp` is Active/Healthy in ap-southeast-1.
+- **Health:** Production `/api/health` and `/api/ready` returned HTTP 200; readiness included the database dependency.
+- **Automated checks:** GitHub Actions Project checks passed for the latest account-export changes, including readiness and account-export tests.
+- **Release evidence:** See [MVP release readiness snapshot](MVP-RELEASE-READINESS-2026-11-17.md) for deployment, route sweep, production data counts, and EOD checks.
 
-Two older Render services also point at the same repository and backend directory. Their request metrics and request logs were empty for Nov 1–6, 2026, and their recent deploy records show update failures. They have not been removed because old URLs may still be in use.
+Two older Render services (`aiconnectpro` and `aiconnectpro-1`) remain in the same workspace. Their recent deploy records show update failures and recent request-log checks found no traffic. They were left untouched because someone may still use their URLs. Confirm URL usage before suspending or deleting them.
 
 ## Implemented capabilities
 
-These capabilities are represented in the current repository; the status review did not run a full end-to-end test of every flow.
+The current application includes:
 
-- Email/password signup and login, email verification codes, Google sign-in, and optional authenticator-app MFA.
-- Professional, student, and founder profile intents. Settings support editing profile details, privacy visibility, appearance, photos, and student/founder information.
-- Resume creation with template options and PDF download.
-- Jobs, applications, and employer access through separate organization records and memberships.
-- Manual organization verification. GST/address details are collected, but a submission is not treated as verified by itself.
-- Discoverable profiles, connection requests, direct messages, delivered/seen receipts, and in-app notifications.
-- Private-by-default professional updates that members can keep visible only to themselves or share with accepted connections. Owners can delete their posts; members who can view a post can add or remove reactions and comment. Comment authors can delete their comments. Account export includes authored posts, reactions, and comments; account deletion cascades both.
-- Capsules with media, likes, comments, shares, and member reports, plus administrator review pages. Signed-in members can scroll through all-member posts, posts shared with their accepted connections, and their own private posts. Authors can edit post text and choose one of those audiences.
-- Account export and deletion flows.
+- Email/password signup and login, email verification flow, Google sign-in, and optional authenticator-app MFA.
+- Member profile intents for professional, student, and founder accounts. Profile settings include profile details, visibility, appearance, and photo.
+- Resume creation with templates and PDF download.
+- Jobs and applications; employer access is separate from member profiles and depends on organization membership and approval.
+- Manual company review. GST/address evidence can be collected, but submitting it does not automatically verify a company.
+- Profile discovery, connection requests, direct messages, sent/delivered/seen indicators, and in-app notifications.
+- Professional updates with privacy controls, editing, reactions, comments, and account export/deletion support.
+- Capsules with media, likes, comments, shares, member reports, and administrator review. Members can browse posts shared with all members, accepted connections, or keep their own posts private; authors can change their post audience.
+- Account export and account deletion flows.
 
-The first administrator role is managed in Supabase `app_metadata.roles`; it must not be granted from browser-controlled `user_metadata`.
+Admin roles are managed through Supabase `app_metadata.roles` and server-side authorization. Never grant admin through browser-editable `user_metadata`.
 
-## Known limits
+## Production data and readiness
 
-- **Phone verification:** Email OTP is available. Phone OTP is not configured because no SMS provider is connected.
-- **Automated business verification:** No GST verification provider is configured, so organization approval stays manual.
-- **Calls:** Reliable calling needs a TURN relay. No calling service is configured.
-- **AI assistant:** Live AI requires an `OPENAI_API_KEY`; otherwise the backend returns a mock response.
-- **Professional update feed:** Posts, reactions, and comments persist in Supabase. Editing and post-specific reports are not implemented yet; update posts remain private to the author or shared with accepted connections.
-- **Automated checks:** The backend package currently has start/dev scripts but no test or lint script. No comprehensive automated release check is present.
-- **Supabase advisories:** Leaked-password screening is disabled and is not included in the Free plan. The database advisor also reports unindexed foreign keys and unused indexes. Only add indexes that match actual query patterns; several flagged foreign keys are not used as query filters today.
-- **RLS notes:** The advisor reports RLS enabled without policies on backend-managed tables. The repository migration describes backend-only access. Keep browser table access revoked and never expose the service-role key. Revisit policies if browser code starts querying those tables directly.
-- **Build warnings:** The last reviewed Render build logged old Puppeteer and UUID dependency warnings, plus no lockfile. The build completed successfully.
+The read-only production snapshot on 2026-11-17 contained 4 auth users, 3 profiles, 0 organizations, 0 employer requests, 0 jobs, 0 applications, 1 conversation, 20 messages, and 3 Capsules.
+
+This is enough to confirm that the product has real accounts and some member activity, but the jobs marketplace currently has no employer or job inventory. Do not create synthetic public companies or listings.
+
+**Current release level: controlled pilot.** Production pages and health checks are available, but this is not a fully stocked public marketplace and has not had every user journey independently verified end to end.
+
+## Known limits and owner checks
+
+- **Email delivery:** The owner previously received a verification email, but production delivery to a new, unrelated signup address is not yet confirmed. Supabase's default relay is limited and best-effort. A dependable public signup needs custom SMTP configured in Supabase and a fresh signup tested by the owner.
+- **Phone OTP:** Not configured because no SMS provider is connected and no paid subscription is authorized.
+- **Automated company verification:** No GST verification provider is configured; review remains manual.
+- **Calls:** No reliable calling service or TURN relay is configured.
+- **AI assistance:** Live AI requires a provider key. Without it, the backend uses its fallback response.
+- **First employer and job:** Production currently has no organization requests or jobs. A real employer must submit company evidence, receive manual review, and publish a genuine listing before testing the complete employer-to-application flow.
+- **Deletion/contact operations:** The privacy policy is deployed. Before broad promotion, the owner should confirm the published retention/deletion process and the working user contact/deletion route.
+- **Free-tier availability:** Supabase previously paused after inactivity, then was restored and verified healthy. Free tiers can pause or impose limits; check `/api/ready` if data-backed pages stop loading.
+
+## Security and maintenance
+
+- Supabase's security advisor reported backend-managed tables with RLS enabled and no policies. A read-only grant check found no table grants to `anon` or `authenticated`; the app accesses this data through the protected server API. Recheck before adding direct browser database access or changing grants.
+- Leaked-password protection is reported unavailable on the current Supabase Free plan and remains disabled.
+- Performance notices include unindexed foreign keys and unused indexes. At current low data volume these are informational; do not drop indexes or change production schema without query-plan review and a tested migration.
+- Keep the Supabase service-role key on the backend only. Never paste credentials or secret values into chat.
 
 ## No-cost operating rule
 
-Keep work within existing free allowances. Do not upgrade plans, enable paid providers, or add services that require payment without the owner's explicit approval. Free-tier quotas and limits still apply.
+Keep work within the existing free allowances. Do not upgrade plans or add a paid provider without the owner's explicit approval. SMS OTP, automated GST verification, reliable TURN calling, paid AI generation, and Supabase leaked-password screening are deferred until a free option or budget is approved.
 
-Current items intentionally deferred until a funded option is available: paid SMS delivery, paid GST verification, reliable TURN calling, paid AI API usage, and Supabase leaked-password screening.
+## Recommended order to reach a broader launch
 
-## Recommended next steps
-
-1. Keep the Vercel production rewrite pointed at `aiconnectpro-backend.onrender.com`.
-2. Confirm whether anyone still uses the two older Render service URLs before changing or deleting those services.
-3. Add post editing and post-specific reports before expanding the audience beyond the author and accepted connections.
-4. Monitor database use and add only indexes justified by query patterns and growth.
-5. Revisit the deferred paid integrations only when a budget and provider are approved.
+1. Configure custom SMTP in Supabase using a no-cost provider and a domain the owner controls; test a fresh signup to an unrelated address. Do not put SMTP credentials in chat.
+2. Have one genuine employer submit a company request; review evidence manually and approve only when appropriate.
+3. Publish a genuine job and complete the employer listing and member application flows.
+4. Verify account deletion/contact operations and privacy wording from a member account.
+5. Decide whether the two older Render service URLs are still used. Keep them until that is confirmed.
+6. Continue free-tier monitoring; defer SMS, automated verification, calls, and paid AI without budget approval.
 
 ## Review evidence
 
-- Repository overview: [README](../README.md).
-- Manual organization review: [employer and organization verification](employer-organization-verification.md).
-- Supabase project and security/performance advisors were checked on 2026-11-03.
-- Vercel, Render, and repository status were checked on 2026-11-07.
+- [README](../README.md).
+- [Employer and organization verification process](employer-organization-verification.md).
+- [MVP release readiness snapshot, 2026-11-17](MVP-RELEASE-READINESS-2026-11-17.md).
+- Production Vercel, Render, and Supabase status plus the backend health/readiness endpoints were checked on 2026-11-17.
+- Supabase security/performance advisories and grants were reviewed read-only on 2026-11-17.
