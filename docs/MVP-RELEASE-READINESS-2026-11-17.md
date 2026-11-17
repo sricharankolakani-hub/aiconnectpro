@@ -9,12 +9,12 @@ The deployed application is available for a controlled pilot. Core pages and bac
 
 ## Production evidence
 
-- Vercel production deployment is **READY** at commit `a65ed0e4a60e2975de90b802eba38249363a0497`.
-- Render service `aiconnectpro-backend` is **live** on the free plan at commit `a65ed0e4a60e2975de90b802eba38249363a0497`.
+- Vercel production deployment is **READY** at commit `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e`.
+- Render service `aiconnectpro-backend` is **live** on the free plan at commit `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e`.
 - Supabase project `yrjkkmvrmiieqozuvbqp` is **ACTIVE_HEALTHY**.
 - Production `/api/health` returned HTTP 200. `/api/ready` returned HTTP 200 with database readiness.
 - A production route sweep returned HTTP 200 for: home, login, signup, jobs, connections, messages, profile, resume builder, Capsules, settings, company access, both admin pages, post-job, and `privacy-policy.html`.
-- GitHub Actions Project checks passed for the account-export regression test (run 57). Vercel and Render are live on the same production commit.
+- GitHub Actions passed all 11 backend Node tests, including five account-deletion safeguard tests, plus the project syntax check. Vercel and Render are live on the same production commit. The deletion tests cover policy guards only; no destructive account deletion was run against production data.
 - The admin company-access page now shows database connectivity separately from request-queue status. Access remains server-side admin protected.
 
 ## Current production data snapshot
@@ -40,6 +40,7 @@ The product has no employer or job inventory yet. Do not create synthetic public
 - Member email/password and Google sign-in flows are present; email verification has been exercised by the owner previously.
 - Profile, resume, connections, messaging, Capsules, and employer access pages are deployed.
 - Account exports include notifications and organization records created by the member; this received a regression test in PR #75.
+- Account deletion safeguards for exact confirmation, recent sign-in, admin transfer, and reviewed-organization transfer are covered by five tests in PR #78.
 - Employer access is separate from a member profile. Job posting requires an approved organization membership.
 - Company verification is manual because no GST verification provider is configured.
 - Admin access is granted only through server-managed Supabase app metadata. Never grant admin through browser-editable user metadata.
@@ -65,7 +66,7 @@ The product has no employer or job inventory yet. Do not create synthetic public
 - [x] Production pages resolve and are served over HTTPS.
 - [x] Backend liveness and database readiness return healthy.
 - [x] Production frontend, backend, and database are active.
-- [x] Automated project checks pass for readiness and account-export changes.
+- [x] Automated project checks pass for readiness, account export, and account-deletion policy safeguards.
 - [x] No open pull requests remain after this release.
 - [ ] Owner confirms custom SMTP and completes a fresh email signup.
 - [ ] A real employer submits a request and is manually reviewed.
