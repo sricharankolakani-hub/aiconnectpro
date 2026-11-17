@@ -5,6 +5,7 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../services/supabaseClient');
 const auth = require('../middleware/authMiddleware');
+const { createAccountExportDocument } = require('../services/accountExportDocument');
 
 const PAGE_SIZE = 500;
 const RECENT_AUTH_SECONDS = 10 * 60;
@@ -113,39 +114,30 @@ router.get('/export', auth, async (req, res) => {
       };
     }));
 
-    const document = {
-      export_version: 1,
-      generated_at: new Date().toISOString(),
-      account: {
-        id: user.id,
-        email: user.email || null,
-        phone: user.phone || null,
-        created_at: user.created_at,
-        email_confirmed_at: user.email_confirmed_at || null,
-        user_metadata: user.user_metadata || {}
-      },
-      profile: profiles,
-      private_profile_details: privateDetails,
+    const document = createAccountExportDocument({
+      user,
+      profiles,
+      privateDetails,
       resumes,
       reels,
-      reel_likes: likes,
-      reel_comments: comments,
-      reel_shares: shares,
+      likes,
+      comments,
+      shares,
       applications,
-      jobs_posted: jobs,
-      feed_posts: posts,
-      feed_post_reactions: postReactions,
-      feed_post_comments: postComments,
-      employer_access_requests: accessRequests,
-      organizations_created: organizations,
-      organization_memberships: memberships,
-      connection_requests: connectionRequests,
+      jobs,
+      accessRequests,
+      organizations,
+      memberships,
+      connectionRequests,
       conversations,
       messages,
       notifications,
-      reports_filed: reportsFiled,
-      stored_files: downloads
-    };
+      reportsFiled,
+      posts,
+      postReactions,
+      postComments,
+      downloads
+    });
 
     res.set('Cache-Control', 'private, no-store');
     res.set('Content-Disposition', 'attachment; filename="aiconnectpro-data-export.json"');
