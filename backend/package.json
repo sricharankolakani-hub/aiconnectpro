@@ -10,7 +10,7 @@
     "start": "node server.js",
     "dev": "NODE_ENV=development node server.js",
     "check": "node scripts/check-project.cjs",
-    "test": "npm run check"
+    "test": "npm run check && node --test test/*.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.25.0",
