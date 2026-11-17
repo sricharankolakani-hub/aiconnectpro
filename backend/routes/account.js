@@ -6,6 +6,7 @@ const router = express.Router();
 const supabase = require('../services/supabaseClient');
 const auth = require('../middleware/authMiddleware');
 const { createAccountExportDocument } = require('../services/accountExportDocument');
+const { accountDeletionPreflight, organizationsRequiringTransfer } = require('../services/accountDeletionPolicy');
 
 const PAGE_SIZE = 500;
 const RECENT_AUTH_SECONDS = 10 * 60;
@@ -151,21 +152,15 @@ router.get('/export', auth, async (req, res) => {
 /** Permanently delete this member's own data after a recent authenticated sign-in. */
 router.delete('/', auth, async (req, res) => {
   const userId = req.user.id;
-  if (req.body?.confirmation !== 'DELETE') {
-    return res.status(400).json({ error: 'type_DELETE_to_confirm' });
-  }
-
-  const now = Math.floor(Date.now() / 1000);
-  if (!Number.isFinite(req.user.authTime) || req.user.authTime > now + 60
-      || now - req.user.authTime > RECENT_AUTH_SECONDS) {
-    return res.status(401).json({ error: 'recent_sign_in_required' });
-  }
-
-  if ((req.user.roles || []).includes('admin')) {
-    return res.status(409).json({
-      error: 'admin_transfer_required',
-      message: 'Transfer administrator access before deleting this account.'
-    });
+  const preflightError = accountDeletionPreflight({
+    confirmation: req.body?.confirmation,
+    authTime: req.user.authTime,
+    now: Math.floor(Date.now() / 1000),
+    roles: req.user.roles || []
+  }, RECENT_AUTH_SECONDS);
+  if (preflightError) {
+    const { status, ...body } = preflightError;
+    return res.status(status).json(body);
   }
 
   try {
@@ -173,7 +168,7 @@ router.delete('/', auth, async (req, res) => {
     // intact until its owner transfers it through the organization review flow.
     const organizations = await fetchAll(() => supabase.from('organizations')
       .select('id, verification_status').eq('created_by', userId));
-    const protectedOrganizations = organizations.filter(row => row.verification_status !== 'pending');
+    const protectedOrganizations = organizationsRequiringTransfer(organizations);
     if (protectedOrganizations.length) {
       return res.status(409).json({
         error: 'organization_transfer_required',
