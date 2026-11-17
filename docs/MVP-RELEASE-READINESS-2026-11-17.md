@@ -9,12 +9,12 @@ The deployed application is available for a controlled pilot. Core pages and bac
 
 ## Production evidence
 
-- Vercel production deployment is **READY** at commit `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e`.
+- The latest Vercel production deployment is **READY**. It includes the tested application code commit `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e` plus a later documentation-only update.
 - Render service `aiconnectpro-backend` is **live** on the free plan at commit `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e`.
 - Supabase project `yrjkkmvrmiieqozuvbqp` is **ACTIVE_HEALTHY**.
 - Production `/api/health` returned HTTP 200. `/api/ready` returned HTTP 200 with database readiness.
 - A production route sweep returned HTTP 200 for: home, login, signup, jobs, connections, messages, profile, resume builder, Capsules, settings, company access, both admin pages, post-job, and `privacy-policy.html`.
-- GitHub Actions passed all 11 backend Node tests, including five account-deletion safeguard tests, plus the project syntax check. Vercel and Render are live on the same production commit. The deletion tests cover policy guards only; no destructive account deletion was run against production data.
+- GitHub Actions passed all 11 backend Node tests, including five account-deletion safeguard tests, plus the project syntax check. The tested application code commit `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e` is live on Render and included in Vercel's Ready production deployment. The deletion tests cover policy guards only; no destructive account deletion was run against production data.
 - The admin company-access page now shows database connectivity separately from request-queue status. Access remains server-side admin protected.
 
 ## Current production data snapshot
