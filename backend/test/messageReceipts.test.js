@@ -19,7 +19,8 @@ function createSupabaseMock(results = [{ error: null }, { error: null }]) {
             neq(column, value) { call.filters.push(['neq', column, value]); return this; },
             is(column, value) {
               call.filters.push(['is', column, value]);
-              return new Promise(resolve => pending.push(() => resolve(results[pending.length - 1])));
+              const resultIndex = pending.length;
+              return new Promise(resolve => pending.push(() => resolve(results[resultIndex])));
             }
           };
         }
