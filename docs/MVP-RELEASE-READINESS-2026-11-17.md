@@ -9,12 +9,12 @@ The deployed application is available for a controlled pilot. Core pages and bac
 
 ## Production evidence
 
-- Vercel production deployment is **READY** at commit `8c5d64265abc7161b6c8a7dd03ef690fcefac8a3`.
-- Render service `aiconnectpro-backend` is **live** on the free plan at commit `d35bcaebc0ff47fe8dd2c880f967af38df54a6b7`.
+- Vercel production deployment is **READY** at commit `a65ed0e4a60e2975de90b802eba38249363a0497`.
+- Render service `aiconnectpro-backend` is **live** on the free plan at commit `a65ed0e4a60e2975de90b802eba38249363a0497`.
 - Supabase project `yrjkkmvrmiieqozuvbqp` is **ACTIVE_HEALTHY**.
 - Production `/api/health` returned HTTP 200. `/api/ready` returned HTTP 200 with database readiness.
 - A production route sweep returned HTTP 200 for: home, login, signup, jobs, connections, messages, profile, resume builder, Capsules, settings, company access, both admin pages, post-job, and `privacy-policy.html`.
-- GitHub Actions Project checks passed for the admin readiness changes (run 43). Vercel production is ready.
+- GitHub Actions Project checks passed for the account-export regression test (run 57). Vercel and Render are live on the same production commit.
 - The admin company-access page now shows database connectivity separately from request-queue status. Access remains server-side admin protected.
 
 ## Current production data snapshot
@@ -39,6 +39,7 @@ The product has no employer or job inventory yet. Do not create synthetic public
 
 - Member email/password and Google sign-in flows are present; email verification has been exercised by the owner previously.
 - Profile, resume, connections, messaging, Capsules, and employer access pages are deployed.
+- Account exports include notifications and organization records created by the member; this received a regression test in PR #75.
 - Employer access is separate from a member profile. Job posting requires an approved organization membership.
 - Company verification is manual because no GST verification provider is configured.
 - Admin access is granted only through server-managed Supabase app metadata. Never grant admin through browser-editable user metadata.
@@ -64,7 +65,7 @@ The product has no employer or job inventory yet. Do not create synthetic public
 - [x] Production pages resolve and are served over HTTPS.
 - [x] Backend liveness and database readiness return healthy.
 - [x] Production frontend, backend, and database are active.
-- [x] Automated project checks pass for the latest admin-status changes.
+- [x] Automated project checks pass for readiness and account-export changes.
 - [x] No open pull requests remain after this release.
 - [ ] Owner confirms custom SMTP and completes a fresh email signup.
 - [ ] A real employer submits a request and is manually reviewed.
