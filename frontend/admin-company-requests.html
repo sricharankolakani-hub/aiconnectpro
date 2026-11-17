@@ -30,6 +30,13 @@
           <select id="status-filter"><option value="pending">Pending</option><option value="all">All requests</option><option value="approved">Approved</option><option value="rejected">Declined</option></select>
         </label>
       </div>
+      <section id="database-readiness" class="admin-readiness" data-state="checking" role="status" aria-live="polite">
+        <div>
+          <strong>Database status</strong>
+          <p id="database-readiness-text">Checking connection…</p>
+        </div>
+        <button id="refresh-readiness" class="button button-outline" type="button">Refresh status</button>
+      </section>
       <p id="queue-status" class="queue-status" role="status" aria-live="polite"></p>
       <div id="request-list" class="request-list"></div>
     </section>
