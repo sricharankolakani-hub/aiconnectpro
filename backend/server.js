@@ -20,6 +20,7 @@ const organizationRoutes = require('./routes/organizations');
 const adminRoutes = require('./routes/admin');
 const accountRoutes = require('./routes/account');
 const reportsRoutes = require('./routes/reports');
+const { createReadinessHandler } = require('./services/readiness');
 
 
 const app = express();
@@ -47,6 +48,7 @@ app.use('/api/reports', reportsRoutes);
 
 // other demo routes
 app.get('/health', (req, res) => res.json({ status: 'ok', message: 'AIConnect Pro backend running' }));
+app.get('/ready', createReadinessHandler(require('./services/supabaseClient')));
 app.get('/', (req, res) => res.send('AIConnect Pro backend is live.'));
 
 // start
