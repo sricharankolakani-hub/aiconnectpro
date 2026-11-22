@@ -11,17 +11,14 @@ const signupHtml = fs.readFileSync(
 );
 
 function getEmailCodeInput() {
-  const match = signupHtml.match(/<input\\b(?=[^>]*\\bid=["']email-code["'])[^>]*>/i);
-  assert.ok(match, 'signup page should include the email verification code input');
-  return match[0];
+  const input = signupHtml.split(/\\r?\\n/).find(line => line.includes('id="email-code"'));
+  assert.ok(input, 'signup page should include the email verification code input');
+  return input;
 }
 
 function getAttribute(element, name) {
-  const match = element.match(new RegExp(
-    `\\\\b${name}\\\\s*=\\\\s*(?:"([^"]*)"|'([^']*)')`,
-    'i'
-  ));
-  return match?.[1] ?? match?.[2] ?? null;
+  const match = element.match(name + '="([^"]*)"');
+  return match?.[1] ?? null;
 }
 
 test('email verification input accepts 6 to 10 digit OTPs, including 8 digit codes', () => {
@@ -34,7 +31,7 @@ test('email verification input accepts 6 to 10 digit OTPs, including 8 digit cod
 
   const digitPattern = getAttribute(input, 'pattern');
   assert.ok(digitPattern, 'email code input should constrain the code to digits');
-  const accepts = new RegExp(`^(?:${digitPattern})$`);
+  const accepts = new RegExp('^(?:' + digitPattern + ')$');
   assert.ok(accepts.test('123456'), 'should accept a six digit code');
   assert.ok(accepts.test('12345678'), 'should accept an eight digit code');
   assert.ok(accepts.test('1234567890'), 'should accept a ten digit code');
