@@ -8,7 +8,6 @@
 The deployed application is available for a controlled pilot. Core pages and backend health checks are responding. The broader product vision is not complete, and the public job marketplace has no inventory yet.
 
 ## Production evidence
-
 - Monitoring on 23 November found no Vercel runtime error clusters in the prior seven days, no Render application error logs in the prior 24 hours, and no open GitHub issues or pull requests.
 
 - The latest Vercel production deployment is **READY** at test-only commit `e7ec3e6c8887ea3cc4a64221a00b587cbbb5858d`, which includes the tested application code from `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e`.
