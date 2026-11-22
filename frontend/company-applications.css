@@ -31,3 +31,19 @@ body[data-theme="dark"] .application-status { background:#29264b; color:#c4bfff;
   .inbox-state { padding:1.5rem; }
   .application-card { padding:1rem; }
 }
+
+.resume-preview-button {
+  margin-left: .45rem;
+  padding: .35rem .65rem;
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 999px;
+  background: var(--surface, #fff);
+  color: var(--accent, #2457c5);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.resume-preview-button:hover { background: var(--accent-soft, #eef3ff); }
+.resume-preview-button:focus-visible { outline: 3px solid var(--accent, #2457c5); outline-offset: 2px; }
+.resume-preview-button:disabled { opacity: .6; cursor: wait; }
