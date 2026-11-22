@@ -4,6 +4,7 @@ const router = express.Router();
 const supabase = require('../services/supabaseClient'); // existing
 const auth = require('../middleware/authMiddleware');   // existing
 const { v4: uuidv4 } = require('uuid');
+const { canEmployerReviewApplicantResume } = require('../services/applicantResumeAccess');
 
 /**
  * Job object fields:
@@ -313,6 +314,68 @@ router.get('/posted/:jobId/applications', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Employer applications lookup failed', error);
+    return res.status(500).json({ error: 'internal' });
+  }
+});
+
+
+// GET /api/jobs/posted/:jobId/applications/:applicationId/resume
+// Only an active member of the listing's verified organization may view an applicant's attached resume.
+router.get('/posted/:jobId/applications/:applicationId/resume', auth, async (req, res) => {
+  try {
+    const { data: job, error: jobError } = await supabase
+      .from('jobs')
+      .select('id, company_id')
+      .eq('id', req.params.jobId)
+      .maybeSingle();
+    if (jobError) return res.status(500).json({ error: 'db_error' });
+    if (!job) return res.status(404).json({ error: 'job_not_found' });
+
+    const { data: membership, error: membershipError } = await supabase
+      .from('organization_memberships')
+      .select('user_id, organization_id, status, organization:organizations(verification_status)')
+      .eq('organization_id', job.company_id)
+      .eq('user_id', req.user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+    if (membershipError) return res.status(500).json({ error: 'organization_access_check_failed' });
+    if (!membership || membership.organization?.verification_status !== 'verified') {
+      return res.status(404).json({ error: 'resume_not_found' });
+    }
+
+    const { data: application, error: applicationError } = await supabase
+      .from('applications')
+      .select('id, job_id, user_id, resume_id')
+      .eq('id', req.params.applicationId)
+      .eq('job_id', job.id)
+      .maybeSingle();
+    if (applicationError) return res.status(500).json({ error: 'application_lookup_failed' });
+    if (!application?.resume_id) return res.status(404).json({ error: 'resume_not_found' });
+
+    const { data: resume, error: resumeError } = await supabase
+      .from('resumes')
+      .select('id, user_id, html')
+      .eq('id', application.resume_id)
+      .eq('user_id', application.user_id)
+      .maybeSingle();
+    if (resumeError) return res.status(500).json({ error: 'resume_lookup_failed' });
+    if (!canEmployerReviewApplicantResume({
+      viewerId: req.user.id,
+      job,
+      membership,
+      application,
+      resume
+    })) return res.status(404).json({ error: 'resume_not_found' });
+
+    res.set({
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'private, no-store',
+      'X-Content-Type-Options': 'nosniff',
+      'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data: https:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    });
+    return res.send(resume.html);
+  } catch (error) {
+    console.error('Applicant resume preview failed', error);
     return res.status(500).json({ error: 'internal' });
   }
 });

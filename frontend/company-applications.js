@@ -46,7 +46,50 @@ function formatDate(value) {
   return Number.isNaN(date.getTime()) ? 'Date unavailable' : date.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
 }
 
-function renderApplications(applications) {
+async function openResumePreview(jobId, applicationId, button) {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    setStatus('Your session expired. Please log in again.', true);
+    return;
+  }
+
+  const previewWindow = window.open('about:blank', '_blank');
+  if (!previewWindow) {
+    setStatus('Allow pop-ups to open the resume preview.', true);
+    return;
+  }
+  previewWindow.opener = null;
+  previewWindow.document.title = 'Loading resume…';
+  button.disabled = true;
+
+  let objectUrl = null;
+  try {
+    const response = await fetch(
+      '/api/jobs/posted/' + encodeURIComponent(jobId) + '/applications/' + encodeURIComponent(applicationId) + '/resume',
+      { headers: { Authorization: 'Bearer ' + token } }
+    );
+    if (!response.ok) {
+      if (response.status === 401) throw new Error('Your session expired. Please log in again.');
+      throw new Error('We couldn’t open this resume. Refresh the inbox and try again.');
+    }
+    const html = await response.text();
+    objectUrl = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+    previewWindow.location.replace(objectUrl);
+    const cleanup = window.setInterval(() => {
+      if (previewWindow.closed) {
+        window.clearInterval(cleanup);
+        URL.revokeObjectURL(objectUrl);
+      }
+    }, 1000);
+  } catch (error) {
+    previewWindow.close();
+    setStatus(error.message || 'We couldn’t open this resume.', true);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function renderApplications(applications, jobId) {
   list.replaceChildren();
   if (!applications.length) {
     const empty = document.createElement('p');
@@ -84,7 +127,15 @@ function renderApplications(applications) {
     if (application.resume) {
       const resume = document.createElement('p');
       resume.className = 'resume-meta';
-      resume.textContent = 'Resume attached · ' + (application.resume.template || 'classic') + ' template';
+      resume.append(document.createTextNode('Resume attached · ' + (application.resume.template || 'classic') + ' template'));
+      if (application.resume.id) {
+        const previewButton = document.createElement('button');
+        previewButton.className = 'resume-preview-button';
+        previewButton.type = 'button';
+        previewButton.textContent = 'View resume';
+        previewButton.addEventListener('click', () => openResumePreview(jobId, application.id, previewButton));
+        resume.append(previewButton);
+      }
       card.append(resume);
     } else {
       const resume = document.createElement('p');
@@ -109,7 +160,7 @@ async function loadApplications() {
   setStatus('Loading applications…');
   try {
     const result = await request('/api/jobs/posted/' + encodeURIComponent(jobId) + '/applications');
-    renderApplications(Array.isArray(result.applications) ? result.applications : []);
+    renderApplications(Array.isArray(result.applications) ? result.applications : [], jobId);
     setStatus('');
   } catch (error) {
     setStatus(error.status === 401
