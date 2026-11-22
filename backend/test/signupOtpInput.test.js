@@ -11,9 +11,9 @@ const signupHtml = fs.readFileSync(
 );
 
 function getEmailCodeInput() {
-  const input = signupHtml.split(/\\r?\\n/).find(line => line.includes('id="email-code"'));
-  assert.ok(input, 'signup page should include the email verification code input');
-  return input;
+  const match = signupHtml.match(/<input[^>]*id="email-code"[^>]*>/i);
+  assert.ok(match, 'signup page should include the email verification code input');
+  return match[0];
 }
 
 function getAttribute(element, name) {
