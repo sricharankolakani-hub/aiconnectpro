@@ -58,9 +58,9 @@ The product has no employer or job inventory yet. Do not create synthetic public
 
 ## Security and maintenance notes
 
-- Supabase’s advisor reports tables with RLS enabled and no policies. A current read-only check found no table grants to the `anon` or `authenticated` database roles; the application accesses data through the protected server API. Recheck this before changing grants or adding direct browser database access.
+- Supabase's security advisor rechecked on 2026-11-23 reports 19 RLS-enabled tables with no policies and a leaked-password protection warning. A same-day read-only grant query found no table grants to the `anon` or `authenticated` database roles; the app uses the protected server API. Recheck before changing grants or adding direct browser database access. A catalog audit confirmed that member-owned profile, connection, messaging, post, and report records cascade when an Auth user is deleted; reviewed organizations block deletion and attribution fields are set null. No destructive account deletion was run in production.
 - Supabase’s leaked-password protection advisory remains. It requires a paid Supabase plan, so it was not enabled under the no-subscription constraint.
-- Performance advisor notices about unused indexes and unindexed foreign keys are informational at current low row counts. Do not drop indexes or make production schema changes without checking query plans and testing a migration.
+- Performance advisor rechecked 2026-11-23 still reports unused indexes and unindexed foreign keys. At current low row counts these are informational; do not drop indexes or make production schema changes without checking query plans and testing a migration.
 
 ## Pilot readiness checklist
 
