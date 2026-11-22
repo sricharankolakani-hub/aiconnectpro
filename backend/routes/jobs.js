@@ -5,6 +5,7 @@ const supabase = require('../services/supabaseClient'); // existing
 const auth = require('../middleware/authMiddleware');   // existing
 const { v4: uuidv4 } = require('uuid');
 const { canEmployerReviewApplicantResume } = require('../services/applicantResumeAccess');
+const { buildJobApplicationNotifications } = require('../services/jobApplicationNotifications');
 
 /**
  * Job object fields:
@@ -145,7 +146,7 @@ router.post('/:id/apply', auth, async (req, res) => {
     const { resume_id, message } = req.body || {};
 
     // Basic validation: ensure job exists
-    const { data: jobRow, error: jobErr } = await supabase.from('jobs').select('id, is_private, posted_by').eq('id', jobId).limit(1).single();
+    const { data: jobRow, error: jobErr } = await supabase.from('jobs').select('id, is_private, posted_by, company_id').eq('id', jobId).limit(1).single();
     if (jobErr || !jobRow) {
       return res.status(404).json({ error: 'job_not_found' });
     }
@@ -193,7 +194,27 @@ router.post('/:id/apply', auth, async (req, res) => {
       return res.status(500).json({ error: 'db_error', details: insertErr.message || insertErr });
     }
 
-    // Optionally: notify job poster (email/webhook) — left as TODO
+    const { data: memberships, error: membershipLookupError } = await supabase
+      .from('organization_memberships')
+      .select('user_id, status, organization:organizations(verification_status)')
+      .eq('organization_id', jobRow.company_id)
+      .eq('status', 'active');
+    if (membershipLookupError) {
+      console.error('Employer application notification recipients lookup failed', membershipLookupError);
+    } else {
+      const notifications = buildJobApplicationNotifications({
+        memberships,
+        applicationId: application.id,
+        applicantId: userId
+      });
+      if (notifications.length) {
+        const { error: notificationError } = await supabase
+          .from('notifications')
+          .upsert(notifications, { onConflict: 'user_id,application_id', ignoreDuplicates: true });
+        if (notificationError) console.error('Employer application notifications failed', notificationError);
+      }
+    }
+
     return res.status(201).json({ applied: true, applicationId: application.id });
   } catch (err) {
     console.error('Apply error', err);
