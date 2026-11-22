@@ -56,9 +56,9 @@ This is enough to confirm that the product has real accounts and some member act
 
 ## Security and maintenance
 
-- Supabase's security advisor reported backend-managed tables with RLS enabled and no policies. A read-only grant check found no table grants to `anon` or `authenticated`; the app accesses this data through the protected server API. Recheck before adding direct browser database access or changing grants.
+- Supabase's security advisor rechecked 2026-11-23 reported 19 RLS-enabled tables with no policies and a leaked-password protection warning. A same-day read-only grant query found no table grants to `anon` or `authenticated`; the app accesses data through the protected server API. Recheck before adding direct browser database access or changing grants. A catalog review confirmed member-owned profile, connection, messaging, post, and report records cascade on Auth user deletion; reviewed organizations block deletion and attribution fields are set null. No destructive account deletion was run in production.
 - Leaked-password protection is reported unavailable on the current Supabase Free plan and remains disabled.
-- Performance notices include unindexed foreign keys and unused indexes. At current low data volume these are informational; do not drop indexes or change production schema without query-plan review and a tested migration.
+- Supabase's performance advisor rechecked 2026-11-23 still flags unindexed foreign keys and unused indexes. At current low data volume these are informational; do not drop indexes or change production schema without query-plan review and a tested migration.
 - Keep the Supabase service-role key on the backend only. Never paste credentials or secret values into chat.
 
 ## No-cost operating rule
