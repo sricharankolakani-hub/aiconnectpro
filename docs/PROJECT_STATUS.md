@@ -14,7 +14,7 @@ The live product name remains AIConnectPro. Do not rename the product or change 
 - **Backend:** Render service `aiconnectpro-backend`, Free plan, at https://aiconnectpro-backend.onrender.com. Its latest application deployment is live.
 - **Database and authentication:** Supabase project `yrjkkmvrmiieqozuvbqp` is Active/Healthy in ap-southeast-1.
 - **Health:** Production `/api/health` and `/api/ready` returned HTTP 200; readiness included the database dependency.
-- **Automated checks:** GitHub Actions passed all 11 backend Node tests, including five new account-deletion safeguard cases, plus the project syntax check. The deletion tests cover policy guards; they do not execute a destructive deletion against production data.
+- **Automated checks:** GitHub Actions passed all 12 backend Node tests and the project syntax check for 53 JavaScript files on 2026-11-23. Coverage includes account export, deletion safeguards, readiness, messaging receipts, and an OTP-input regression check that accepts 6-, 8-, and 10-digit codes. The deletion tests cover policy guards; they do not execute a destructive deletion against production data.
 - **Release evidence:** See [MVP release readiness snapshot](MVP-RELEASE-READINESS-2026-11-17.md) for deployment, route sweep, production data counts, and EOD checks.
 
 Two older Render services (`aiconnectpro` and `aiconnectpro-1`) remain in the same workspace. Their recent deploy records show update failures and recent request-log checks found no traffic. They were left untouched because someone may still use their URLs. Confirm URL usage before suspending or deleting them.
@@ -79,5 +79,5 @@ Keep work within the existing free allowances. Do not upgrade plans or add a pai
 - [README](../README.md).
 - [Employer and organization verification process](employer-organization-verification.md).
 - [MVP release readiness snapshot, 2026-11-17](MVP-RELEASE-READINESS-2026-11-17.md).
-- Production state was rechecked on 2026-11-23: latest Vercel production deployment READY, Render backend deployment live on the Free plan, and Supabase ACTIVE_HEALTHY. The HTTP health/readiness and full route sweep evidence is from 2026-11-17.
+- Production state was rechecked on 2026-11-23: Vercel production and Render backend are READY/live on the Free plan at test-only commit `e7ec3e6c8887ea3cc4a64221a00b587cbbb5858d`, and Supabase is ACTIVE_HEALTHY. The HTTP health/readiness and full route sweep evidence is from 2026-11-17. Current monitoring found no Vercel runtime errors in 7 days, no Render application errors in 24 hours, and no open repository issues or pull requests.
 - Supabase security/performance advisories and grants were reviewed read-only on 2026-11-17.
