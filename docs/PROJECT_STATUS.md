@@ -80,4 +80,4 @@ Keep work within the existing free allowances. Do not upgrade plans or add a pai
 - [Employer and organization verification process](employer-organization-verification.md).
 - [MVP release readiness snapshot, 2026-11-17](MVP-RELEASE-READINESS-2026-11-17.md).
 - Production state was rechecked on 2026-11-23: Vercel production and Render backend are READY/live on the Free plan at test-only commit `e7ec3e6c8887ea3cc4a64221a00b587cbbb5858d`, and Supabase is ACTIVE_HEALTHY. The HTTP health/readiness and full route sweep evidence is from 2026-11-17. Current monitoring found no Vercel runtime errors in 7 days, no Render application errors in 24 hours, and no open repository issues or pull requests.
-- Supabase security/performance advisories and grants were reviewed read-only on 2026-11-17.
+- Supabase security/performance advisories, table grants, and account-deletion foreign-key rules were reviewed read-only on 2026-11-23.
