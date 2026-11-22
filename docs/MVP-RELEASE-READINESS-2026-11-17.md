@@ -1,6 +1,6 @@
 # AIConnectPro MVP release readiness
 
-**Snapshot date:** 17 November 2026 (Asia/Kolkata)  
+**Snapshot date:** 23 November 2026 (Asia/Kolkata)  
 **Scope:** Current production MVP, using existing no-cost services.
 
 ## Current result
@@ -12,6 +12,7 @@ The deployed application is available for a controlled pilot. Core pages and bac
 - The latest Vercel production deployment is **READY**. It includes the tested application code commit `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e` plus a later documentation-only update.
 - Render service `aiconnectpro-backend` is **live** on the free plan at commit `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e`.
 - Supabase project `yrjkkmvrmiieqozuvbqp` is **ACTIVE_HEALTHY**.
+- Platform state rechecked 23 November: Vercel's latest production deployment is READY, Render's backend deploy is live on the Free plan, and Supabase is ACTIVE_HEALTHY. The health/readiness endpoint responses and full route sweep below are the earlier 17 November checks.
 - Production `/api/health` returned HTTP 200. `/api/ready` returned HTTP 200 with database readiness.
 - A production route sweep returned HTTP 200 for: home, login, signup, jobs, connections, messages, profile, resume builder, Capsules, settings, company access, both admin pages, post-job, and `privacy-policy.html`.
 - GitHub Actions passed all 11 backend Node tests, including five account-deletion safeguard tests, plus the project syntax check. The tested application code commit `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e` is live on Render and included in Vercel's Ready production deployment. The deletion tests cover policy guards only; no destructive account deletion was run against production data.
@@ -23,7 +24,7 @@ Read-only counts at the time of review:
 
 | Item | Count |
 | --- | ---: |
-| Auth users | 4 |
+| Auth users | 6 (5 email-confirmed; 1 awaiting email confirmation) |
 | Profiles | 3 |
 | Organizations | 0 |
 | Employer requests | 0 |
@@ -37,7 +38,7 @@ The product has no employer or job inventory yet. Do not create synthetic public
 
 ## Ready for a controlled pilot
 
-- Member email/password and Google sign-in flows are present; email verification has been exercised by the owner previously.
+- Member email/password and Google sign-in flows are present. The owner reports saving temporary Gmail SMTP settings and successfully receiving a signup OTP. That confirms delivery for the reported test; it does not by itself confirm code acceptance. Current aggregate counts show one account awaiting email confirmation, but cannot identify whether it is the test account. Complete the OTP step in the browser; never share the code in chat.
 - Profile, resume, connections, messaging, Capsules, and employer access pages are deployed.
 - Account exports include notifications and organization records created by the member; this received a regression test in PR #75.
 - Account deletion safeguards for exact confirmation, recent sign-in, admin transfer, and reviewed-organization transfer are covered by five tests in PR #78.
@@ -48,7 +49,7 @@ The product has no employer or job inventory yet. Do not create synthetic public
 
 ## Remaining launch gates
 
-1. **Email delivery:** The owner reported saving temporary Gmail SMTP settings on 2026-11-17. Supabase Auth logs checked after that report showed no signup, OTP, or verification request, so delivery to an address outside the project team remains unverified. Complete a fresh signup and confirm the code arrives. The Gmail sender is a temporary pilot setup.
+1. **Email verification:** OTP delivery is confirmed for the owner's reported signup test after Gmail SMTP configuration. The signup's OTP acceptance and resulting signed-in state still need confirmation in the browser; the owner should enter the code without sharing it. Delivery to an unrelated public address has not been separately checked. Gmail SMTP is a temporary pilot setup.
 2. **Mobile OTP:** Not enabled because no SMS provider is configured and the owner has no budget for paid services. Signup copy explains the limitation. Revisit only when a no-cost provider or budget is available.
 3. **Real employer supply:** No company requests, organizations, or jobs exist in production. Invite a genuine employer, review the company documents, approve the organization, then publish a real listing.
 4. **Privacy and account operations:** The policy page is deployed. Before broad public launch, verify the published retention/deletion process and provide users a working account deletion/contact route.
@@ -61,16 +62,17 @@ The product has no employer or job inventory yet. Do not create synthetic public
 - Supabase’s leaked-password protection advisory remains. It requires a paid Supabase plan, so it was not enabled under the no-subscription constraint.
 - Performance advisor notices about unused indexes and unindexed foreign keys are informational at current low row counts. Do not drop indexes or make production schema changes without checking query plans and testing a migration.
 
-## EOD acceptance checklist
+## Pilot readiness checklist
 
 - [x] Production pages resolve and are served over HTTPS.
 - [x] Backend liveness and database readiness return healthy.
 - [x] Production frontend, backend, and database are active.
 - [x] Automated project checks pass for readiness, account export, and account-deletion policy safeguards.
 - [x] No open pull requests remain after this release.
-- [ ] Owner confirms custom SMTP and completes a fresh email signup.
+- [x] Owner reports receiving the signup OTP after configuring temporary Gmail SMTP.
+- [ ] Owner submits the code in the signup page and confirms the new account reaches its signed-in state.
 - [ ] A real employer submits a request and is manually reviewed.
 - [ ] A real job is published and its listing/application flow is checked.
 - [ ] Owner verifies deletion/contact operations before inviting a broad public audience.
 
-**Recommendation:** Treat the current deployment as a controlled pilot, not a fully stocked public marketplace. Complete the owner-controlled SMTP and first-employer checks before promoting it broadly.
+**Recommendation:** Treat the current deployment as a controlled pilot, not a fully stocked public marketplace. Complete the OTP sign-in check, first-employer review, real listing/application flow, and privacy/account-operation check before promoting it broadly.
