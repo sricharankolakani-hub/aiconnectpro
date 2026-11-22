@@ -9,13 +9,15 @@ The deployed application is available for a controlled pilot. Core pages and bac
 
 ## Production evidence
 
-- The latest Vercel production deployment is **READY**. It includes the tested application code commit `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e` plus a later documentation-only update.
-- Render service `aiconnectpro-backend` is **live** on the free plan at commit `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e`.
+- Monitoring on 23 November found no Vercel runtime error clusters in the prior seven days, no Render application error logs in the prior 24 hours, and no open GitHub issues or pull requests.
+
+- The latest Vercel production deployment is **READY** at test-only commit `e7ec3e6c8887ea3cc4a64221a00b587cbbb5858d`, which includes the tested application code from `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e`.
+- Render service `aiconnectpro-backend` is **live** on the free plan at test-only commit `e7ec3e6c8887ea3cc4a64221a00b587cbbb5858d`.
 - Supabase project `yrjkkmvrmiieqozuvbqp` is **ACTIVE_HEALTHY**.
 - Platform state rechecked 23 November: Vercel's latest production deployment is READY, Render's backend deploy is live on the Free plan, and Supabase is ACTIVE_HEALTHY. The health/readiness endpoint responses and full route sweep below are the earlier 17 November checks.
 - Production `/api/health` returned HTTP 200. `/api/ready` returned HTTP 200 with database readiness.
 - A production route sweep returned HTTP 200 for: home, login, signup, jobs, connections, messages, profile, resume builder, Capsules, settings, company access, both admin pages, post-job, and `privacy-policy.html`.
-- GitHub Actions passed all 11 backend Node tests, including five account-deletion safeguard tests, plus the project syntax check. The tested application code commit `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e` is live on Render and included in Vercel's Ready production deployment. The deletion tests cover policy guards only; no destructive account deletion was run against production data.
+- GitHub Actions passed all 12 backend Node tests and the project syntax check for 53 JavaScript files. Coverage includes five account-deletion safeguard cases and a regression check for 6-, 8-, and 10-digit signup email codes. The app code commit `1293f2393bf7a5e6c22c32a82a54a4cae4a1c74e` remains included in both Ready/Live deployments. The deletion tests cover policy guards only; no destructive account deletion was run against production data.
 - The admin company-access page now shows database connectivity separately from request-queue status. Access remains server-side admin protected.
 
 ## Current production data snapshot
@@ -38,7 +40,7 @@ The product has no employer or job inventory yet. Do not create synthetic public
 
 ## Ready for a controlled pilot
 
-- Member email/password and Google sign-in flows are present. The owner reports saving temporary Gmail SMTP settings and successfully receiving a signup OTP. That confirms delivery for the reported test; it does not by itself confirm code acceptance. Current aggregate counts show one account awaiting email confirmation, but cannot identify whether it is the test account. Complete the OTP step in the browser; never share the code in chat.
+- Member email/password and Google sign-in flows are present. The owner reports saving temporary Gmail SMTP settings and successfully receiving a signup OTP. That confirms delivery for the reported test; it does not by itself confirm code acceptance. A CI regression test now protects the signup page's 6–10 digit range, including 8-digit codes. Current aggregate counts show one account awaiting email confirmation, but cannot identify whether it is the test account. Complete the OTP step in the browser; never share the code in chat.
 - Profile, resume, connections, messaging, Capsules, and employer access pages are deployed.
 - Account exports include notifications and organization records created by the member; this received a regression test in PR #75.
 - Account deletion safeguards for exact confirmation, recent sign-in, admin transfer, and reviewed-organization transfer are covered by five tests in PR #78.
