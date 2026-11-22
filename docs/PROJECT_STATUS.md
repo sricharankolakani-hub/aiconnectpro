@@ -1,6 +1,6 @@
 # AIConnectPro project status and no-cost roadmap
 
-Last reviewed: 2026-11-17 (Asia/Kolkata)
+Last reviewed: 2026-11-23 (Asia/Kolkata)
 
 ## Product direction
 
@@ -37,7 +37,7 @@ Admin roles are managed through Supabase `app_metadata.roles` and server-side au
 
 ## Production data and readiness
 
-The read-only production snapshot on 2026-11-17 contained 4 auth users, 3 profiles, 0 organizations, 0 employer requests, 0 jobs, 0 applications, 1 conversation, 20 messages, and 3 Capsules.
+The read-only production snapshot on 2026-11-23 contained 6 auth users (5 email-confirmed and 1 awaiting email confirmation), 3 profiles, 0 organizations, 0 employer requests, 0 jobs, 0 applications, 1 conversation, 20 messages, and 3 Capsules.
 
 This is enough to confirm that the product has real accounts and some member activity, but the jobs marketplace currently has no employer or job inventory. Do not create synthetic public companies or listings.
 
@@ -45,7 +45,7 @@ This is enough to confirm that the product has real accounts and some member act
 
 ## Known limits and owner checks
 
-- **Email delivery:** On 2026-11-17 the owner reported saving temporary Gmail SMTP settings in Supabase. Auth logs checked after that report showed no signup, OTP, or verification request, so delivery to an address outside the project team remains unverified. A fresh signup test is still required. Supabase's default relay is limited and best-effort.
+- **Email delivery:** The owner reports saving temporary Gmail SMTP settings in Supabase and successfully receiving a signup OTP. This confirms delivery for that test. The production database currently has one account awaiting email confirmation, but aggregate counts cannot tie it to this test; code acceptance and completion of the signup still need confirmation in the browser. Gmail SMTP is a temporary pilot setup. Never share OTPs or SMTP credentials in chat.
 - **Phone OTP:** Not configured because no SMS provider is connected and no paid subscription is authorized.
 - **Automated company verification:** No GST verification provider is configured; review remains manual.
 - **Calls:** No reliable calling service or TURN relay is configured.
@@ -67,7 +67,7 @@ Keep work within the existing free allowances. Do not upgrade plans or add a pai
 
 ## Recommended order to reach a broader launch
 
-1. Configure custom SMTP in Supabase using a no-cost provider and a domain the owner controls; test a fresh signup to an unrelated address. Do not put SMTP credentials in chat.
+1. Complete the received email OTP in the signup page and confirm that the account reaches its signed-in state. Before broad public launch, test delivery to an address outside the owner's team. Keep Gmail SMTP as a temporary pilot setup and do not share credentials in chat.
 2. Have one genuine employer submit a company request; review evidence manually and approve only when appropriate.
 3. Publish a genuine job and complete the employer listing and member application flows.
 4. Verify account deletion/contact operations and privacy wording from a member account.
@@ -79,5 +79,5 @@ Keep work within the existing free allowances. Do not upgrade plans or add a pai
 - [README](../README.md).
 - [Employer and organization verification process](employer-organization-verification.md).
 - [MVP release readiness snapshot, 2026-11-17](MVP-RELEASE-READINESS-2026-11-17.md).
-- Production Vercel, Render, and Supabase status plus the backend health/readiness endpoints were checked on 2026-11-17.
+- Production state was rechecked on 2026-11-23: latest Vercel production deployment READY, Render backend deployment live on the Free plan, and Supabase ACTIVE_HEALTHY. The HTTP health/readiness and full route sweep evidence is from 2026-11-17.
 - Supabase security/performance advisories and grants were reviewed read-only on 2026-11-17.
