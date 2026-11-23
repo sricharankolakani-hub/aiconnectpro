@@ -10,13 +10,13 @@ The deployed application is available for a controlled pilot. Core pages and bac
 ## Production evidence
 
 - Monitoring on 23 November found no Vercel runtime error clusters in the prior seven days, no Render application error logs in the prior 24 hours, and no open GitHub issues or pull requests before this release.
-- The latest Vercel production deployment is **READY** at commit `4a8a8e4899dccfdf48570370c33b28f6b869add6`.
+- The latest Vercel production deployment is **READY** at commit `e49ba799ed81542a3caa9ddcd706a208d9b31197`.
 - Render service `aiconnectpro-backend` is **live** on the free plan at the same commit.
 - Supabase project `yrjkkmvrmiieqozuvbqp` is **ACTIVE_HEALTHY**.
 - Platform state rechecked 23 November: Vercel's latest production deployment is READY, Render's backend deploy is live on the Free plan, and Supabase is ACTIVE_HEALTHY. Production `/api/ready` returned HTTP 200 and confirmed database readiness after the latest release.
-- GitHub Actions passed all 19 backend Node tests and the project syntax check for 57 JavaScript files. Coverage includes secure employer resume previews, verified-employer application-notification recipients, signup OTP input length, messaging receipts, readiness, account export, and account-deletion safeguards. The deletion tests cover policy guards only; no destructive account deletion was run against production data.
+- GitHub Actions passed all 22 backend Node tests and the project syntax check for 59 JavaScript files. Coverage includes secure employer resume previews, verified-employer application-notification recipients, company review decision notifications, signup OTP input length, messaging receipts, readiness, account export, and account-deletion safeguards. The deletion tests cover policy guards only; no destructive account deletion was run against production data.
 - The admin company-access page reports database connectivity separately from request-queue status. Access remains server-side admin protected.
-- New-application notifications are delivered to active members of the verified organization and link directly to that opportunity in the applicant inbox. The supporting Supabase migration is applied.
+- New-application notifications reach active members of the verified organization and link directly to that opportunity in the applicant inbox. Company approval and rejection notifications reach the request owner and link to company access. Both supporting Supabase migrations are applied.
 
 ## Current production data snapshot
 
@@ -40,6 +40,7 @@ The product has no employer or job inventory yet. Do not create synthetic public
 
 - Member email/password and Google sign-in flows are present. The owner reports saving temporary Gmail SMTP settings and successfully receiving a signup OTP. That confirms delivery for the reported test; code acceptance and completion of signup still need browser confirmation. A CI regression test protects the signup page's 6–10 digit range, including 8-digit codes. Current aggregate counts show one account awaiting email confirmation, but cannot identify whether it is the test account. Complete the OTP step in the browser; never share the code in chat.
 - Profile, resume, connections, messaging, Capsules, and employer access pages are deployed. Verified employers can open an applicant’s attached resume from the inbox, subject to a server-side check that it belongs to an application for their own listing. Active members of the verified organization receive an alert when an application arrives.
+- Company request owners receive in-app alerts when an administrator approves or rejects their request.
 - Account exports include notifications and organization records created by the member; this received a regression test in PR #75.
 - Account deletion safeguards for exact confirmation, recent sign-in, admin transfer, and reviewed-organization transfer are covered by five tests in PR #78.
 - Employer access is separate from a member profile. Job posting requires an approved organization membership.
@@ -67,8 +68,8 @@ The product has no employer or job inventory yet. Do not create synthetic public
 - [x] Production pages resolve and are served over HTTPS.
 - [x] Backend liveness and database readiness return healthy.
 - [x] Production frontend, backend, and database are active.
-- [x] Automated project checks pass for readiness, account export, account-deletion safeguards, OTP input length, employer resume access, and employer application notifications (19 tests total; syntax check covers 57 JavaScript files).
-- [x] New application notification schema migration is applied and the corresponding code is live on Vercel and Render.
+- [x] Automated project checks pass for readiness, account export, account-deletion safeguards, OTP input length, employer resume access, application notifications, and company review notifications (22 tests total; syntax check covers 59 JavaScript files).
+- [x] Application and company-review notification migrations are applied; corresponding code is live on Vercel and Render.
 - [x] Owner reports receiving the signup OTP after configuring temporary Gmail SMTP.
 - [ ] Owner submits the code in the signup page and confirms the new account reaches its signed-in state.
 - [ ] A real employer submits a request and is manually reviewed.

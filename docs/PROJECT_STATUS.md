@@ -10,12 +10,12 @@ The live product name remains AIConnectPro. Do not rename the product or change 
 
 ## Production status
 
-- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest deployment is Ready at commit `4a8a8e4899dccfdf48570370c33b28f6b869add6`.
+- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest deployment is Ready at commit `e49ba799ed81542a3caa9ddcd706a208d9b31197`.
 - **Backend:** Render service `aiconnectpro-backend`, Free plan, at https://aiconnectpro-backend.onrender.com. Its latest application deployment is live at the same commit.
 - **Database and authentication:** Supabase project `yrjkkmvrmiieqozuvbqp` is Active/Healthy in ap-southeast-1.
 - **Health:** Production `/api/ready` returned HTTP 200 with database readiness after the latest release.
-- **Automated checks:** GitHub Actions passed all 19 backend Node tests and the project syntax check for 57 JavaScript files on 2026-11-23. Coverage includes account export, deletion safeguards, readiness, messaging receipts, 6–10 digit email OTP input, employer resume access, and employer application-notification recipient rules. The deletion tests cover policy guards; they do not execute a destructive deletion against production data.
-- **Employer notifications:** New applications now notify active members of the verified organization. Notifications link to the relevant job in the protected applicant inbox. A production database migration supports these alerts.
+- **Automated checks:** GitHub Actions passed all 22 backend Node tests and the project syntax check for 59 JavaScript files on 2026-11-23. Coverage includes account export, deletion safeguards, readiness, messaging receipts, 6–10 digit email OTP input, employer resume access, employer application-notification recipients, and company review-notification events. The deletion tests cover policy guards; they do not execute a destructive deletion against production data.
+- **Notifications:** New applications notify active members of the verified organization and link to the relevant job in its protected applicant inbox. Company request approval and rejection also notify the requester and link to the company access page. Migrations for these events are applied.
 - **Release evidence:** See [MVP release readiness snapshot](MVP-RELEASE-READINESS-2026-11-17.md) for current deployment, test, production data, and launch-gate evidence.
 
 Two older Render services (`aiconnectpro` and `aiconnectpro-1`) remain in the same workspace. Their recent deploy records show update failures and recent request-log checks found no traffic. They were left untouched because someone may still use their URLs. Confirm URL usage before suspending or deleting them.
@@ -27,8 +27,8 @@ The current application includes:
 - Email/password signup and login, email verification flow, Google sign-in, and optional authenticator-app MFA.
 - Member profile intents for professional, student, and founder accounts. Profile settings include profile details, visibility, appearance, and photo.
 - Resume creation with templates and PDF download.
-- Jobs and applications; employer access is separate from member profiles and depends on active membership in a verified organization. The applicant inbox provides a protected preview of resumes attached to applications and now receives application alerts, scoped to active members of the verified organization.
-- Manual company review. GST/address evidence can be collected, but submitting it does not automatically verify a company.
+- Jobs and applications; employer access is separate from member profiles and depends on active membership in a verified organization. The applicant inbox provides a protected preview of resumes attached to applications and receives application alerts for active members of the verified organization.
+- Manual company review. GST/address evidence can be collected, but submitting it does not automatically verify a company. Requesters are notified when an admin approves or rejects their request.
 - Profile discovery, connection requests, direct messages, sent/delivered/seen indicators, and in-app notifications.
 - Professional updates with privacy controls, editing, reactions, comments, and account export/deletion support.
 - Capsules with media, likes, comments, shares, member reports, and administrator review. Members can browse posts shared with all members, accepted connections, or keep their own posts private; authors can change their post audience.
@@ -51,7 +51,7 @@ This is enough to confirm that the product has real accounts and some member act
 - **Automated company verification:** No GST verification provider is configured; review remains manual.
 - **Calls:** No reliable calling service or TURN relay is configured.
 - **AI assistance:** Live AI requires a provider key. Without it, the backend uses its fallback response.
-- **First employer and job:** Production currently has no organization requests or jobs. A real employer must submit company evidence, receive manual review, and publish a genuine listing before testing the complete employer-to-application flow.
+- **First employer and job:** Production currently has no organization requests or jobs. A real employer must submit company evidence, receive manual review, and publish a genuine listing before testing the complete employer-to-application flow and notifications.
 - **Deletion/contact operations:** The privacy policy is deployed. Before broad promotion, the owner should confirm the published retention/deletion process and the working user contact/deletion route.
 - **Free-tier availability:** Supabase previously paused after inactivity, then was restored and verified healthy. Free tiers can pause or impose limits; check `/api/ready` if data-backed pages stop loading.
 
@@ -80,4 +80,4 @@ Keep work within the existing free allowances. Do not upgrade plans or add a pai
 - [README](../README.md).
 - [Employer and organization verification process](employer-organization-verification.md).
 - [MVP release readiness snapshot, 2026-11-17](MVP-RELEASE-READINESS-2026-11-17.md).
-- Production rechecked on 2026-11-23: Vercel production and Render backend are live on commit `4a8a8e4899dccfdf48570370c33b28f6b869add6`; Supabase is ACTIVE_HEALTHY. Production readiness returned HTTP 200 with database dependency. GitHub Actions passed 19 tests and syntax validation for 57 JavaScript files. The release adds notifications to active verified-organization members when an application arrives and links alerts to the relevant applicant inbox listing.
+- Production rechecked on 2026-11-23: Vercel production and Render backend are live on commit `e49ba799ed81542a3caa9ddcd706a208d9b31197`; Supabase is ACTIVE_HEALTHY. Production readiness returned HTTP 200 with database dependency. GitHub Actions passed 22 tests and syntax validation for 59 JavaScript files. Releases add alerts for applications and company review outcomes while retaining member- and organization-scoped authorization.
