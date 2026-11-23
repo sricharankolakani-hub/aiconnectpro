@@ -198,7 +198,19 @@ async function initialize() {
       summary.textContent = 'You haven’t posted an opportunity yet.';
       setStatus('Post an opportunity to start receiving applications.');
     } else {
-      await loadApplications();
+      const requestedJobId = new URLSearchParams(window.location.search).get('job');
+      if (requestedJobId) {
+        const requestedJob = rows.find(job => job.id === requestedJobId);
+        if (requestedJob) {
+          jobSelect.value = requestedJobId;
+          await loadApplications();
+        } else {
+          summary.textContent = 'This opportunity is not available in your inbox.';
+          setStatus('Choose one of your opportunities to review its applicants.');
+        }
+      } else {
+        await loadApplications();
+      }
     }
   } catch (error) {
     showAccess('We couldn’t open your applicant inbox', error.status === 401

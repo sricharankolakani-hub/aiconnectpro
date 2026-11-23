@@ -24,6 +24,12 @@ function node(tag, className, text) {
 
 function destination(item) {
   if (item.type === 'message') return 'messages.html?user=' + encodeURIComponent(item.actor_id);
+  if (item.type === 'job_application') {
+    const target = item.job_id
+      ? 'company-applications.html?job=' + encodeURIComponent(item.job_id) + '#inbox'
+      : 'company-applications.html#inbox';
+    return target;
+  }
   if (item.type === 'connection_request') return 'connections.html#incoming-heading';
   return 'connections.html#outgoing-heading';
 }
@@ -43,7 +49,7 @@ function render(items, unreadCount) {
     link.append(node('span', 'notification-title', item.title));
     const preview = item.type === 'message'
       ? item.body + (item.unread_count > 1 ? ' · ' + item.unread_count + ' unread messages' : '')
-      : item.type.replaceAll('_', ' ');
+      : item.body || item.type.replaceAll('_', ' ');
     if (preview) link.append(node('span', 'notification-copy', preview));
     const time = new Date(item.created_at);
     if (!Number.isNaN(time.getTime())) link.append(node('time', 'notification-time', time.toLocaleString()));
