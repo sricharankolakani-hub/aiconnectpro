@@ -68,7 +68,7 @@ Keep work within the existing free allowances. Do not upgrade plans or add a pai
 
 ## Recommended order to reach a broader launch
 
-1. Complete the received email OTP in the signup page and confirm that the account reaches its signed-in state. Before broad public launch, test delivery to an address outside the owner's team. Keep Gmail SMTP as a temporary pilot setup and do not share credentials in chat.
+1. Submit the received email OTP in the signup page and confirm that the account reaches its signed-in state. Before broad public launch, test delivery to an address outside the owner's team. Keep Gmail SMTP as a temporary pilot setup and do not share credentials in chat.
 2. Have one genuine employer submit a company request; review evidence manually and approve only when appropriate.
 3. Publish a genuine job and complete the employer listing and member application flows, including the new application notification and resume preview.
 4. Verify account deletion/contact operations and privacy wording from a member account.
