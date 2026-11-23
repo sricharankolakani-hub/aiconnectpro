@@ -40,7 +40,7 @@
       const rawConsent = sessionStorage.getItem(signupConsentKey);
       if (rawConsent) {
         const consent = JSON.parse(rawConsent);
-        if (!consent.acceptedAt || consent.policyVersion !== '2026-10-17') {
+        if (!consent.acceptedAt || consent.policyVersion !== '2026-11-02') {
           throw new Error('Privacy Policy agreement could not be confirmed. Please return to sign up and try again.');
         }
 
@@ -59,7 +59,7 @@
       if (currentUserError) throw currentUserError;
       const currentUser = currentUserData.user;
       const createdAt = Date.parse(currentUser.created_at || '');
-      const hasCurrentPrivacyConsent = currentUser.user_metadata?.privacy_policy_version === '2026-10-17';
+      const hasCurrentPrivacyConsent = currentUser.user_metadata?.privacy_policy_version === '2026-11-02';
       if (!rawConsent && !hasCurrentPrivacyConsent && Number.isFinite(createdAt) && Date.now() - createdAt < 10 * 60 * 1000) {
         sessionStorage.setItem('aicp_signup_email', currentUser.email || '');
         window.location.replace('signup.html?stage=google-consent');
