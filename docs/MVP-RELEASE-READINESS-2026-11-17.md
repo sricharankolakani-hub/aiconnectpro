@@ -10,11 +10,11 @@ The deployed application is available for a controlled pilot. Core pages and bac
 ## Production evidence
 
 - Monitoring on 23 November found no Vercel runtime error clusters in the prior seven days, no Render application error logs in the prior 24 hours, and no open GitHub issues or pull requests before this release.
-- The latest application-code release on Vercel is **READY** at commit `b32aec9309719693185e52e854f395933ba9fbd7`, including the signup consent version fix.
-- Render service `aiconnectpro-backend` is **live** on the free plan at backend application commit `ee4e0e570fe5b706f448c4507ea37a83b7469a2d`.
+- The latest production code release on Vercel is **READY** at commit `631e87346382ae80114b2797548eee91d485c4b1`, including the signup consent fix and legacy endpoint removal.
+- Render service `aiconnectpro-backend` is **live** on the free plan at backend application commit `631e87346382ae80114b2797548eee91d485c4b1`.
 - Supabase project `yrjkkmvrmiieqozuvbqp` is **ACTIVE_HEALTHY**.
-- Platform state rechecked 24 November: the latest Vercel application-code release is READY, Render's backend deploy is live on the Free plan, and Supabase is ACTIVE_HEALTHY. Production `/api/ready` returned HTTP 200 and confirmed database readiness after the latest release.
-- The backend test suite passed all 25 Node tests in PR #92; the latest PR #94 syntax check for frontend and backend JavaScript passed. Coverage includes the protected AI assistant endpoint and input policy, secure employer resume previews, verified-employer application-notification recipients, company review decision notifications, signup OTP input length, messaging receipts, readiness, account export, and account-deletion safeguards. The deletion tests cover policy guards only; no destructive account deletion was run against production data.
+- Platform state rechecked 24 November: the latest Vercel production code release is READY, Render's backend deploy is live on the Free plan, and Supabase is ACTIVE_HEALTHY. Production `/api/ready` returned HTTP 200 and confirmed database readiness after the latest release; the removed legacy company-list endpoint returned HTTP 404.
+- The backend test suite passed all 25 Node tests in PR #92; JavaScript syntax checks passed on PRs #94 and #96. Coverage includes the protected AI assistant endpoint and input policy, secure employer resume previews, verified-employer application-notification recipients, company review decision notifications, signup OTP input length, messaging receipts, readiness, account export, and account-deletion safeguards. The deletion tests cover policy guards only; no destructive account deletion was run against production data.
 - The admin company-access page reports database connectivity separately from request-queue status. Access remains server-side admin protected.
 - New-application notifications reach active members of the verified organization and link directly to that opportunity in the applicant inbox. Company approval and rejection notifications reach the request owner and link to company access. Both supporting Supabase migrations are applied.
 
@@ -59,6 +59,7 @@ The product has no employer or job inventory yet. Do not create synthetic public
 
 ## Security and maintenance notes
 
+- **API route audit (24 Nov):** All inspected user-data routes require sign-in; admin routes also require the server-managed admin role. PR #96 removed an unused unauthenticated legacy company-list endpoint, and production now returns HTTP 404 for that path. Signup/login and health/readiness routes remain intentionally public.
 - Supabase's security advisor rechecked on 2026-11-23 reports 19 RLS-enabled tables with no policies and a leaked-password protection warning. A same-day read-only grant query found no table grants to the `anon` or `authenticated` database roles; the app uses the protected server API. Recheck before changing grants or adding direct browser database access. A catalog audit confirmed that member-owned profile, connection, messaging, post, and report records cascade when an Auth user is deleted; reviewed organizations block deletion and attribution fields are set null. No destructive account deletion was run in production.
 - Supabase’s leaked-password protection advisory remains. It requires a paid Supabase plan, so it was not enabled under the no-subscription constraint.
 - Performance advisor rechecked 2026-11-23 still reports unused indexes and unindexed foreign keys. At current low row counts these are informational; do not drop indexes or make production schema changes without checking query plans and testing a migration.
