@@ -1,6 +1,6 @@
 # AIConnectPro project status and no-cost roadmap
 
-Last reviewed: 2026-11-23 (Asia/Kolkata)
+Last reviewed: 2026-11-24 (Asia/Kolkata)
 
 ## Product direction
 
@@ -10,11 +10,11 @@ The live product name remains AIConnectPro. Do not rename the product or change 
 
 ## Production status
 
-- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest deployment is Ready at commit `ee4e0e570fe5b706f448c4507ea37a83b7469a2d`.
-- **Backend:** Render service `aiconnectpro-backend`, Free plan, at https://aiconnectpro-backend.onrender.com. Its latest application deployment is live at the same commit.
+- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest application-code release is Ready at commit `b32aec9309719693185e52e854f395933ba9fbd7` (signup consent version fix).
+- **Backend:** Render service `aiconnectpro-backend`, Free plan, at https://aiconnectpro-backend.onrender.com. Its latest backend application deployment is live at commit `ee4e0e570fe5b706f448c4507ea37a83b7469a2d`.
 - **Database and authentication:** Supabase project `yrjkkmvrmiieqozuvbqp` is Active/Healthy in ap-southeast-1.
 - **Health:** Production `/api/ready` returned HTTP 200 with database readiness after the latest release.
-- **Automated checks:** GitHub Actions passed all 25 backend Node tests and the project syntax check for 61 JavaScript files on 2026-11-23. Coverage includes account export, deletion safeguards, readiness, messaging receipts, 6–10 digit email OTP input, employer resume access, employer application-notification recipients, and company review-notification events. The deletion tests cover policy guards; they do not execute a destructive deletion against production data.
+- **Automated checks:** The backend test suite passed 25 tests in PR #92; the latest PR #94 syntax workflow passed for frontend and backend JavaScript. Coverage includes account export, deletion safeguards, readiness, messaging receipts, 6–10 digit email OTP input, employer resume access, employer application-notification recipients, and company review-notification events. The deletion tests cover policy guards; they do not execute a destructive deletion against production data.
 - **Notifications:** New applications notify active members of the verified organization and link to the relevant job in its protected applicant inbox. Company request approval and rejection also notify the requester and link to the company access page. Migrations for these events are applied.
 - **Release evidence:** See [MVP release readiness snapshot](MVP-RELEASE-READINESS-2026-11-17.md) for current deployment, test, production data, and launch-gate evidence.
 
@@ -46,7 +46,7 @@ This is enough to confirm that the product has real accounts and some member act
 
 ## Known limits and owner checks
 
-- **Email delivery:** The owner reports saving temporary Gmail SMTP settings in Supabase and has now confirmed receiving a signup OTP. Delivery is confirmed for that test; acceptance of the code and completion of signup still need browser confirmation. The production database currently has one account awaiting email confirmation, but aggregate counts cannot tie it to this test. Gmail SMTP is a temporary pilot setup. Never share OTPs or SMTP credentials in chat.
+- **Email delivery:** The owner reports saving temporary Gmail SMTP settings in Supabase and has now confirmed receiving a signup OTP. Delivery is confirmed for that test; acceptance of the code and completion of signup still need browser confirmation. The production database snapshot captured one account awaiting email confirmation, but aggregate counts cannot tie it to this test. Gmail SMTP is a temporary pilot setup. Never share OTPs or SMTP credentials in chat.
 - **Phone OTP:** Not configured because no SMS provider is connected and no paid subscription is authorized.
 - **Automated company verification:** No GST verification provider is configured; review remains manual.
 - **Calls:** No reliable calling service or TURN relay is configured.
@@ -68,7 +68,7 @@ Keep work within the existing free allowances. Do not upgrade plans or add a pai
 
 ## Recommended order to reach a broader launch
 
-1. Complete the received email OTP in the signup page and confirm that the account reaches its signed-in state. Before broad public launch, test delivery to an address outside the owner's team. Keep Gmail SMTP as a temporary pilot setup and do not share credentials in chat.
+1. Submit the received email OTP in the signup page and confirm that the account reaches its signed-in state. Before broad public launch, test delivery to an address outside the owner's team. Keep Gmail SMTP as a temporary pilot setup and do not share credentials in chat.
 2. Have one genuine employer submit a company request; review evidence manually and approve only when appropriate.
 3. Publish a genuine job and complete the employer listing and member application flows, including the new application notification and resume preview.
 4. Verify account deletion/contact operations and privacy wording from a member account.
@@ -80,4 +80,4 @@ Keep work within the existing free allowances. Do not upgrade plans or add a pai
 - [README](../README.md).
 - [Employer and organization verification process](employer-organization-verification.md).
 - [MVP release readiness snapshot, 2026-11-17](MVP-RELEASE-READINESS-2026-11-17.md).
-- Production rechecked on 2026-11-23: Vercel production and Render backend are live on commit `ee4e0e570fe5b706f448c4507ea37a83b7469a2d`; Supabase is ACTIVE_HEALTHY. Production readiness returned HTTP 200 with database dependency. GitHub Actions passed 22 tests and syntax validation for 61 JavaScript files. Releases add alerts for applications and company review outcomes while retaining member- and organization-scoped authorization. The AI assistant endpoint is also protected by verified-user authentication and bounded input validation.
+- Production rechecked on 2026-11-24: Vercel's latest application-code release is Ready at `b32aec9309719693185e52e854f395933ba9fbd7`; Render's backend is live at `ee4e0e570fe5b706f448c4507ea37a83b7469a2d`; Supabase is ACTIVE_HEALTHY. Production readiness returned HTTP 200 with database dependency. PR #94's syntax workflow passed; the latest backend test suite passed 25 tests in PR #92. Signup and Google OAuth now record the currently published privacy policy version (`2026-11-02`).
