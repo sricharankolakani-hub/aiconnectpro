@@ -141,7 +141,7 @@ router.get('/', async (req, res) => {
           type: row.type,
           company_access_request_id: row.company_access_request_id,
           actor_id: row.actor_id,
-          title: companyName + (approved ? ' was approved' : ' needs more review'),
+          title: approved ? companyName + ' was approved' : companyName + '’s request was not approved',
           body: approved
             ? 'Your organization can now continue to the employer workspace.'
             : 'Open your company access page to review the request status.',
