@@ -3,6 +3,7 @@ const router = express.Router();
 const supabase = require('../services/supabaseClient');
 const auth = require('../middleware/authMiddleware');
 const requireAdmin = require('../middleware/adminMiddleware');
+const { buildCompanyReviewNotification } = require('../services/companyReviewNotifications');
 
 router.use(auth, requireAdmin);
 
@@ -158,6 +159,24 @@ router.patch('/company-access-requests/:id', async (req, res) => {
 
   if (updateError) return res.status(500).json({ error: 'request_review_failed' });
   if (!updated) return res.status(409).json({ error: 'request_already_reviewed' });
+
+  const notification = buildCompanyReviewNotification({
+    requestId: request.id,
+    requesterId: request.requester_id,
+    reviewerId: req.user.id,
+    decision
+  });
+  if (notification) {
+    const { error: notificationError } = await supabase.from('notifications')
+      .upsert([notification], {
+        onConflict: 'user_id,company_access_request_id',
+        ignoreDuplicates: true
+      });
+    if (notificationError) {
+      console.error('Company review notification failed', notificationError);
+    }
+  }
+
   return res.json({ request: updated });
 });
 

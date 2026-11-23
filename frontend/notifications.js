@@ -25,10 +25,12 @@ function node(tag, className, text) {
 function destination(item) {
   if (item.type === 'message') return 'messages.html?user=' + encodeURIComponent(item.actor_id);
   if (item.type === 'job_application') {
-    const target = item.job_id
+    return item.job_id
       ? 'company-applications.html?job=' + encodeURIComponent(item.job_id) + '#inbox'
       : 'company-applications.html#inbox';
-    return target;
+  }
+  if (item.type === 'company_request_approved' || item.type === 'company_request_rejected') {
+    return 'company-access.html';
   }
   if (item.type === 'connection_request') return 'connections.html#incoming-heading';
   return 'connections.html#outgoing-heading';

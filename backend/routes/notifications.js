@@ -10,7 +10,7 @@ router.get('/', async (req, res) => {
   try {
     const includeMessages = req.query.type !== 'connections';
     let notificationQuery = supabase.from('notifications')
-      .select('id, type, actor_id, request_id, application_id, created_at')
+      .select('id, type, actor_id, request_id, application_id, company_access_request_id, created_at')
       .eq('user_id', userId)
       .is('read_at', null)
       .order('created_at', { ascending: false })
@@ -71,6 +71,18 @@ router.get('/', async (req, res) => {
     if (applicationResult.error) throw applicationResult.error;
     const applications = new Map((applicationResult.data || []).map(row => [row.id, row]));
 
+    const companyRequestIds = [...new Set(rows
+      .filter(row => row.type === 'company_request_approved' || row.type === 'company_request_rejected')
+      .map(row => row.company_access_request_id)
+      .filter(Boolean))];
+    const companyRequestResult = companyRequestIds.length
+      ? await supabase.from('company_access_requests')
+        .select('id, company_name, status')
+        .in('id', companyRequestIds)
+      : { data: [], error: null };
+    if (companyRequestResult.error) throw companyRequestResult.error;
+    const companyRequests = new Map((companyRequestResult.data || []).map(row => [row.id, row]));
+
     const actorIds = [...new Set([
       ...rows.map(row => row.actor_id),
       ...unreadBySender.keys()
@@ -82,7 +94,7 @@ router.get('/', async (req, res) => {
     const names = new Map((profiles || []).map(row => [row.id, row.full_name || 'AIConnectPro member']));
 
     const connectionNotifications = rows
-      .filter(row => row.type !== 'job_application')
+      .filter(row => ['connection_request', 'connection_accepted', 'connection_declined'].includes(row.type))
       .map(row => {
         const actorName = names.get(row.actor_id) || 'AIConnectPro member';
         const accepted = row.type === 'connection_accepted';
@@ -118,13 +130,31 @@ router.get('/', async (req, res) => {
           created_at: row.created_at
         };
       });
+    const companyReviewNotifications = rows
+      .filter(row => row.type === 'company_request_approved' || row.type === 'company_request_rejected')
+      .map(row => {
+        const request = companyRequests.get(row.company_access_request_id);
+        const approved = row.type === 'company_request_approved';
+        const companyName = request?.company_name || 'your organization';
+        return {
+          id: row.id,
+          type: row.type,
+          company_access_request_id: row.company_access_request_id,
+          actor_id: row.actor_id,
+          title: companyName + (approved ? ' was approved' : ' needs more review'),
+          body: approved
+            ? 'Your organization can now continue to the employer workspace.'
+            : 'Open your company access page to review the request status.',
+          created_at: row.created_at
+        };
+      });
     const messageNotifications = [...unreadBySender.values()].map(item => ({
       ...item,
       actor_name: names.get(item.actor_id) || 'AIConnectPro member',
       title: 'New message from ' + (names.get(item.actor_id) || 'AIConnectPro member')
     }));
 
-    const notifications = [...connectionNotifications, ...jobApplicationNotifications, ...messageNotifications]
+    const notifications = [...connectionNotifications, ...jobApplicationNotifications, ...companyReviewNotifications, ...messageNotifications]
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       .slice(0, 50);
     return res.json({
