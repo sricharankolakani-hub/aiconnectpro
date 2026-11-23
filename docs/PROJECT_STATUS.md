@@ -10,11 +10,11 @@ The live product name remains AIConnectPro. Do not rename the product or change 
 
 ## Production status
 
-- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest application-code release is Ready at commit `b32aec9309719693185e52e854f395933ba9fbd7` (signup consent version fix).
-- **Backend:** Render service `aiconnectpro-backend`, Free plan, at https://aiconnectpro-backend.onrender.com. Its latest backend application deployment is live at commit `ee4e0e570fe5b706f448c4507ea37a83b7469a2d`.
+- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest production code release is Ready at commit `631e87346382ae80114b2797548eee91d485c4b1` (signup consent fix and legacy endpoint removal).
+- **Backend:** Render service `aiconnectpro-backend`, Free plan, at https://aiconnectpro-backend.onrender.com. Its latest backend application deployment is live at commit `631e87346382ae80114b2797548eee91d485c4b1`.
 - **Database and authentication:** Supabase project `yrjkkmvrmiieqozuvbqp` is Active/Healthy in ap-southeast-1.
 - **Health:** Production `/api/ready` returned HTTP 200 with database readiness after the latest release.
-- **Automated checks:** The backend test suite passed 25 tests in PR #92; the latest PR #94 syntax workflow passed for frontend and backend JavaScript. Coverage includes account export, deletion safeguards, readiness, messaging receipts, 6–10 digit email OTP input, employer resume access, employer application-notification recipients, and company review-notification events. The deletion tests cover policy guards; they do not execute a destructive deletion against production data.
+- **Automated checks:** The backend test suite passed 25 tests in PR #92. JavaScript syntax checks passed on PRs #94 and #96. Coverage includes account export, deletion safeguards, readiness, messaging receipts, 6–10 digit email OTP input, employer resume access, employer application-notification recipients, and company review-notification events. The deletion tests cover policy guards; they do not execute a destructive deletion against production data.
 - **Notifications:** New applications notify active members of the verified organization and link to the relevant job in its protected applicant inbox. Company request approval and rejection also notify the requester and link to the company access page. Migrations for these events are applied.
 - **Release evidence:** See [MVP release readiness snapshot](MVP-RELEASE-READINESS-2026-11-17.md) for current deployment, test, production data, and launch-gate evidence.
 
@@ -57,6 +57,7 @@ This is enough to confirm that the product has real accounts and some member act
 
 ## Security and maintenance
 
+- **API route audit (24 Nov):** All inspected user-data routes require sign-in; admin routes also require the server-managed admin role. The unauthenticated legacy company-list endpoint was unused by the current app pages, removed in PR #96, and returns HTTP 404 in production. Signup/login and health/readiness routes remain intentionally public.
 - Supabase's security advisor warnings: 19 RLS-enabled tables with no policies and leaked-password protection unavailable on the current Free plan. A same-day read-only grant query found no table grants to `anon` or `authenticated`; the app accesses data through the protected server API. Recheck before adding direct browser database access or changing grants. A catalog review confirmed member-owned profile, connection, messaging, post, and report records cascade on Auth user deletion; reviewed organizations block deletion and attribution fields are set null. No destructive account deletion was run in production.
 - Leaked-password protection remains disabled because it is reported unavailable on the current Supabase Free plan.
 - Supabase's performance advisor flags unindexed foreign keys and unused indexes. At current low data volume these are informational; do not drop indexes or change production schema without query-plan review and a tested migration.
@@ -80,4 +81,4 @@ Keep work within the existing free allowances. Do not upgrade plans or add a pai
 - [README](../README.md).
 - [Employer and organization verification process](employer-organization-verification.md).
 - [MVP release readiness snapshot, 2026-11-17](MVP-RELEASE-READINESS-2026-11-17.md).
-- Production rechecked on 2026-11-24: Vercel's latest application-code release is Ready at `b32aec9309719693185e52e854f395933ba9fbd7`; Render's backend is live at `ee4e0e570fe5b706f448c4507ea37a83b7469a2d`; Supabase is ACTIVE_HEALTHY. Production readiness returned HTTP 200 with database dependency. PR #94's syntax workflow passed; the latest backend test suite passed 25 tests in PR #92. Signup and Google OAuth now record the currently published privacy policy version (`2026-11-02`).
+- Production rechecked on 2026-11-24: Vercel production and Render's backend are live at `631e87346382ae80114b2797548eee91d485c4b1`; Supabase is ACTIVE_HEALTHY. Production readiness returned HTTP 200 with database dependency; the removed legacy company-list endpoint returned HTTP 404. PRs #94 and #96 syntax workflows passed; the latest backend test suite passed 25 tests in PR #92. Signup and Google OAuth now record the currently published privacy policy version (`2026-11-02`).
