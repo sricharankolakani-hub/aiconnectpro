@@ -14,7 +14,7 @@ The deployed application is available for a controlled pilot. Core pages and bac
 - Render service `aiconnectpro-backend` is **live** on the free plan at backend application commit `4b4a272dd0fb2c52fb35cf135069ce3cb90a02ac`.
 - Supabase project `yrjkkmvrmiieqozuvbqp` is **ACTIVE_HEALTHY**.
 - Platform state rechecked 24 November: the latest Vercel production code release is READY, Render's backend deploy is live on the Free plan, and Supabase is ACTIVE_HEALTHY. Production `/api/ready` returned HTTP 200 and confirmed database readiness after the latest release; the removed legacy company-list endpoint returned HTTP 404.
-- The backend test suite passed all 25 Node tests in PR #92; JavaScript syntax checks passed on PRs #94, #96, and #98. Coverage includes the protected AI assistant endpoint and input policy, secure employer resume previews, verified-employer application-notification recipients, company review decision notifications, signup OTP input length, messaging receipts, readiness, account export, and account-deletion safeguards. The deletion tests cover policy guards only; no destructive account deletion was run against production data.
+- The latest GitHub Actions workflow on PR #98 ran `npm test --prefix backend` successfully, including JavaScript checks and all 25 backend Node tests. The same workflow passed on PRs #94 and #96. Coverage includes the protected AI assistant endpoint and input policy, secure employer resume previews, verified-employer application-notification recipients, company review decision notifications, signup OTP input length, messaging receipts, readiness, account export, and account-deletion safeguards. The deletion tests cover policy guards only; no destructive account deletion was run against production data.
 - The admin company-access page reports database connectivity separately from request-queue status. Access remains server-side admin protected.
 - New-application notifications reach active members of the verified organization and link directly to that opportunity in the applicant inbox. Company approval and rejection notifications reach the request owner and link to company access. Both supporting Supabase migrations are applied.
 
@@ -69,7 +69,7 @@ The product has no employer or job inventory yet. Do not create synthetic public
 - [x] Production pages resolve and are served over HTTPS.
 - [x] Backend liveness and database readiness return healthy.
 - [x] Production frontend, backend, and database are active.
-- [x] Automated project checks pass for readiness, account export, account-deletion safeguards, OTP input length, employer resume access, application notifications, and company review notifications (25 backend tests passed in PR #92; the latest PR #94 syntax check passed).
+- [x] Automated project checks pass for readiness, account export, account-deletion safeguards, OTP input length, employer resume access, application notifications, and company review notifications (CI runs `npm test --prefix backend`; all 25 backend tests and JavaScript checks passed on PR #98).
 - [x] Application and company-review notification migrations are applied; corresponding code is live on Vercel and Render.
 - [x] Owner confirms receiving the signup OTP after configuring temporary Gmail SMTP; the signup and OAuth consent version now matches the published policy.
 - [ ] Owner submits the code in the signup page and confirms the new account reaches its signed-in state.
