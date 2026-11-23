@@ -222,21 +222,6 @@ router.post('/:id/apply', auth, async (req, res) => {
   }
 });
 
-/**
- * OPTIONAL: GET /api/companies - list companies (public)
- * If you have a companies table, you can enable this.
- */
-router.get('/_companies/list', async (req, res) => {
-  try {
-    const { data, error } = await supabase.from('companies').select('*').order('name', { ascending: true }).limit(200);
-    if (error) return res.status(500).json({ error: 'db_error', details: error.message || error });
-    return res.json({ companies: data || [] });
-  } catch (err) {
-    console.error('Companies list failed', err);
-    return res.status(500).json({ error: 'internal', details: err.message });
-  }
-});
-
 module.exports = router;
 // GET /api/jobs/applied
 router.get('/applied', auth, async (req, res) => {
