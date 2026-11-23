@@ -10,12 +10,13 @@ The live product name remains AIConnectPro. Do not rename the product or change 
 
 ## Production status
 
-- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest deployment is Ready.
-- **Backend:** Render service `aiconnectpro-backend`, Free plan, at https://aiconnectpro-backend.onrender.com. Its latest application deployment is live.
+- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest deployment is Ready at commit `4a8a8e4899dccfdf48570370c33b28f6b869add6`.
+- **Backend:** Render service `aiconnectpro-backend`, Free plan, at https://aiconnectpro-backend.onrender.com. Its latest application deployment is live at the same commit.
 - **Database and authentication:** Supabase project `yrjkkmvrmiieqozuvbqp` is Active/Healthy in ap-southeast-1.
-- **Health:** Production `/api/health` and `/api/ready` returned HTTP 200; readiness included the database dependency.
-- **Automated checks:** GitHub Actions passed all 16 backend Node tests and the project syntax check for 55 JavaScript files on 2026-11-23. Coverage includes account export, deletion safeguards, readiness, messaging receipts, 6–10 digit email OTP input, and employer resume access rules. The deletion tests cover policy guards; they do not execute a destructive deletion against production data.
-- **Release evidence:** See [MVP release readiness snapshot](MVP-RELEASE-READINESS-2026-11-17.md) for deployment, route sweep, production data counts, and EOD checks.
+- **Health:** Production `/api/ready` returned HTTP 200 with database readiness after the latest release.
+- **Automated checks:** GitHub Actions passed all 19 backend Node tests and the project syntax check for 57 JavaScript files on 2026-11-23. Coverage includes account export, deletion safeguards, readiness, messaging receipts, 6–10 digit email OTP input, employer resume access, and employer application-notification recipient rules. The deletion tests cover policy guards; they do not execute a destructive deletion against production data.
+- **Employer notifications:** New applications now notify active members of the verified organization. Notifications link to the relevant job in the protected applicant inbox. A production database migration supports these alerts.
+- **Release evidence:** See [MVP release readiness snapshot](MVP-RELEASE-READINESS-2026-11-17.md) for current deployment, test, production data, and launch-gate evidence.
 
 Two older Render services (`aiconnectpro` and `aiconnectpro-1`) remain in the same workspace. Their recent deploy records show update failures and recent request-log checks found no traffic. They were left untouched because someone may still use their URLs. Confirm URL usage before suspending or deleting them.
 
@@ -26,7 +27,7 @@ The current application includes:
 - Email/password signup and login, email verification flow, Google sign-in, and optional authenticator-app MFA.
 - Member profile intents for professional, student, and founder accounts. Profile settings include profile details, visibility, appearance, and photo.
 - Resume creation with templates and PDF download.
-- Jobs and applications; employer access is separate from member profiles and depends on active membership in a verified organization. The applicant inbox now provides a protected preview of resumes attached to applications, scoped to that listing and organization.
+- Jobs and applications; employer access is separate from member profiles and depends on active membership in a verified organization. The applicant inbox provides a protected preview of resumes attached to applications and now receives application alerts, scoped to active members of the verified organization.
 - Manual company review. GST/address evidence can be collected, but submitting it does not automatically verify a company.
 - Profile discovery, connection requests, direct messages, sent/delivered/seen indicators, and in-app notifications.
 - Professional updates with privacy controls, editing, reactions, comments, and account export/deletion support.
@@ -56,9 +57,9 @@ This is enough to confirm that the product has real accounts and some member act
 
 ## Security and maintenance
 
-- Supabase's security advisor rechecked 2026-11-23 reported 19 RLS-enabled tables with no policies and a leaked-password protection warning. A same-day read-only grant query found no table grants to `anon` or `authenticated`; the app accesses data through the protected server API. Recheck before adding direct browser database access or changing grants. A catalog review confirmed member-owned profile, connection, messaging, post, and report records cascade on Auth user deletion; reviewed organizations block deletion and attribution fields are set null. No destructive account deletion was run in production.
-- Leaked-password protection is reported unavailable on the current Supabase Free plan and remains disabled.
-- Supabase's performance advisor rechecked 2026-11-23 still flags unindexed foreign keys and unused indexes. At current low data volume these are informational; do not drop indexes or change production schema without query-plan review and a tested migration.
+- Supabase's security advisor warnings: 19 RLS-enabled tables with no policies and leaked-password protection unavailable on the current Free plan. A same-day read-only grant query found no table grants to `anon` or `authenticated`; the app accesses data through the protected server API. Recheck before adding direct browser database access or changing grants. A catalog review confirmed member-owned profile, connection, messaging, post, and report records cascade on Auth user deletion; reviewed organizations block deletion and attribution fields are set null. No destructive account deletion was run in production.
+- Leaked-password protection remains disabled because it is reported unavailable on the current Supabase Free plan.
+- Supabase's performance advisor flags unindexed foreign keys and unused indexes. At current low data volume these are informational; do not drop indexes or change production schema without query-plan review and a tested migration.
 - Keep the Supabase service-role key on the backend only. Never paste credentials or secret values into chat.
 
 ## No-cost operating rule
@@ -69,7 +70,7 @@ Keep work within the existing free allowances. Do not upgrade plans or add a pai
 
 1. Complete the received email OTP in the signup page and confirm that the account reaches its signed-in state. Before broad public launch, test delivery to an address outside the owner's team. Keep Gmail SMTP as a temporary pilot setup and do not share credentials in chat.
 2. Have one genuine employer submit a company request; review evidence manually and approve only when appropriate.
-3. Publish a genuine job and complete the employer listing and member application flows.
+3. Publish a genuine job and complete the employer listing and member application flows, including the new application notification and resume preview.
 4. Verify account deletion/contact operations and privacy wording from a member account.
 5. Decide whether the two older Render service URLs are still used. Keep them until that is confirmed.
 6. Continue free-tier monitoring; defer SMS, automated verification, calls, and paid AI without budget approval.
@@ -79,5 +80,4 @@ Keep work within the existing free allowances. Do not upgrade plans or add a pai
 - [README](../README.md).
 - [Employer and organization verification process](employer-organization-verification.md).
 - [MVP release readiness snapshot, 2026-11-17](MVP-RELEASE-READINESS-2026-11-17.md).
-- Production state rechecked on 2026-11-23: Vercel production is READY and Render backend is live on the Free plan at commit `ada4435b30c9f3f570c36d77c6d0731b58e004d3`; Supabase is ACTIVE_HEALTHY. The deployed update adds protected employer resume previews. GitHub Actions v5 now runs on Node 24 while the project runtime stays on Node 22. The HTTP health/readiness and full route sweep evidence is from 2026-11-17. Current monitoring found no Vercel runtime errors in 7 days, no Render application errors in 24 hours, and no open repository issues or pull requests.
-- Supabase security/performance advisories, table grants, and account-deletion foreign-key rules were reviewed read-only on 2026-11-23.
+- Production rechecked on 2026-11-23: Vercel production and Render backend are live on commit `4a8a8e4899dccfdf48570370c33b28f6b869add6`; Supabase is ACTIVE_HEALTHY. Production readiness returned HTTP 200 with database dependency. GitHub Actions passed 19 tests and syntax validation for 57 JavaScript files. The release adds notifications to active verified-organization members when an application arrives and links alerts to the relevant applicant inbox listing.
