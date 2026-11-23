@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../services/supabaseClient');
 
-const REQUIRED_PRIVACY_POLICY_VERSION = '2026-10-17';
+const REQUIRED_PRIVACY_POLICY_VERSION = '2026-11-02';
 
 /**
  * POST /api/auth/signup
