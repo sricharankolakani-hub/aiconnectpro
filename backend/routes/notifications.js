@@ -9,13 +9,20 @@ router.get('/', async (req, res) => {
   const userId = req.user.id;
   try {
     const includeMessages = req.query.type !== 'connections';
+    let notificationQuery = supabase.from('notifications')
+      .select('id, type, actor_id, request_id, application_id, created_at')
+      .eq('user_id', userId)
+      .is('read_at', null)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (!includeMessages) {
+      notificationQuery = notificationQuery.in('type', [
+        'connection_request', 'connection_accepted', 'connection_declined'
+      ]);
+    }
+
     const [notificationResult, conversationResult] = await Promise.all([
-      supabase.from('notifications')
-        .select('id, type, actor_id, request_id, created_at')
-        .eq('user_id', userId)
-        .is('read_at', null)
-        .order('created_at', { ascending: false })
-        .limit(50),
+      notificationQuery,
       includeMessages
         ? supabase.from('direct_conversations')
           .select('id')
@@ -52,6 +59,18 @@ router.get('/', async (req, res) => {
       unreadBySender.set(message.sender_id, item);
     }
 
+    const applicationIds = [...new Set(rows
+      .filter(row => row.type === 'job_application')
+      .map(row => row.application_id)
+      .filter(Boolean))];
+    const applicationResult = applicationIds.length
+      ? await supabase.from('applications')
+        .select('id, job_id, jobs(title)')
+        .in('id', applicationIds)
+      : { data: [], error: null };
+    if (applicationResult.error) throw applicationResult.error;
+    const applications = new Map((applicationResult.data || []).map(row => [row.id, row]));
+
     const actorIds = [...new Set([
       ...rows.map(row => row.actor_id),
       ...unreadBySender.keys()
@@ -62,29 +81,50 @@ router.get('/', async (req, res) => {
     if (profileError) throw profileError;
     const names = new Map((profiles || []).map(row => [row.id, row.full_name || 'AIConnectPro member']));
 
-    const connectionNotifications = rows.map(row => {
-      const actorName = names.get(row.actor_id) || 'AIConnectPro member';
-      const accepted = row.type === 'connection_accepted';
-      const declined = row.type === 'connection_declined';
-      return {
-        id: row.id,
-        type: row.type,
-        actor_id: row.actor_id,
-        request_id: row.request_id,
-        actor_name: actorName,
-        title: row.type === 'connection_request'
-          ? actorName + ' sent you a connection request'
-          : actorName + (accepted ? ' accepted your connection request' : declined ? ' declined your connection request' : ' updated a connection request'),
-        created_at: row.created_at
-      };
-    });
+    const connectionNotifications = rows
+      .filter(row => row.type !== 'job_application')
+      .map(row => {
+        const actorName = names.get(row.actor_id) || 'AIConnectPro member';
+        const accepted = row.type === 'connection_accepted';
+        const declined = row.type === 'connection_declined';
+        return {
+          id: row.id,
+          type: row.type,
+          actor_id: row.actor_id,
+          request_id: row.request_id,
+          actor_name: actorName,
+          title: row.type === 'connection_request'
+            ? actorName + ' sent you a connection request'
+            : actorName + (accepted ? ' accepted your connection request' : declined ? ' declined your connection request' : ' updated a connection request'),
+          created_at: row.created_at
+        };
+      });
+    const jobApplicationNotifications = rows
+      .filter(row => row.type === 'job_application')
+      .map(row => {
+        const actorName = names.get(row.actor_id) || 'An applicant';
+        const application = applications.get(row.application_id);
+        const job = Array.isArray(application?.jobs) ? application.jobs[0] : application?.jobs;
+        const jobTitle = job?.title || 'your opportunity';
+        return {
+          id: row.id,
+          type: row.type,
+          actor_id: row.actor_id,
+          application_id: row.application_id,
+          job_id: application?.job_id || null,
+          actor_name: actorName,
+          title: actorName + ' applied to ' + jobTitle,
+          body: 'Open your applicant inbox to review this application.',
+          created_at: row.created_at
+        };
+      });
     const messageNotifications = [...unreadBySender.values()].map(item => ({
       ...item,
       actor_name: names.get(item.actor_id) || 'AIConnectPro member',
       title: 'New message from ' + (names.get(item.actor_id) || 'AIConnectPro member')
     }));
 
-    const notifications = [...connectionNotifications, ...messageNotifications]
+    const notifications = [...connectionNotifications, ...jobApplicationNotifications, ...messageNotifications]
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       .slice(0, 50);
     return res.json({
