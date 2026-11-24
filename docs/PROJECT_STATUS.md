@@ -1,6 +1,6 @@
 # AIConnectPro project status and no-cost roadmap
 
-Last reviewed: 2026-11-24 (Asia/Kolkata)
+Last reviewed: 2026-11-25 (Asia/Kolkata)
 
 ## Product direction
 
@@ -10,11 +10,11 @@ The live product name remains AIConnectPro. Do not rename the product or change 
 
 ## Production status
 
-- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest production code release is Ready at commit `907cb95ec31f5efe405dddba6f3c163044a4cd49` (signup consent, photo ownership, and legacy endpoint fixes).
-- **Backend:** Render service `aiconnectpro-backend`, Free plan, at https://aiconnectpro-backend.onrender.com. Its latest backend application deployment is live at commit `907cb95ec31f5efe405dddba6f3c163044a4cd49`.
+- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest production code release is Ready at commit `8632fb570d42f552ffaf97dd4f0729d286591fad` (owner-scoped profile/Capsule media and cleanup safeguards, signup consent, and legacy endpoint fixes).
+- **Backend:** Render service `aiconnectpro-backend`, Free plan, at https://aiconnectpro-backend.onrender.com. Its latest backend application deployment is live at commit `8632fb570d42f552ffaf97dd4f0729d286591fad`.
 - **Database and authentication:** Supabase project `yrjkkmvrmiieqozuvbqp` is Active/Healthy in ap-southeast-1.
 - **Health:** Production `/api/ready` returned HTTP 200 with database readiness after the latest release.
-- **Automated checks:** CI runs `npm test --prefix backend`, which checks project JavaScript and runs the backend Node tests. The latest workflow on PR #101 passed all 28 backend tests; the same workflow passed on PRs #94, #96, #98, and #100. Coverage includes profile-photo ownership, account export, deletion safeguards, readiness, messaging receipts, 6–10 digit email OTP input, employer resume access, employer application-notification recipients, and company review-notification events. The deletion tests cover policy guards; they do not execute a destructive deletion against production data.
+- **Automated checks:** CI runs `npm test --prefix backend`, which checks project JavaScript and runs the backend Node tests. The latest workflow on PR #103 passed JavaScript checks for 63 files and all 28 backend tests; the same workflow passed on PRs #94, #96, #98, #100, and #101. Coverage includes owner-scoped profile/Capsule media paths, account export, deletion safeguards, readiness, messaging receipts, 6–10 digit email OTP input, employer resume access, employer application-notification recipients, and company review-notification events. The deletion tests cover policy guards; they do not execute a destructive deletion against production data.
 - **Notifications:** New applications notify active members of the verified organization and link to the relevant job in its protected applicant inbox. Company request approval and rejection also notify the requester and link to the company access page. Migrations for these events are applied.
 - **Release evidence:** See [MVP release readiness snapshot](MVP-RELEASE-READINESS-2026-11-17.md) for current deployment, test, production data, and launch-gate evidence.
 
@@ -57,7 +57,7 @@ This is enough to confirm that the product has real accounts and some member act
 
 ## Security and maintenance
 
-- **API route audit (24 Nov):** All inspected user-data routes require sign-in; admin routes also require the server-managed admin role. The unauthenticated legacy company-list endpoint was unused by the current app pages, removed in PR #96, and returns HTTP 404 in production. Signed profile-photo URLs are restricted to paths under the matching user ID after the PR #101 fix. Signup/login and health/readiness routes remain intentionally public.
+- **API route audit (25 Nov):** All inspected user-data routes require sign-in; admin routes also require the server-managed admin role. The unauthenticated legacy company-list endpoint was unused by current app pages and removed in PR #96. PR #103 validates owner paths before signing Capsule media, restricts account-deletion cleanup to the account owner's storage paths, and checks ownership before deleting Capsule media. Signup/login and health/readiness routes remain intentionally public.
 - Supabase's security advisor warnings: 19 RLS-enabled tables with no policies and leaked-password protection unavailable on the current Free plan. A same-day read-only grant query found no table grants to `anon` or `authenticated`; the app accesses data through the protected server API. Recheck before adding direct browser database access or changing grants. A catalog review confirmed member-owned profile, connection, messaging, post, and report records cascade on Auth user deletion; reviewed organizations block deletion and attribution fields are set null. No destructive account deletion was run in production.
 - Leaked-password protection remains disabled because it is reported unavailable on the current Supabase Free plan.
 - Supabase's performance advisor flags unindexed foreign keys and unused indexes. At current low data volume these are informational; do not drop indexes or change production schema without query-plan review and a tested migration.
@@ -81,4 +81,4 @@ Keep work within the existing free allowances. Do not upgrade plans or add a pai
 - [README](../README.md).
 - [Employer and organization verification process](employer-organization-verification.md).
 - [MVP release readiness snapshot, 2026-11-17](MVP-RELEASE-READINESS-2026-11-17.md).
-- Production rechecked on 2026-11-24: Vercel production and Render's backend are live at `907cb95ec31f5efe405dddba6f3c163044a4cd49`; Supabase is ACTIVE_HEALTHY. Production readiness returned HTTP 200 with database dependency; the removed legacy company-list endpoint returned HTTP 404. GitHub Actions on PR #101 passed the full `npm test --prefix backend` workflow: JavaScript checks and all 28 backend tests, including profile-photo ownership regression tests. Signup and Google OAuth now record the currently published privacy policy version (`2026-11-02`); the backend signup endpoint validates the same version in PR #98.
+- Production rechecked on 2026-11-25: Vercel production and Render's backend are live at `8632fb570d42f552ffaf97dd4f0729d286591fad`; Supabase is ACTIVE_HEALTHY. Production readiness returned HTTP 200 with database dependency. GitHub Actions on PR #103 passed the full `npm test --prefix backend` workflow: JavaScript checks for 63 files and all 28 backend tests, including owner-scoped profile/Capsule media path regressions. Signup and Google OAuth record the published privacy policy version (`2026-11-02`); the backend signup endpoint validates the same version in PR #98.
