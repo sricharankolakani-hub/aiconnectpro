@@ -10,11 +10,11 @@ The deployed application is available for a controlled pilot. Core pages and bac
 ## Production evidence
 
 - Monitoring on 23 November found no Vercel runtime error clusters in the prior seven days, no Render application error logs in the prior 24 hours, and no open GitHub issues or pull requests before this release.
-- The latest production code release on Vercel is **READY** at commit `4b4a272dd0fb2c52fb35cf135069ce3cb90a02ac`, including the signup consent fix and legacy endpoint removal.
-- Render service `aiconnectpro-backend` is **live** on the free plan at backend application commit `4b4a272dd0fb2c52fb35cf135069ce3cb90a02ac`.
+- The latest production code release on Vercel is **READY** at commit `907cb95ec31f5efe405dddba6f3c163044a4cd49`, including the signup consent, photo ownership, and legacy endpoint fixes.
+- Render service `aiconnectpro-backend` is **live** on the free plan at backend application commit `907cb95ec31f5efe405dddba6f3c163044a4cd49`.
 - Supabase project `yrjkkmvrmiieqozuvbqp` is **ACTIVE_HEALTHY**.
 - Platform state rechecked 24 November: the latest Vercel production code release is READY, Render's backend deploy is live on the Free plan, and Supabase is ACTIVE_HEALTHY. Production `/api/ready` returned HTTP 200 and confirmed database readiness after the latest release; the removed legacy company-list endpoint returned HTTP 404.
-- The latest GitHub Actions workflow on PR #98 ran `npm test --prefix backend` successfully, including JavaScript checks and all 25 backend Node tests. The same workflow passed on PRs #94 and #96. Coverage includes the protected AI assistant endpoint and input policy, secure employer resume previews, verified-employer application-notification recipients, company review decision notifications, signup OTP input length, messaging receipts, readiness, account export, and account-deletion safeguards. The deletion tests cover policy guards only; no destructive account deletion was run against production data.
+- The latest GitHub Actions workflow on PR #101 ran `npm test --prefix backend` successfully, including JavaScript checks and all 28 backend Node tests. The same workflow passed on PRs #94, #96, #98, and #100. Coverage includes the protected AI assistant endpoint and input policy, secure employer resume previews, verified-employer application-notification recipients, company review decision notifications, signup OTP input length, messaging receipts, readiness, account export, and account-deletion safeguards. The deletion tests cover policy guards only; no destructive account deletion was run against production data. Profile-photo regression tests reject paths outside an owner folder and malformed/traversal paths.
 - The admin company-access page reports database connectivity separately from request-queue status. Access remains server-side admin protected.
 - New-application notifications reach active members of the verified organization and link directly to that opportunity in the applicant inbox. Company approval and rejection notifications reach the request owner and link to company access. Both supporting Supabase migrations are applied.
 
@@ -59,7 +59,7 @@ The product has no employer or job inventory yet. Do not create synthetic public
 
 ## Security and maintenance notes
 
-- **API route audit (24 Nov):** All inspected user-data routes require sign-in; admin routes also require the server-managed admin role. PR #96 removed an unused unauthenticated legacy company-list endpoint, and production now returns HTTP 404 for that path. PR #98 aligned the legacy backend signup consent check with the same current policy version as the browser flow. Signup/login and health/readiness routes remain intentionally public.
+- **API route audit (24 Nov):** All inspected user-data routes require sign-in; admin routes also require the server-managed admin role. PR #96 removed an unused unauthenticated legacy company-list endpoint, and production now returns HTTP 404 for that path. PR #98 aligned the legacy backend signup consent check with the same current policy version as the browser flow. PR #101 added owner-path validation before profile-photo URLs are signed by the backend. Signup/login and health/readiness routes remain intentionally public.
 - Supabase's security advisor rechecked on 2026-11-23 reports 19 RLS-enabled tables with no policies and a leaked-password protection warning. A same-day read-only grant query found no table grants to the `anon` or `authenticated` database roles; the app uses the protected server API. Recheck before changing grants or adding direct browser database access. A catalog audit confirmed that member-owned profile, connection, messaging, post, and report records cascade when an Auth user is deleted; reviewed organizations block deletion and attribution fields are set null. No destructive account deletion was run in production.
 - Supabase’s leaked-password protection advisory remains. It requires a paid Supabase plan, so it was not enabled under the no-subscription constraint.
 - Performance advisor rechecked 2026-11-23 still reports unused indexes and unindexed foreign keys. At current low row counts these are informational; do not drop indexes or make production schema changes without checking query plans and testing a migration.
@@ -69,7 +69,7 @@ The product has no employer or job inventory yet. Do not create synthetic public
 - [x] Production pages resolve and are served over HTTPS.
 - [x] Backend liveness and database readiness return healthy.
 - [x] Production frontend, backend, and database are active.
-- [x] Automated project checks pass for readiness, account export, account-deletion safeguards, OTP input length, employer resume access, application notifications, and company review notifications (CI runs `npm test --prefix backend`; all 25 backend tests and JavaScript checks passed on PR #98).
+- [x] Automated project checks pass for readiness, account export, account-deletion safeguards, OTP input length, employer resume access, application notifications, and company review notifications (CI runs `npm test --prefix backend`; all 28 backend tests and JavaScript checks passed on PR #101).
 - [x] Application and company-review notification migrations are applied; corresponding code is live on Vercel and Render.
 - [x] Owner confirms receiving the signup OTP after configuring temporary Gmail SMTP; the signup and OAuth consent version now matches the published policy.
 - [ ] Owner submits the code in the signup page and confirms the new account reaches its signed-in state.
