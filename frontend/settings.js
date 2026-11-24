@@ -46,7 +46,7 @@ function avatarLetters(name) {
   return String(name || 'A').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
 }
 function isOwnedProfilePhotoPath(path, userId) {
-  if (typeof path !== 'string' || typeof userId !== 'string' || path.includes('\\\\')) return false;
+  if (typeof path !== 'string' || typeof userId !== 'string' || path.includes('\\')) return false;
   const segments = path.split('/');
   return segments.length >= 2 && segments[0] === userId && segments.every(segment => segment && segment !== '.' && segment !== '..');
 }
