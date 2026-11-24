@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../services/supabaseClient');
 const auth = require('../middleware/authMiddleware');
-const { isProfilePhotoPathOwnedBy } = require('../services/profilePhotoAccess');
+const { isUserStoragePathOwnedBy } = require('../services/profilePhotoAccess');
 
 function isPrivateDetailsTableMissing(error) {
   return error?.code === '42P01' || error?.code === 'PGRST205';
@@ -302,7 +302,7 @@ router.get('/:userId', auth, async (req, res) => {
 
     if (authUser && canViewField(visibility.avatar, isOwner, isConnected)) {
       const avatarPath = authUser.user_metadata?.avatar_path;
-      if (isProfilePhotoPathOwnedBy(avatarPath, targetId)) {
+      if (isUserStoragePathOwnedBy(avatarPath, targetId)) {
         const { data: signed, error } = await supabase.storage
           .from('profile-photos')
           .createSignedUrl(avatarPath, 600);
