@@ -266,7 +266,7 @@ router.delete('/:id', auth, async (req, res) => {
   if (deleteError) return res.status(500).json({ error: 'reel_delete_failed' });
   if (!deleted) return res.status(404).json({ error: 'reel_not_found' });
 
-  if (reel.media_url && !/^https?:\/\//i.test(reel.media_url)) {
+  if (isUserStoragePathOwnedBy(reel.media_url, req.user.id)) {
     const { error: storageError } = await supabase.storage.from('reel-media').remove([reel.media_url]);
     if (storageError) console.error('Deleted Reel media cleanup failed', storageError);
   }
