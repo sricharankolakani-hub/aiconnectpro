@@ -10,7 +10,7 @@ The live product name remains AIConnectPro. Do not rename the product or change 
 
 ## Production status
 
-- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest production code release is Ready at commit `907cb95ec31f5efe405dddba6f3c163044a4cd49` (signup consent fix and legacy endpoint removal).
+- **Frontend:** Vercel production at https://aiconnectpro.vercel.app. The latest production code release is Ready at commit `907cb95ec31f5efe405dddba6f3c163044a4cd49` (signup consent, photo ownership, and legacy endpoint fixes).
 - **Backend:** Render service `aiconnectpro-backend`, Free plan, at https://aiconnectpro-backend.onrender.com. Its latest backend application deployment is live at commit `907cb95ec31f5efe405dddba6f3c163044a4cd49`.
 - **Database and authentication:** Supabase project `yrjkkmvrmiieqozuvbqp` is Active/Healthy in ap-southeast-1.
 - **Health:** Production `/api/ready` returned HTTP 200 with database readiness after the latest release.
