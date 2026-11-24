@@ -16,7 +16,7 @@ test('rejects a path under a different user folder or a prefix collision', () =>
 test('rejects traversal and malformed paths', () => {
   assert.equal(isProfilePhotoPathOwnedBy('user-1/../user-2/avatar.webp', 'user-1'), false);
   assert.equal(isProfilePhotoPathOwnedBy('/user-1/avatar.webp', 'user-1'), false);
-  assert.equal(isProfilePhotoPathOwnedBy('user-1\\\\avatar.webp', 'user-1'), false);
+  assert.equal(isProfilePhotoPathOwnedBy('user-1/avatar\\\\evil.webp', 'user-1'), false);
   assert.equal(isProfilePhotoPathOwnedBy('user-1', 'user-1'), false);
   assert.equal(isProfilePhotoPathOwnedBy(null, 'user-1'), false);
 });
