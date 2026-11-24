@@ -1,6 +1,6 @@
 'use strict';
 
-function isProfilePhotoPathOwnedBy(path, userId) {
+function isUserStoragePathOwnedBy(path, userId) {
   if (typeof path !== 'string' || typeof userId !== 'string' || path.includes('\\')) return false;
   const segments = path.split('/');
   return segments.length >= 2
@@ -8,4 +8,6 @@ function isProfilePhotoPathOwnedBy(path, userId) {
     && segments.every(segment => segment && segment !== '.' && segment !== '..');
 }
 
-module.exports = { isProfilePhotoPathOwnedBy };
+const isProfilePhotoPathOwnedBy = isUserStoragePathOwnedBy;
+
+module.exports = { isProfilePhotoPathOwnedBy, isUserStoragePathOwnedBy };
