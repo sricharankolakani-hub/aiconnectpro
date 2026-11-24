@@ -4,8 +4,9 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const { isProfilePhotoPathOwnedBy } = require('../services/profilePhotoAccess');
 
-test('accepts a profile photo path under the matching user folder', () => {
+test('accepts user-scoped photo and Capsule media paths', () => {
   assert.equal(isProfilePhotoPathOwnedBy('user-1/avatar.webp', 'user-1'), true);
+  assert.equal(isProfilePhotoPathOwnedBy('user-1/capsule/clip.mp4', 'user-1'), true);
 });
 
 test('rejects a path under a different user folder or a prefix collision', () => {

@@ -4,7 +4,7 @@ const router = express.Router();
 const supabase = require('../services/supabaseClient');
 const auth = require('../middleware/authMiddleware');
 const { normalizeReelRow } = require('../services/reelService');
-const { isProfilePhotoPathOwnedBy } = require('../services/profilePhotoAccess');
+const { isUserStoragePathOwnedBy } = require('../services/profilePhotoAccess');
 
 async function canView(reel, userId) {
   if (!reel) return false;
@@ -24,6 +24,10 @@ async function withSignedMedia(reel) {
   const path = normalized.media_url;
   if (!path) return normalized;
   if (/^https?:\/\//i.test(path)) return normalized;
+  if (!isUserStoragePathOwnedBy(path, normalized.user_id)) {
+    normalized.media_url = null;
+    return normalized;
+  }
 
   const { data, error } = await supabase.storage.from('reel-media').createSignedUrl(path, 3600);
   if (error) {
@@ -156,7 +160,7 @@ router.get('/', auth, async (req, res) => {
         const { data: account, error: accountError } = await supabase.auth.admin.getUserById(authorId);
         if (!accountError && account?.user) {
           const avatarPath = account.user.user_metadata?.avatar_path;
-          if (isProfilePhotoPathOwnedBy(avatarPath, authorId)) {
+          if (isUserStoragePathOwnedBy(avatarPath, authorId)) {
             const { data: signed } = await supabase.storage.from('profile-photos').createSignedUrl(avatarPath, 3600);
             if (signed?.signedUrl) authorAvatarUrl = signed.signedUrl;
           } else if (account.user.user_metadata?.avatar_url) {
@@ -262,7 +266,7 @@ router.delete('/:id', auth, async (req, res) => {
   if (deleteError) return res.status(500).json({ error: 'reel_delete_failed' });
   if (!deleted) return res.status(404).json({ error: 'reel_not_found' });
 
-  if (reel.media_url && !/^https?:\/\//i.test(reel.media_url)) {
+  if (isUserStoragePathOwnedBy(reel.media_url, req.user.id)) {
     const { error: storageError } = await supabase.storage.from('reel-media').remove([reel.media_url]);
     if (storageError) console.error('Deleted Reel media cleanup failed', storageError);
   }

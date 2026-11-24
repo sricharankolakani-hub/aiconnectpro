@@ -7,6 +7,7 @@ const supabase = require('../services/supabaseClient');
 const auth = require('../middleware/authMiddleware');
 const { createAccountExportDocument } = require('../services/accountExportDocument');
 const { accountDeletionPreflight, organizationsRequiringTransfer } = require('../services/accountDeletionPolicy');
+const { isUserStoragePathOwnedBy } = require('../services/profilePhotoAccess');
 
 const PAGE_SIZE = 500;
 const RECENT_AUTH_SECONDS = 10 * 60;
@@ -189,17 +190,18 @@ router.delete('/', auth, async (req, res) => {
     const resumePaths = resumes.map(row => row.pdf_path)
       .filter(path => typeof path === 'string' && path.startsWith('resumes/'));
     const legacyReelPaths = reels.map(row => row.media_url)
-      .filter(path => typeof path === 'string' && path.startsWith(userId + '/') && !/^https?:\/\//i.test(path));
+      .filter(path => isUserStoragePathOwnedBy(path, userId) && !/^https?:\/\//i.test(path));
     const avatarPath = user.user_metadata?.avatar_path;
     const profilePaths = [
-      ...profilePhotoPaths,
-      ...(typeof avatarPath === 'string' && avatarPath.startsWith(userId + '/') ? [avatarPath] : [])
+      ...profilePhotoPaths.filter(path => isUserStoragePathOwnedBy(path, userId)),
+      ...(isUserStoragePathOwnedBy(avatarPath, userId) ? [avatarPath] : [])
     ];
+    const ownedReelMediaPaths = reelMediaPaths.filter(path => isUserStoragePathOwnedBy(path, userId));
 
     // Remove private objects before deleting their account metadata. Retrying is
     // safe if a later database or Auth operation fails.
     await removeStoragePaths('profile-photos', profilePaths);
-    await removeStoragePaths('reel-media', [...reelMediaPaths, ...legacyReelPaths]);
+    await removeStoragePaths('reel-media', [...ownedReelMediaPaths, ...legacyReelPaths]);
     await removeStoragePaths('resumes', resumePaths);
 
     // Delete personal rows that do not cascade from auth.users and standalone jobs.
