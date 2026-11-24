@@ -45,9 +45,14 @@ function setStatus(element, message, error = false) {
 function avatarLetters(name) {
   return String(name || 'A').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'A';
 }
+function isOwnedProfilePhotoPath(path, userId) {
+  if (typeof path !== 'string' || typeof userId !== 'string' || path.includes('\\\\')) return false;
+  const segments = path.split('/');
+  return segments.length >= 2 && segments[0] === userId && segments.every(segment => segment && segment !== '.' && segment !== '..');
+}
 async function getAvatarUrl(user) {
   const path = user?.user_metadata?.avatar_path;
-  if (path) {
+  if (isOwnedProfilePhotoPath(path, user?.id)) {
     const { data, error } = await supabase.storage.from('profile-photos').createSignedUrl(path, 3600);
     if (error) throw error;
     return data.signedUrl;
@@ -345,7 +350,7 @@ photoInput.addEventListener('change', async () => {
     currentUser = updated.user;
     showAvatar(await getAvatarUrl(currentUser), document.getElementById('full-name').value);
     setStatus(photoStatus, 'Your profile photo has been updated.');
-    if (oldPath && oldPath !== path) {
+    if (isOwnedProfilePhotoPath(oldPath, currentUser.id) && oldPath !== path) {
       const { error: removeError } = await supabase.storage.from('profile-photos').remove([oldPath]);
       if (removeError) console.warn('Previous profile photo could not be removed.');
     }
