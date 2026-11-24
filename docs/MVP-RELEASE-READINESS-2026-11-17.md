@@ -10,7 +10,7 @@ The deployed application is available for a controlled pilot. Core pages and bac
 ## Production evidence
 
 - Monitoring on 23 November found no Vercel runtime error clusters in the prior seven days, no Render application error logs in the prior 24 hours, and no open GitHub issues or pull requests before this release.
-- The latest production code release on Vercel is **READY** at commit `907cb95ec31f5efe405dddba6f3c163044a4cd49`, including the signup consent fix and legacy endpoint removal.
+- The latest production code release on Vercel is **READY** at commit `907cb95ec31f5efe405dddba6f3c163044a4cd49`, including the signup consent, photo ownership, and legacy endpoint fixes.
 - Render service `aiconnectpro-backend` is **live** on the free plan at backend application commit `907cb95ec31f5efe405dddba6f3c163044a4cd49`.
 - Supabase project `yrjkkmvrmiieqozuvbqp` is **ACTIVE_HEALTHY**.
 - Platform state rechecked 24 November: the latest Vercel production code release is READY, Render's backend deploy is live on the Free plan, and Supabase is ACTIVE_HEALTHY. Production `/api/ready` returned HTTP 200 and confirmed database readiness after the latest release; the removed legacy company-list endpoint returned HTTP 404.
