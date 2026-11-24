@@ -19,6 +19,7 @@ const { v4: uuidv4 } = require('uuid');
 const supabase = require('../services/supabaseClient');
 const authMiddleware = require('../middleware/authMiddleware');
 const { htmlToPdfBuffer, uploadPdfBufferToSupabase } = require('../services/resumePdfService');
+const { isResumePdfPathForId } = require('../services/resumeStorageAccess');
 
 // Render accessible, readable HTML. ATS mode deliberately stays single-column and unadorned.
 function buildResumeHtml(data = {}, requestedTemplate = 'ats') {
@@ -227,7 +228,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
     // If pdf_path exists, create a signed url (fresh)
     let pdfUrl = null;
-    if (data.pdf_path) {
+    if (isResumePdfPathForId(data.pdf_path, data.id)) {
       try {
         const bucket = process.env.SUPABASE_RESUME_BUCKET || 'resumes';
         const expiresIn = parseInt(process.env.SUPABASE_SIGNED_URL_EXPIRES || String(60 * 60), 10);

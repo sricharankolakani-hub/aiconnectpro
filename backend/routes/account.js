@@ -8,6 +8,7 @@ const auth = require('../middleware/authMiddleware');
 const { createAccountExportDocument } = require('../services/accountExportDocument');
 const { accountDeletionPreflight, organizationsRequiringTransfer } = require('../services/accountDeletionPolicy');
 const { isUserStoragePathOwnedBy } = require('../services/profilePhotoAccess');
+const { isResumePdfPathForId } = require('../services/resumeStorageAccess');
 
 const PAGE_SIZE = 500;
 const RECENT_AUTH_SECONDS = 10 * 60;
@@ -101,7 +102,7 @@ router.get('/export', auth, async (req, res) => {
       listStoragePaths('profile-photos', userId),
       listStoragePaths('reel-media', userId)
     ]);
-    const resumePaths = resumes.map(row => row.pdf_path).filter(path => typeof path === 'string' && path.startsWith('resumes/'));
+    const resumePaths = resumes.filter(row => isResumePdfPathForId(row.pdf_path, row.id)).map(row => row.pdf_path);
     const storedFiles = [
       ...profilePhotoPaths.map(path => ({ bucket: 'profile-photos', path })),
       ...reelMediaPaths.map(path => ({ bucket: 'reel-media', path })),
@@ -182,13 +183,13 @@ router.delete('/', auth, async (req, res) => {
     const user = authResult.user;
 
     const [resumes, reels, profilePhotoPaths, reelMediaPaths] = await Promise.all([
-      fetchAll(() => supabase.from('resumes').select('pdf_path').eq('user_id', userId)),
+      fetchAll(() => supabase.from('resumes').select('id, pdf_path').eq('user_id', userId)),
       fetchAll(() => supabase.from('reels').select('media_url').eq('user_id', userId)),
       listStoragePaths('profile-photos', userId),
       listStoragePaths('reel-media', userId)
     ]);
-    const resumePaths = resumes.map(row => row.pdf_path)
-      .filter(path => typeof path === 'string' && path.startsWith('resumes/'));
+    const resumePaths = resumes.filter(row => isResumePdfPathForId(row.pdf_path, row.id))
+      .map(row => row.pdf_path);
     const legacyReelPaths = reels.map(row => row.media_url)
       .filter(path => isUserStoragePathOwnedBy(path, userId) && !/^https?:\/\//i.test(path));
     const avatarPath = user.user_metadata?.avatar_path;
