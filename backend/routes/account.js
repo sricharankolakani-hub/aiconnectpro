@@ -7,6 +7,7 @@ const supabase = require('../services/supabaseClient');
 const auth = require('../middleware/authMiddleware');
 const { createAccountExportDocument } = require('../services/accountExportDocument');
 const { accountDeletionPreflight, organizationsRequiringTransfer } = require('../services/accountDeletionPolicy');
+const { isUserStoragePathOwnedBy } = require('../services/profilePhotoAccess');
 
 const PAGE_SIZE = 500;
 const RECENT_AUTH_SECONDS = 10 * 60;
@@ -189,11 +190,11 @@ router.delete('/', auth, async (req, res) => {
     const resumePaths = resumes.map(row => row.pdf_path)
       .filter(path => typeof path === 'string' && path.startsWith('resumes/'));
     const legacyReelPaths = reels.map(row => row.media_url)
-      .filter(path => typeof path === 'string' && path.startsWith(userId + '/') && !/^https?:\/\//i.test(path));
+      .filter(path => isUserStoragePathOwnedBy(path, userId) && !/^https?:\/\//i.test(path));
     const avatarPath = user.user_metadata?.avatar_path;
     const profilePaths = [
       ...profilePhotoPaths,
-      ...(typeof avatarPath === 'string' && avatarPath.startsWith(userId + '/') ? [avatarPath] : [])
+      ...(isUserStoragePathOwnedBy(avatarPath, userId) ? [avatarPath] : [])
     ];
 
     // Remove private objects before deleting their account metadata. Retrying is
