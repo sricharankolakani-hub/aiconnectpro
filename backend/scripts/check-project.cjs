@@ -14,7 +14,7 @@ function collectJavaScript(directory) {
     const fullPath = path.join(directory, entry.name);
     if (entry.isDirectory()) {
       if (entry.name !== 'node_modules' && entry.name !== '.git') collectJavaScript(fullPath);
-    } else if (entry.isFile() && entry.name.endsWith('.js')) {
+    } else if (entry.isFile() && (entry.name.endsWith('.js') || entry.name.endsWith('.mjs'))) {
       files.push(fullPath);
     }
   }
