@@ -15,6 +15,7 @@ const pagePaths = [
 ];
 const failures = [];
 const checked = new Set();
+const checkedAssets = new Set();
 
 async function fetchChecked(url, label, expectedType) {
   const key = url.toString();
@@ -54,6 +55,7 @@ for (const path of pagePaths) {
     const assetUrl = new URL(reference, pageUrl);
     if (assetUrl.origin !== baseUrl.origin || !/\.(?:m?js|css)$/i.test(assetUrl.pathname)) continue;
 
+    checkedAssets.add(assetUrl.toString());
     const expectedType = assetUrl.pathname.endsWith(".css") ? "text/css" : "javascript";
     await fetchChecked(assetUrl, `${path} → ${assetUrl.pathname}`, expectedType);
   }
@@ -77,5 +79,5 @@ if (failures.length) {
   for (const failure of failures) console.error(`- ${failure}`);
   process.exitCode = 1;
 } else {
-  console.log(`Production smoke check passed: ${pagePaths.length} pages, ${checked.size - pagePaths.length} local JS/CSS assets, and database readiness.`);
+  console.log(`Production smoke check passed: ${pagePaths.length} pages, ${checkedAssets.size} local JS/CSS assets, and database readiness.`);
 }
