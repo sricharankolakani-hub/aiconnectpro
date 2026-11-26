@@ -40,6 +40,8 @@ Admin roles are managed through Supabase `app_metadata.roles` and server-side au
 
 The read-only production snapshot on 2026-11-23 contained 6 auth users (5 email-confirmed and 1 awaiting email confirmation), 3 profiles, 0 organizations, 0 employer requests, 0 jobs, 0 applications, 1 conversation, 20 messages, and 3 Capsules.
 
+A limited aggregate recheck on 2026-11-26 confirmed 6 Auth users (5 email-confirmed, 1 awaiting confirmation), 0 organizations, 0 employer requests, 0 jobs, 0 applications, and 3 Capsules. It returned no personal identifiers and cannot establish whether the pending account is the owner's OTP test; counts for profiles, conversations, and messages above remain the 23 November snapshot.
+
 This is enough to confirm that the product has real accounts and some member activity, but the jobs marketplace currently has no employer or job inventory. Do not create synthetic public companies or listings.
 
 **Current release level: controlled pilot.** Production pages and health checks are available, but this is not a fully stocked public marketplace and has not had every user journey independently verified end to end.

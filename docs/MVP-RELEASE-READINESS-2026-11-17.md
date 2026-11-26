@@ -36,6 +36,8 @@ Read-only counts captured on 23 November 2026:
 
 The product has no employer or job inventory yet. Do not create synthetic public listings; onboard a real employer and review its company evidence manually.
 
+A limited aggregate recheck on 26 November returned 6 Auth users (5 email-confirmed, 1 awaiting confirmation), 0 organizations, 0 employer requests, 0 jobs, 0 applications, and 3 Capsules. This query returned no personal identifiers and cannot establish whether the pending account is the owner's OTP test.
+
 ## Ready for a controlled pilot
 
 - Member email/password and Google sign-in flows are present. The owner reports saving temporary Gmail SMTP settings and has confirmed receiving a signup OTP. That confirms delivery for the reported test; code acceptance and completion of signup still need browser confirmation. A CI regression test protects the signup page's 6–10 digit range, including 8-digit codes. Signup, Google OAuth, and the backend signup endpoint now record/validate version `2026-11-02`, matching the published policy effective date (PR #98). Current aggregate counts show one account awaiting email confirmation, but cannot identify whether it is the test account. Complete the OTP step in the browser; never share the code in chat.
