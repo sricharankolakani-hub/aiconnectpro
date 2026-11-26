@@ -17,31 +17,37 @@ const failures = [];
 const checked = new Set();
 const checkedAssets = new Set();
 
-async function fetchChecked(url, label, expectedType) {
+async function fetchChecked(url, label, expectedType, { retries = 0, retryDelayMs = 0 } = {}) {
   const key = url.toString();
   if (checked.has(key)) return null;
+
+  let lastFailure = "request failed";
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+      if (!response.ok) {
+        lastFailure = `HTTP ${response.status}`;
+      } else {
+        const contentType = response.headers.get("content-type") || "";
+        if (expectedType && !contentType.toLowerCase().includes(expectedType)) {
+          lastFailure = `unexpected content type ${contentType || "(missing)"}`;
+        } else {
+          checked.add(key);
+          return response;
+        }
+      }
+    } catch (error) {
+      lastFailure = `request failed (${error.message})`;
+    }
+
+    if (attempt < retries) {
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    }
+  }
+
   checked.add(key);
-
-  let response;
-  try {
-    response = await fetch(url, { signal: AbortSignal.timeout(15_000) });
-  } catch (error) {
-    failures.push(`${label}: request failed (${error.message})`);
-    return null;
-  }
-
-  if (!response.ok) {
-    failures.push(`${label}: HTTP ${response.status}`);
-    return null;
-  }
-
-  const contentType = response.headers.get("content-type") || "";
-  if (expectedType && !contentType.toLowerCase().includes(expectedType)) {
-    failures.push(`${label}: unexpected content type ${contentType || "(missing)"}`);
-    return null;
-  }
-
-  return response;
+  failures.push(`${label}: ${lastFailure}`);
+  return null;
 }
 
 for (const path of pagePaths) {
@@ -62,7 +68,7 @@ for (const path of pagePaths) {
 }
 
 const readinessUrl = new URL("/api/ready", baseUrl);
-const readinessResponse = await fetchChecked(readinessUrl, "/api/ready", "application/json");
+const readinessResponse = await fetchChecked(readinessUrl, "/api/ready", "application/json", { retries: 5, retryDelayMs: 10_000 });
 if (readinessResponse) {
   try {
     const readiness = await readinessResponse.json();
